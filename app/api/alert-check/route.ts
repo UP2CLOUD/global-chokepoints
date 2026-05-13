@@ -17,7 +17,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getD1 } from '@/app/lib/db';
 import { sendEmail, alertEmailHtml } from '@/app/lib/email';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 function siteUrl() {

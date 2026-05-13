@@ -8,7 +8,6 @@
 import { NextResponse } from 'next/server';
 import { getKV } from '@/app/lib/kv';
 
-export const runtime = 'edge';
 export const revalidate = 300;
 export const dynamic = 'force-dynamic';
 

@@ -8,7 +8,6 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 
-export const runtime = 'edge';
 export const revalidate = 300;
 
 function answerFor(state: string): { word: string; color: string; sub: string } {

@@ -11,7 +11,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getD1, randomId, randomToken } from '@/app/lib/db';
 import { sendEmail, confirmationEmailHtml } from '@/app/lib/email';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
