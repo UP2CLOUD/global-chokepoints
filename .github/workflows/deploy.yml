@@ -1,16 +1,17 @@
 # ============================================================
-# Deploy to Cloudflare Pages
+# Deploy to Cloudflare Workers (OpenNext)
 #
 # Triggers:   push to main  |  manual (workflow_dispatch)
-# Builds:     @cloudflare/next-on-pages  →  .vercel/output/static
-# Deploys:    wrangler pages deploy  (picks up wrangler.toml for D1 bindings)
+# Builds:     @opennextjs/cloudflare  →  .open-next/worker.js
+# Deploys:    wrangler deploy
 #
 # Required repository secrets (Settings → Secrets → Actions):
-#   CLOUDFLARE_API_TOKEN   — CF API token with "Cloudflare Pages:Edit" permission
+#   CLOUDFLARE_API_TOKEN   — CF API token with Workers:Edit permission
 #   CLOUDFLARE_ACCOUNT_ID  — Your Cloudflare account ID
+#   AISSTREAM_KEY          — aisstream.io API key for live AIS vessel data
 #
-# Required repository variables (Settings → Variables → Actions):
-#   CF_PROJECT_NAME        — Cloudflare Pages project name (e.g. strait-of-hormuz-monitor)
+# Optional repository variables (Settings → Variables → Actions):
+#   NEXT_PUBLIC_SITE_URL   — Public URL of the deployed worker
 # ============================================================
 
 name: Deploy → Cloudflare Pages
@@ -66,3 +67,10 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
+
+      - name: Push Worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "${{ secrets.AISSTREAM_KEY }}" | npx wrangler secret put AISSTREAM_KEY
