@@ -146,7 +146,8 @@ export default function VesselMap() {
     resize();
     window.addEventListener('resize', resize);
 
-    const hasLiveVessels = ais && ais.running && !ais.stale && ais.vessels?.length > 0;
+    // Show vessels whether fresh or stale — stale means slightly old but real data
+    const hasLiveVessels = ais && ais.running && ais.vessels?.length > 0;
 
     function draw() {
       const dpr = window.devicePixelRatio || 1;
@@ -214,7 +215,7 @@ export default function VesselMap() {
     };
   }, [lang, ais]);
 
-  const live = ais && ais.running && !ais.stale && ais.vessels?.length > 0;
+  const live = ais && ais.running && ais.vessels?.length > 0;
 
   // Determine the status badge content
   let badge: { text: string; cls: string };
@@ -222,8 +223,8 @@ export default function VesselMap() {
     badge = { text: lang === 'en' ? 'LOADING…' : 'CARREGANDO…', cls: 'bg-bg2/80 text-text3 border border-divider' };
   } else if (live) {
     badge = { text: `LIVE · ${ais!.count} ${lang === 'en' ? 'ships' : 'navios'}`, cls: 'bg-ok/15 text-ok border border-ok/30' };
-  } else if (ais?.stale) {
-    badge = { text: lang === 'en' ? 'STALE · reconnecting' : 'DESATUALIZADO · reconectando', cls: 'bg-warning/15 text-warning border border-warning/30' };
+  } else if (live && ais?.stale) {
+    badge = { text: `LIVE · ${ais!.count} ${lang === 'en' ? 'ships' : 'navios'} · ${lang === 'en' ? 'refreshing' : 'atualizando'}`, cls: 'bg-ok/10 text-ok border border-ok/20' };
   } else {
     badge = { text: lang === 'en' ? 'AIS OFFLINE' : 'AIS OFFLINE', cls: 'bg-bg2/80 text-text3 border border-divider' };
   }
