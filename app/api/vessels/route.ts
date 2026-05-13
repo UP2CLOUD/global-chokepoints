@@ -78,21 +78,32 @@ function connect(apiKey: string) {
   if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   collectorState = 'connecting';
 
-  // Dynamically require ws so this file loads cleanly in both Node.js and
-  // CF Workers (where ws is unavailable). In CF Workers, require() throws →
-  // we catch it and stay in 'error' state, so the UI shows simulation lanes.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // In Edge runtimes (Cloudflare), the native WebSocket object is available globally.
+  // In Node.js (local dev without edge simulator), it might not be.
   let WS: any;
-  try { WS = require('ws'); } catch {
-    console.warn('[ais-embedded] ws module unavailable (CF Workers / edge runtime) — AIS disabled, UI will show simulation');
+  if (typeof WebSocket !== 'undefined') {
+    WS = WebSocket;
+  } else {
+    try {
+      // @ts-ignore
+      WS = require('ws');
+    } catch {
+      console.warn('[ais-embedded] ws module unavailable — AIS disabled, UI will show simulation');
+      collectorState = 'error';
+      return;
+    }
+  }
+
+  console.log('[ais-embedded] connecting to wss://stream.aisstream.io/v0/stream …');
+  try {
+    wsConn = new WS('wss://stream.aisstream.io/v0/stream');
+  } catch (err) {
+    console.warn('[ais-embedded] WebSocket creation failed:', err);
     collectorState = 'error';
     return;
   }
 
-  console.log('[ais-embedded] connecting to wss://stream.aisstream.io/v0/stream …');
-  wsConn = new WS('wss://stream.aisstream.io/v0/stream');
-
-  wsConn.on('open', () => {
+  const handleOpen = () => {
     backoff = 1000;
     collectorState = 'connected';
     const sub = {
@@ -102,12 +113,16 @@ function connect(apiKey: string) {
     };
     wsConn!.send(JSON.stringify(sub));
     console.log('[ais-embedded] subscribed — Strait of Hormuz bbox');
-  });
+  };
 
-  wsConn.on('message', (raw: any) => {
+  const handleMessage = (event: any) => {
     messagesReceived++;
     let msg: any;
-    try { msg = JSON.parse(raw.toString()); } catch { return; }
+    try { 
+      // ws package uses raw, native WebSocket uses event.data
+      const raw = event.data || event;
+      msg = JSON.parse(raw.toString()); 
+    } catch { return; }
     const meta = msg.MetaData;
     if (!meta?.MMSI) return;
     const mmsi = Number(meta.MMSI);
@@ -138,19 +153,31 @@ function connect(apiKey: string) {
         type: classifyType(sd.Type),
       });
     }
-  });
+  };
 
-  wsConn.on('close', () => {
+  const handleClose = () => {
     collectorState = 'error';
     console.warn(`[ais-embedded] socket closed, reconnecting in ${backoff} ms`);
     reconnectTimer = setTimeout(() => connect(apiKey), backoff);
     backoff = Math.min(backoff * 2, 30_000);
-  });
+  };
 
-  wsConn.on('error', (err: any) => {
-    // 'close' fires after 'error' — reconnect handled there
-    console.error('[ais-embedded] socket error:', err.message);
-  });
+  const handleError = (err: any) => {
+    console.error('[ais-embedded] socket error:', err.message || err);
+  };
+
+  // Attach event listeners (works for both native WebSocket and ws package)
+  if (wsConn.on) {
+    wsConn.on('open', handleOpen);
+    wsConn.on('message', handleMessage);
+    wsConn.on('close', handleClose);
+    wsConn.on('error', handleError);
+  } else {
+    wsConn.onopen = handleOpen;
+    wsConn.onmessage = handleMessage;
+    wsConn.onclose = handleClose;
+    wsConn.onerror = handleError;
+  }
 }
 
 function ensureCollector() {
