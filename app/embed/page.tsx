@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DashboardData } from '@/app/lib/types';
 import { fetchDashboardData, deriveStatus } from '@/app/lib/api';
+import { getMockData } from '@/app/lib/mockData';
 import { LangProvider, useLang } from '@/app/components/LangContext';
 import HeroStatus from '@/app/components/HeroStatus';
 import LoadingScreen from '@/app/components/LoadingScreen';
@@ -20,7 +21,10 @@ function EmbedContent() {
         realData.metrics?.brentChangePercent ?? null,
         lang
       );
-      setData({ ...realData, status });
+      const seed = getMockData(lang);
+      // seed provides required fallbacks (metrics, news, timeline) if realData is partial
+      const merged: DashboardData = { ...seed, ...realData, status };
+      setData(merged);
     } catch (err) {
       console.warn('Real API fetch failed:', err);
     }

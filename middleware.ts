@@ -10,18 +10,14 @@ export function middleware(request: NextRequest) {
     const authHeader = request.headers.get('Authorization') || request.headers.get('x-api-key');
     const validKey = process.env.V1_API_KEY;
 
+    // If V1_API_KEY is not configured, /v1/* is public (backwards compatible)
     if (!validKey) {
-      // If no key is configured on the server, we might want to temporarily allow
-      // or strictly block. We'll block to enforce security.
-      return new NextResponse(
-        JSON.stringify({ error: 'API key not configured on server' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+      return NextResponse.next();
     }
 
-    if (!authHeader || (authHeader !== \`Bearer \${validKey}\` && authHeader !== validKey)) {
+    if (!authHeader || (authHeader !== `Bearer ${validKey}` && authHeader !== validKey)) {
       return new NextResponse(
-        JSON.stringify({ error: 'Unauthorized. Please provide a valid x-api-key header.' }),
+        JSON.stringify({ error: 'Unauthorized. Provide x-api-key or Authorization: Bearer <key>' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
