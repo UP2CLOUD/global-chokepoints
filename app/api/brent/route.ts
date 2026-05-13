@@ -13,6 +13,7 @@
 import { NextResponse } from 'next/server';
 import { fetchEiaSpot, eiaToTicker } from '@/app/lib/eia';
 
+export const runtime = 'edge';
 export const revalidate = 300;
 export const dynamic = 'force-dynamic';
 
@@ -26,9 +27,9 @@ type Payload = {
   stale?: boolean;
 };
 
-// In-process cache for the Yahoo fallback so a 429 doesn't blank out
-// the dashboard. Replaced as soon as a fresh fetch succeeds.
-let yahooCache: { ts: number; payload: Payload } | null = null;
+// In-process cache — shared across all sources so any success survives
+// a subsequent source failure.
+let priceCache: { ts: number; payload: Payload } | null = null;
 const STALE_OK_MS = 6 * 60 * 60 * 1000;
 
 async function fetchYahoo(): Promise<Payload> {
@@ -89,75 +90,115 @@ async function fetchYahoo(): Promise<Payload> {
         asOf: new Date((meta.regularMarketTime ?? Date.now() / 1000) * 1000).toISOString(),
         source: `Yahoo Finance (${host})`,
       };
-      yahooCache = { ts: Date.now(), payload };
+      priceCache = { ts: Date.now(), payload };
       return payload;
     } catch (err) {
       console.warn(`[brent] Yahoo ${host} failed:`, (err as Error).message);
       lastErr = err;
     }
   }
-  // Both Yahoo hosts failed — try stale cache before giving up
-  if (yahooCache && Date.now() - yahooCache.ts < STALE_OK_MS) {
-    console.warn('[brent] all Yahoo hosts failed; serving stale cache.');
-    return { ...yahooCache.payload, stale: true, source: 'Yahoo Finance (cached)' };
-  }
   throw lastErr;
+}
+
+// ── Stooq fallback (free, no key, separate rate-limit pool from Yahoo) ────
+async function fetchStooq(): Promise<Payload> {
+  // stooq returns CSV: Date,Open,High,Low,Close,Volume
+  const url = 'https://stooq.com/q/d/l/?s=bz.f&i=d';
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+    cache: 'no-store',
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) throw new Error(`Stooq HTTP ${res.status}`);
+  const csv = await res.text();
+  const lines = csv.trim().split('\n').filter((l) => l && !l.startsWith('Date'));
+  if (lines.length < 2) throw new Error('Stooq: insufficient data');
+
+  const parsed = lines.map((line) => {
+    const [date, , , , close] = line.split(',');
+    return { date: date.trim(), price: parseFloat(close) };
+  }).filter((p) => !isNaN(p.price));
+
+  const history = parsed.slice(-7);
+  const latest = history[history.length - 1].price;
+  const previous = history[history.length - 2]?.price ?? latest;
+  const change = latest - previous;
+  const changePercent = previous !== 0 ? (change / previous) * 100 : 0;
+
+  // Format dates from YYYY-MM-DD to MM/DD
+  const chart = history.map((h) => {
+    const [, m, d] = h.date.split('-');
+    return { date: `${m}/${d}`, price: Number(h.price.toFixed(2)) };
+  });
+
+  const payload: Payload = {
+    price: Number(latest.toFixed(2)),
+    change: Number(change.toFixed(2)),
+    changePercent: Number(changePercent.toFixed(2)),
+    history: chart,
+    asOf: new Date().toISOString(),
+    source: 'Stooq (BZ.F)',
+  };
+  priceCache = { ts: Date.now(), payload };
+  return payload;
 }
 
 // Preferred EIA freshness limit. If EIA data is older than this,
 // we prefer Yahoo — but still fall back to stale EIA over a 502.
 const EIA_PREFERRED_MAX_AGE_DAYS = 5;
 
+const ok = (payload: Payload, staleOverride?: boolean) =>
+  NextResponse.json(
+    staleOverride ? { ...payload, stale: true } : payload,
+    { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+  );
+
 export async function GET() {
-  // 1) Try Yahoo Finance first — real-time, no key required
+  // 1) Yahoo Finance — real-time, no key, can 429 on server-side calls
   try {
-    const payload = await fetchYahoo();
-    return NextResponse.json(payload, {
-      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
-    });
+    return ok(await fetchYahoo());
   } catch (err) {
-    console.warn('[api/brent] Yahoo failed, trying EIA:', (err as Error).message);
+    console.warn('[api/brent] Yahoo failed, trying Stooq:', (err as Error).message);
   }
 
-  // 2) Try EIA — fresh data preferred, stale data accepted as last resort
+  // 2) Stooq — free CSV, separate rate-limit pool from Yahoo
+  try {
+    return ok(await fetchStooq());
+  } catch (err) {
+    console.warn('[api/brent] Stooq failed, trying EIA:', (err as Error).message);
+  }
+
+  // 3) EIA — keyed, up to 5-day lag acceptable; serve stale data over 502
   try {
     const eia = await fetchEiaSpot('RBRTE');
     if (eia) {
       const latestTs = eia.points[eia.points.length - 1].ts;
       const ageDays = (Date.now() - latestTs) / (1000 * 60 * 60 * 24);
       const isStale = ageDays > EIA_PREFERRED_MAX_AGE_DAYS;
-
-      if (isStale) {
-        console.warn(
-          `[api/brent] EIA data is ${ageDays.toFixed(1)} days old — serving as stale fallback`
-        );
-      }
-
+      if (isStale) console.warn(`[api/brent] EIA data is ${ageDays.toFixed(1)} days old — serving as stale fallback`);
       const payload = eiaToTicker(eia);
-      return NextResponse.json(
-        {
-          ...payload,
-          source: isStale
-            ? `EIA (PET.RBRTE.D · ${Math.round(ageDays)}d old)`
-            : 'EIA (PET.RBRTE.D)',
-          stale: isStale || undefined,
-        },
-        {
-          headers: {
-            'Cache-Control': isStale
-              ? 'public, s-maxage=60, stale-while-revalidate=120'
-              : 'public, s-maxage=300, stale-while-revalidate=600',
-          },
-        }
-      );
+      const result = {
+        ...payload,
+        source: isStale ? `EIA (PET.RBRTE.D · ${Math.round(ageDays)}d old)` : 'EIA (PET.RBRTE.D)',
+        stale: isStale || undefined,
+      };
+      priceCache = { ts: Date.now(), payload: result };
+      return NextResponse.json(result, {
+        headers: { 'Cache-Control': isStale ? 'public, s-maxage=60, stale-while-revalidate=120' : 'public, s-maxage=300, stale-while-revalidate=600' },
+      });
     }
   } catch (err) {
     console.error('[api/brent] EIA also failed:', (err as Error).message);
   }
 
-  // Should never reach here in practice (EIA key is always set)
+  // 4) Last resort — serve whatever is in module-level cache (up to 6 h old)
+  if (priceCache && Date.now() - priceCache.ts < STALE_OK_MS) {
+    console.warn('[api/brent] all sources failed; serving module cache.');
+    return ok(priceCache.payload, true);
+  }
+
   return NextResponse.json(
-    { error: 'Both Yahoo Finance and EIA are unavailable', source: 'all sources failed' },
+    { error: 'All Brent price sources unavailable', source: 'all sources failed' },
     { status: 502 }
   );
 }

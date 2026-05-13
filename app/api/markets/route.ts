@@ -11,6 +11,7 @@
 import { NextResponse } from 'next/server';
 import { fetchEiaSpot, eiaToTicker, type EiaSeries } from '@/app/lib/eia';
 
+export const runtime = 'edge';
 export const revalidate = 300;
 export const dynamic = 'force-dynamic';
 

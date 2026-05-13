@@ -21,6 +21,7 @@ import { NextResponse } from 'next/server';
 // that breaks when bundled by webpack AND is unavailable in CF Workers.
 // We use require() inside connect() so the module loads cleanly in any runtime.
 
+export const runtime = 'edge';
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 

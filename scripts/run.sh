@@ -129,13 +129,13 @@ say "Starting Next.js dev server on ${BLD}http://localhost:${PORT}${RST}"
 ( node node_modules/next/dist/bin/next dev -p "$PORT" 2>&1 | prefix "[web]" "$BLU" ) &
 pids+=("$!")
 
-# --- 7. Start the AIS collector if configured ----------------
+# NOTE: The AIS collector is embedded directly in /api/vessels (module-level
+# WebSocket).  No separate process is needed — starting one would create two
+# concurrent connections with the same key and trigger 429s from aisstream.io.
 if has_key AISSTREAM_KEY; then
-  say "Starting AIS collector (Strait of Hormuz bounding box)"
-  ( node scripts/ais-collector.mjs 2>&1 | prefix "[ais]" "$GRN" ) &
-  pids+=("$!")
+  ok "AISSTREAM_KEY set — embedded AIS collector will connect on first /api/vessels request"
 else
-  warn "Skipping AIS collector — set AISSTREAM_KEY in .env.local to enable real vessel positions"
+  warn "AISSTREAM_KEY not set — vessel map will show simulated lanes"
 fi
 
 # --- 8. Open the browser after a beat ------------------------

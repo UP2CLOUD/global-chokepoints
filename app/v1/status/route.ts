@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { deriveStatus } from '@/app/lib/api';
 
+export const runtime = 'edge';
 export const revalidate = 30;
 export const dynamic = 'force-dynamic';
 
