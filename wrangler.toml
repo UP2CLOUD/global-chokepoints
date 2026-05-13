@@ -32,8 +32,6 @@ database_id = "REPLACE_WITH_REAL_D1_DATABASE_ID"
 [vars]
 NEXT_PUBLIC_SITE_URL = "https://strait-of-hormuz-monitor.pages.dev"
 
-# ── Cron Triggers — alert check every 10 minutes ─────────────
-# Calls /api/alert-check to detect strait status changes and
-# send email alerts to confirmed subscribers.
-[triggers]
-crons = ["*/10 * * * *"]
+# NOTE: Cron triggers ([triggers]) are Workers-only and not supported in CF Pages.
+# Alert checks are handled by the GitHub Actions hourly schedule (.github/workflows/alert-check.yml)
+# which POSTs to /api/alert-check with the X-Alert-Secret header.
