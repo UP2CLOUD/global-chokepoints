@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Bell, X, CheckCircle, AlertCircle, Loader2, Mail } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { useLang } from './LangContext';
 
 type Phase = 'idle' | 'loading' | 'success' | 'error' | 'already';
@@ -44,6 +45,7 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Trap focus + close on Escape
@@ -63,7 +65,7 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, turnstileToken }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -179,6 +181,14 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
                     <span>{errorMsg}</span>
                   </div>
                 )}
+
+                <div className="flex justify-center">
+                  <Turnstile
+                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                    onSuccess={setTurnstileToken}
+                    options={{ theme: 'dark', size: 'flexible' }}
+                  />
+                </div>
 
                 <button
                   type="submit"

@@ -12,6 +12,7 @@
 // ============================================================
 import { NextResponse } from 'next/server';
 import { fetchEiaSpot, eiaToTicker } from '@/app/lib/eia';
+import { getKV } from '@/app/lib/kv';
 
 export const runtime = 'edge';
 export const revalidate = 300;
@@ -154,16 +155,49 @@ const ok = (payload: Payload, staleOverride?: boolean) =>
   );
 
 export async function GET() {
+  const kv = getKV();
+
+  // Check KV cache first (if it exists and is fresh)
+  if (kv) {
+    try {
+      const cached = await kv.get('BRENT_PAYLOAD', 'json');
+      if (cached) {
+        // If we want to return directly from KV, we could, but to keep data fresh,
+        // we'll only return from KV if it's less than 5 mins old, otherwise we fetch
+        // and update KV in the background or right now.
+        // For simplicity, let's treat KV as a fallback just like module-cache but persistent.
+        const parsed = cached as { ts: number; payload: Payload };
+        if (Date.now() - parsed.ts < 5 * 60 * 1000) {
+          return ok(parsed.payload);
+        }
+      }
+    } catch (err) {
+      console.warn('[api/brent] KV read failed:', err);
+    }
+  }
+
+  const updateKV = (payload: Payload) => {
+    if (kv) {
+      kv.put('BRENT_PAYLOAD', JSON.stringify({ ts: Date.now(), payload })).catch(e => 
+        console.warn('[api/brent] KV write failed:', e)
+      );
+    }
+  };
+
   // 1) Yahoo Finance — real-time, no key, can 429 on server-side calls
   try {
-    return ok(await fetchYahoo());
+    const data = await fetchYahoo();
+    updateKV(data);
+    return ok(data);
   } catch (err) {
     console.warn('[api/brent] Yahoo failed, trying Stooq:', (err as Error).message);
   }
 
   // 2) Stooq — free CSV, separate rate-limit pool from Yahoo
   try {
-    return ok(await fetchStooq());
+    const data = await fetchStooq();
+    updateKV(data);
+    return ok(data);
   } catch (err) {
     console.warn('[api/brent] Stooq failed, trying EIA:', (err as Error).message);
   }
@@ -183,6 +217,7 @@ export async function GET() {
         stale: isStale || undefined,
       };
       priceCache = { ts: Date.now(), payload: result };
+      updateKV(result);
       return NextResponse.json(result, {
         headers: { 'Cache-Control': isStale ? 'public, s-maxage=60, stale-while-revalidate=120' : 'public, s-maxage=300, stale-while-revalidate=600' },
       });
@@ -195,6 +230,20 @@ export async function GET() {
   if (priceCache && Date.now() - priceCache.ts < STALE_OK_MS) {
     console.warn('[api/brent] all sources failed; serving module cache.');
     return ok(priceCache.payload, true);
+  }
+
+  // 5) KV Fallback — last ditch effort before returning 502
+  if (kv) {
+    try {
+      const cached = await kv.get('BRENT_PAYLOAD', 'json');
+      if (cached) {
+        console.warn('[api/brent] all sources failed; serving KV cache.');
+        const parsed = cached as { ts: number; payload: Payload };
+        return ok(parsed.payload, true);
+      }
+    } catch (err) {
+      console.warn('[api/brent] KV read fallback failed:', err);
+    }
   }
 
   return NextResponse.json(

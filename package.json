@@ -10,13 +10,14 @@
     "type-check": "tsc --noEmit",
     "ais": "node scripts/ais-collector.mjs",
     "start:local": "bash scripts/run.sh",
-    "build:cf": "npx @cloudflare/next-on-pages@1",
-    "preview:cf": "npm run build:cf && wrangler pages dev .vercel/output/static --d1=DB",
-    "db:migrate": "wrangler d1 execute strait-subscriptions --file=migrations/0001_subscriptions.sql",
+    "build:cf": "npx @opennextjs/cloudflare build",
+    "preview:cf": "npm run build:cf && wrangler dev",
+    "db:migrate": "wrangler d1 execute strait-subscriptions --remote --file=migrations/0001_subscriptions.sql",
     "db:migrate:local": "wrangler d1 execute strait-subscriptions --local --file=migrations/0001_subscriptions.sql",
-    "deploy:cf": "npm run build:cf && wrangler pages deploy .vercel/output/static --project-name=strait-of-hormuz-monitor"
+    "deploy:cf": "npm run build:cf && wrangler deploy"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.5.2",
     "@tanstack/react-query": "^5.32.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
@@ -32,7 +33,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.7",
+    "@opennextjs/cloudflare": "^1.7.0",
     "@types/leaflet": "^1.9.0",
     "@types/node": "^20.12.0",
     "@types/react": "^18.3.0",

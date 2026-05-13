@@ -22,15 +22,45 @@ function siteUrl() {
 
 export async function POST(req: NextRequest) {
   let email: string;
+  let turnstileToken: string;
   try {
     const body = await req.json();
     email = (body.email ?? '').toString().trim().toLowerCase();
+    turnstileToken = (body.turnstileToken ?? '').toString().trim();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
   if (!EMAIL_RE.test(email)) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
+  }
+
+  // ── Turnstile Verification ────────────────────────────
+  // Skip if we are running locally without a secret key (or using test keys)
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+  if (turnstileSecret && turnstileSecret !== '1x0000000000000000000000000000000AA') {
+    if (!turnstileToken) {
+      return NextResponse.json({ error: 'Missing Turnstile token' }, { status: 400 });
+    }
+
+    try {
+      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: turnstileSecret,
+          response: turnstileToken,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyData.success) {
+        console.warn('[subscribe] Turnstile verification failed:', verifyData);
+        return NextResponse.json({ error: 'Bot verification failed. Please try again.' }, { status: 403 });
+      }
+    } catch (err) {
+      console.error('[subscribe] Turnstile API error:', err);
+      return NextResponse.json({ error: 'Failed to verify bot protection.' }, { status: 500 });
+    }
   }
 
   const db = getD1();

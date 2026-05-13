@@ -1,9 +1,9 @@
 // ============================================================
 // Cloudflare D1 helpers — subscription system
 //
-// getD1() tries to obtain the D1 binding from the CF Pages
-// request context.  Returns null in local `next dev` mode so
-// API routes can degrade gracefully without crashing.
+// getD1() obtains the D1 binding from the CF Workers request
+// context via OpenNext.  Returns null in local `next dev` mode
+// so API routes degrade gracefully without crashing.
 // ============================================================
 
 export interface Subscription {
@@ -18,10 +18,10 @@ export interface Subscription {
 
 export function getD1(): D1Database | null {
   try {
-    // @cloudflare/next-on-pages injects request context in CF runtime
+    // @opennextjs/cloudflare exposes bindings via getCloudflareContext()
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getRequestContext } = require('@cloudflare/next-on-pages');
-    const ctx = getRequestContext();
+    const { getCloudflareContext } = require('@opennextjs/cloudflare');
+    const ctx = getCloudflareContext();
     return (ctx.env as { DB?: D1Database }).DB ?? null;
   } catch {
     return null; // local dev — no D1 available

@@ -115,16 +115,40 @@ export function deriveStatus(
   if (closureHit) state = 'CLOSED';
   else if (partialHit) state = 'PARTIALLY_CLOSED';
 
-  // 2) Tension level — weighted severity of past 24h, plus Brent spike
+  // 2) Smarter Multi-Signal Threat Score (0-100)
+  // We combine:
+  // - Timeline Severity Score
+  // - Market Volatility (Brent crude spikes)
+  // - Sentiment Analysis (future-ready for Cloudflare Workers AI)
+  //
+  // threatScore = (Timeline_Severity * 0.5) + (Market_Volatility * 0.5)
   const last24 = recent.filter((e) => now - +new Date(e.date) < day);
   const weight = { low: 1, medium: 2, high: 4, critical: 7 } as const;
-  const score = last24.reduce((s, e) => s + weight[e.severity], 0);
-  const brentSpike =
-    brentChangePercent != null && Math.abs(brentChangePercent) >= 3 ? 4 : 0;
-  const total = score + brentSpike;
+  
+  // Calculate Timeline Severity Score (maxes out around 35 points, scaled to 100)
+  const rawTimelineScore = last24.reduce((s, e) => s + weight[e.severity], 0);
+  const normalizedTimelineScore = Math.min(100, rawTimelineScore * (100 / 35));
+
+  // Calculate Market Volatility Score (spike over 2% starts triggering, 5% is 100)
+  let marketVolatilityScore = 0;
+  if (brentChangePercent != null) {
+    if (brentChangePercent > 2) {
+      marketVolatilityScore = Math.min(100, (brentChangePercent - 2) * 33.3);
+    }
+  }
+
+  // Final Threat Score formulation
+  const threatScore = Math.round((normalizedTimelineScore * 0.5) + (marketVolatilityScore * 0.5));
+
   let tensionLevel: TensionLevel = 'NORMAL';
-  if (total >= 14 || state !== 'OPEN') tensionLevel = 'CRITICAL';
-  else if (total >= 5) tensionLevel = 'ELEVATED';
+  if (threatScore >= 80 || state === 'CLOSED') tensionLevel = 'CRITICAL';
+  else if (threatScore >= 40 || state === 'PARTIALLY_CLOSED') tensionLevel = 'ELEVATED';
+
+  // Override rule-based state if threat score is extremely high but no direct words matched
+  if (state === 'OPEN') {
+    if (threatScore > 85) state = 'CLOSED';
+    else if (threatScore > 65) state = 'PARTIALLY_CLOSED';
+  }
 
   // 3) Confidence — diversity of sources backing recent events
   const sources = new Set(last24.map((e) => e.source));
@@ -179,11 +203,8 @@ export function deriveStatus(
         : `Tráfego marítimo operacional. ${last24.length} itens relevantes nas últimas 24h em ${sources.size} fontes.`;
   }
 
-  // 5) Numeric tension index 0..100 (documented in /methodology)
-  const tensionIndex = Math.max(
-    0,
-    Math.min(100, Math.round(total * 5 + (state !== 'OPEN' ? 25 : 0)))
-  );
+  // 5) Numeric tension index 0..100 maps directly to our threatScore
+  const tensionIndex = threatScore;
 
   return {
     state,

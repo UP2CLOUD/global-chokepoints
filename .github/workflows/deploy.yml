@@ -46,15 +46,14 @@ jobs:
       - name: Type-check
         run: npm run type-check
 
-      - name: Build for Cloudflare Pages
-        run: npx @cloudflare/next-on-pages@1
+      - name: Build for Cloudflare Workers (OpenNext)
+        run: npx @opennextjs/cloudflare build
         env:
-          # Expose public env vars at build time
-          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://strait-of-hormuz-monitor.pages.dev' }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://strait-of-hormuz-monitor.workers.dev' }}
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .vercel/output/static --project-name=${{ vars.CF_PROJECT_NAME || 'strait-of-hormuz-monitor' }} --commit-dirty=true
+          command: deploy

@@ -25,5 +25,14 @@ interface D1Database {
   batch(statements: D1PreparedStatement[]): Promise<D1Result[]>;
 }
 
+// Cloudflare KV Namespace
+interface KVNamespace {
+  get(key: string, type: 'text'): Promise<string | null>;
+  get(key: string, type: 'json'): Promise<unknown | null>;
+  get(key: string, type?: 'text'): Promise<string | null>;
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
+  delete(key: string): Promise<void>;
+}
+
 // Cloudflare Workers global
 declare const EdgeRuntime: string | undefined;

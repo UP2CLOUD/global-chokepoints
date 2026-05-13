@@ -6,6 +6,7 @@
 // stale cache (up to 1 h) when GDELT is fully unavailable.
 // ============================================================
 import { NextResponse } from 'next/server';
+import { getKV } from '@/app/lib/kv';
 
 export const runtime = 'edge';
 export const revalidate = 300;
@@ -106,13 +107,40 @@ function buildNews(articles: any[]) {
 }
 
 export async function GET() {
+  const kv = getKV();
+
+  // Try to use KV cache if it's less than 5 minutes old
+  if (kv) {
+    try {
+      const cached = await kv.get('NEWS_PAYLOAD', 'json');
+      if (cached) {
+        const parsed = cached as { ts: number; news: any[] };
+        if (Date.now() - parsed.ts < 5 * 60 * 1000) {
+          return NextResponse.json(
+            { news: parsed.news, source: 'GDELT', count: parsed.news.length, cached: true },
+            { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+          );
+        }
+      }
+    } catch (err) {
+      console.warn('[api/news] KV read failed:', err);
+    }
+  }
+
   try {
     const data = await fetchGdelt();
     const articles: any[] = data.articles ?? [];
     const news = buildNews(articles);
 
     // Update module-level cache on success
-    if (news.length > 0) gdeltCache = { ts: Date.now(), news };
+    if (news.length > 0) {
+      gdeltCache = { ts: Date.now(), news };
+      if (kv) {
+        kv.put('NEWS_PAYLOAD', JSON.stringify({ ts: Date.now(), news })).catch(e => 
+          console.warn('[api/news] KV write failed:', e)
+        );
+      }
+    }
 
     return NextResponse.json(
       { news, source: 'GDELT', count: news.length },
@@ -128,6 +156,21 @@ export async function GET() {
         { news: gdeltCache.news, source: 'GDELT (cached)', count: gdeltCache.news.length, stale: true },
         { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } }
       );
+    }
+
+    // Serve from KV if possible
+    if (kv) {
+      try {
+        const cached = await kv.get('NEWS_PAYLOAD', 'json');
+        if (cached) {
+          console.warn('[api/news] serving KV fallback');
+          const parsed = cached as { ts: number; news: any[] };
+          return NextResponse.json(
+            { news: parsed.news, source: 'GDELT (KV fallback)', count: parsed.news.length, stale: true },
+            { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } }
+          );
+        }
+      } catch (err) {}
     }
 
     return NextResponse.json(
