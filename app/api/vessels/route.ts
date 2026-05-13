@@ -77,25 +77,15 @@ function connect(apiKey: string) {
   if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   collectorState = 'connecting';
 
-  // In Edge runtimes (Cloudflare), the native WebSocket object is available globally.
-  // In Node.js (local dev without edge simulator), it might not be.
-  let WS: any;
-  if (typeof WebSocket !== 'undefined') {
-    WS = WebSocket;
-  } else {
-    try {
-      // @ts-ignore
-      WS = require('ws');
-    } catch {
-      console.warn('[ais-embedded] ws module unavailable — AIS disabled, UI will show simulation');
-      collectorState = 'error';
-      return;
-    }
+  if (typeof WebSocket === 'undefined') {
+    console.warn('[ais-embedded] WebSocket API unavailable. Please use Node >= 21 or Cloudflare Edge.');
+    collectorState = 'error';
+    return;
   }
 
   console.log('[ais-embedded] connecting to wss://stream.aisstream.io/v0/stream …');
   try {
-    wsConn = new WS('wss://stream.aisstream.io/v0/stream');
+    wsConn = new WebSocket('wss://stream.aisstream.io/v0/stream');
   } catch (err) {
     console.warn('[ais-embedded] WebSocket creation failed:', err);
     collectorState = 'error';
@@ -165,18 +155,11 @@ function connect(apiKey: string) {
     console.error('[ais-embedded] socket error:', err.message || err);
   };
 
-  // Attach event listeners (works for both native WebSocket and ws package)
-  if (wsConn.on) {
-    wsConn.on('open', handleOpen);
-    wsConn.on('message', handleMessage);
-    wsConn.on('close', handleClose);
-    wsConn.on('error', handleError);
-  } else {
-    wsConn.onopen = handleOpen;
-    wsConn.onmessage = handleMessage;
-    wsConn.onclose = handleClose;
-    wsConn.onerror = handleError;
-  }
+  // Attach event listeners for native WebSocket
+  wsConn.addEventListener('open', handleOpen);
+  wsConn.addEventListener('message', handleMessage);
+  wsConn.addEventListener('close', handleClose);
+  wsConn.addEventListener('error', handleError);
 }
 
 function ensureCollector() {

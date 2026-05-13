@@ -5,9 +5,6 @@ const nextConfig = {
   // use `@cloudflare/next-on-pages` instead of static export.
   images: { unoptimized: true },
 
-  // `ws` uses a native C addon (bufferUtil) for frame masking.
-  // When webpack bundles it, the addon is corrupted → "bufferUtil.mask is not a function".
-  // Marking it as external lets Node.js load it natively (same as running ais-collector.mjs).
-  serverExternalPackages: ['ws'],
+  // The app now uses the native WebSocket API which doesn't need to be excluded.
 };
 module.exports = nextConfig;
