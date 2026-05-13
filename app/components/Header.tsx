@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useLang } from './LangContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import SupportButton from './SupportButton';
+import SponsorChip from './SponsorChip';
 
 export default function Header() {
   const { t } = useLang();
@@ -38,7 +40,8 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
+          <SponsorChip />
           <LanguageSwitcher />
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-bg2/60 border border-divider backdrop-blur-sm">
             <span className="w-1.5 h-1.5 bg-ok rounded-full animate-[live-pulse_2s_ease-in-out_infinite]" aria-hidden />
@@ -50,6 +53,7 @@ export default function Header() {
           >
             Methodology
           </a>
+          <SupportButton variant="header" />
         </div>
       </div>
     </header>

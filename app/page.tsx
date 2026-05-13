@@ -18,7 +18,9 @@ import Footer from '@/app/components/Footer';
 import RefreshButton from '@/app/components/RefreshButton';
 // LoadingScreen removed — dashboard renders instantly with progressive loading
 import ScrollIndicator from '@/app/components/ScrollIndicator';
-import { TrendingUp, Navigation, Activity } from 'lucide-react';
+import AdSlot from '@/app/components/AdSlot';
+import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
+import { TrendingUp, Navigation, Activity, Zap } from 'lucide-react';
 
 // ── 3D hero — dynamic import, no SSR (WebGL) ─────────────────
 const HeroScene = dynamic(() => import('@/app/components/HeroScene'), {
@@ -243,6 +245,39 @@ function DashboardContent() {
             <Timeline events={data.timeline} />
           </div>
         </div>
+
+        {/* Newsletter CTA — after intelligence sections */}
+        <div className="animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+          <SubscribeInlineCTA />
+        </div>
+
+        {/* API Access CTA */}
+        <div className="animate-fadeInUp rounded-2xl border border-divider bg-card/40 backdrop-blur-sm p-5 md:p-6" style={{ animationDelay: '0.46s' }}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-2">
+                <Zap size={13} className="text-accent" />
+                {lang === 'en' ? 'Commercial API Access' : 'Acesso à API Comercial'}
+              </div>
+              <p className="text-[12px] text-text3 leading-relaxed max-w-lg">
+                {lang === 'en'
+                  ? 'Need real-time status data for your platform? Access the Strait monitoring API with webhooks, historical events, and commercial-grade rate limits.'
+                  : 'Precisa de dados em tempo real para sua plataforma? Acesse a API de monitoramento do Estreito com webhooks, eventos históricos e limites comerciais.'}
+              </p>
+            </div>
+            <a
+              href="/v1/status"
+              className="shrink-0 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
+                text-accent border border-accent/30 hover:border-accent/60 hover:bg-accent/5
+                transition-all duration-200"
+            >
+              {lang === 'en' ? 'Explore API →' : 'Explorar API →'}
+            </a>
+          </div>
+        </div>
+
+        {/* Ad slot — below intelligence, before footer */}
+        <AdSlot position="below-intel" />
 
         <Footer />
       </main>

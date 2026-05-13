@@ -102,27 +102,25 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    /* Backdrop */
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(7,9,15,0.85)', backdropFilter: 'blur(4px)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog"
       aria-modal="true"
       aria-label="Subscribe to alerts"
     >
-      <div className="relative w-full max-w-md bg-bg1 border border-divider rounded-xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-bg1 border border-divider rounded-xl shadow-2xl overflow-hidden animate-fadeInUp">
         {/* Header bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-divider">
           <div className="flex items-center gap-2">
             <Bell size={14} className="text-accent" />
-            <span className="text-[12px] font-mono font-semibold text-text1 uppercase tracking-wider">
+            <span className="text-[12px] font-mono font-semibold text-text uppercase tracking-wider">
               {t.title}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="text-text3 hover:text-text1 transition-colors"
+            className="text-text3 hover:text-text transition-colors"
             aria-label="Close"
           >
             <X size={16} />
@@ -130,11 +128,10 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="px-6 py-6">
-          {/* ── Success state ── */}
-          {(phase === 'success' || phase === 'already') && (
+          {(phase === 'success' || phase === 'already') ? (
             <div className="text-center py-4">
               <CheckCircle size={40} className="text-ok mx-auto mb-4" />
-              <h3 className="text-[14px] font-mono font-semibold text-text1 mb-2">
+              <h3 className="text-[14px] font-mono font-semibold text-text mb-2">
                 {phase === 'already' ? t.alreadyTitle : t.successTitle}
               </h3>
               <p className="text-[12px] font-mono text-text3 leading-relaxed">
@@ -142,21 +139,18 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
               </p>
               <button
                 onClick={onClose}
-                className="mt-6 px-6 py-2 text-[11px] font-mono font-semibold bg-accent text-bg0 rounded-md hover:bg-accent/90 transition-colors"
+                className="mt-6 px-6 py-2 text-[11px] font-mono font-semibold bg-accent text-bg rounded-md hover:bg-accent-hi transition-colors"
               >
                 Done
               </button>
             </div>
-          )}
-
-          {/* ── Input state ── */}
-          {phase !== 'success' && phase !== 'already' && (
+          ) : (
             <>
               <p className="text-[12px] font-mono text-text3 leading-relaxed mb-5">
                 {t.subtitle}
               </p>
 
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="relative">
                   <Mail
                     size={13}
@@ -170,7 +164,7 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.placeholder}
                     className="w-full pl-8 pr-4 py-2.5 bg-bg2 border border-divider rounded-md
-                               text-[12px] font-mono text-text1 placeholder-text4
+                               text-[12px] font-mono text-text placeholder-text4
                                focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
@@ -192,9 +186,9 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
 
                 <button
                   type="submit"
-                  disabled={phase === 'loading'}
-                  className="w-full py-2.5 bg-accent text-bg0 text-[12px] font-mono font-bold
-                             rounded-md hover:bg-accent/90 disabled:opacity-60
+                  disabled={phase === 'loading' || !turnstileToken}
+                  className="w-full py-2.5 bg-accent text-bg text-[12px] font-mono font-bold
+                             rounded-md hover:bg-accent-hi disabled:opacity-60
                              transition-colors flex items-center justify-center gap-2"
                 >
                   {phase === 'loading'
@@ -212,5 +206,44 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * SubscribeInlineCTA — full-width newsletter capture strip for the dashboard.
+ * Opens the subscribe modal when clicked.
+ */
+export function SubscribeInlineCTA() {
+  const { lang } = useLang();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <div className="rounded-2xl border border-divider bg-card/40 backdrop-blur-sm p-5 md:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-2">
+              <Mail size={13} className="text-accent" />
+              {lang === 'en' ? 'Status Alerts' : 'Alertas de Status'}
+            </div>
+            <p className="text-[12px] text-text3 leading-relaxed max-w-lg">
+              {lang === 'en'
+                ? 'Get notified when the risk signal changes. One short alert when it matters \u2014 no spam, no newsletters.'
+                : 'Seja notificado quando o sinal de risco mudar. Um alerta curto quando importa \u2014 sem spam, sem newsletters.'}
+            </p>
+          </div>
+          <button
+            onClick={() => setOpen(true)}
+            className="shrink-0 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
+              text-bg bg-accent hover:bg-accent-hi font-semibold
+              transition-all duration-200"
+          >
+            {lang === 'en' ? 'Subscribe' : 'Inscrever-se'}
+          </button>
+        </div>
+      </div>
+
+      {open && <SubscribeModal onClose={() => setOpen(false)} />}
+    </>
   );
 }

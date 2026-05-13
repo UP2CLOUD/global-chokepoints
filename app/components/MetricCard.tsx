@@ -25,6 +25,8 @@ interface Props {
   down?: boolean;
   /** Optional tone for the value (e.g. severity color) */
   tone?: 'ok' | 'caution' | 'warn' | 'danger' | 'default';
+  /** Show shimmer skeleton — data not yet loaded */
+  loading?: boolean;
 }
 
 function MiniSpark({ data, up }: { data: SparkPoint[]; up: boolean }) {
@@ -83,12 +85,32 @@ const TONE_CLASS: Record<NonNullable<Props['tone']>, string> = {
 export default function MetricCard({
   title, value, icon, change, changeType = 'neutral',
   delay = 0, source, spark, asOf, refreshSec, stale, down, tone = 'default',
+  loading = false,
 }: Props) {
   const changeColor =
     changeType === 'up' ? 'text-ok'
     : changeType === 'down' ? 'text-danger'
     : 'text-text2';
   const valueColor = TONE_CLASS[tone];
+
+  // ── Skeleton shimmer while data loads ──────────────────────
+  if (loading) {
+    return (
+      <div
+        className="relative rounded-xl border border-divider bg-card/70 p-4 overflow-hidden animate-fadeInUp"
+        style={{ animationDelay: `${delay}s` }}
+        aria-busy="true"
+      >
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+        <div className="flex items-start justify-between mb-3">
+          <div className="h-2.5 w-20 bg-bg1 rounded animate-pulse" />
+          <div className="w-7 h-7 rounded-md bg-bg1 animate-pulse" />
+        </div>
+        <div className="h-7 w-24 bg-bg1 rounded animate-pulse mb-3" />
+        <div className="h-2 w-16 bg-bg1 rounded animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div

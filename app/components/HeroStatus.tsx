@@ -1,9 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { StatusData } from '@/app/lib/types';
 import { useLang } from './LangContext';
 import { fmtTime } from '@/app/lib/utils';
-import { Shield, Clock, ExternalLink, Info } from 'lucide-react';
+import { Shield, Clock, ExternalLink, Info, Share2 } from 'lucide-react';
 
 interface Props {
   status: StatusData;
@@ -61,6 +62,18 @@ export default function HeroStatus({ status }: Props) {
       ? word
       : word === 'YES' ? 'SIM' : word === 'NO' ? 'NÃO' : 'INTERROMPIDO';
 
+  const [showWhy, setShowWhy] = useState(false);
+
+  const shareStatus = () => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({
+        title: 'IsStraitHormuzOpen?',
+        text: `The Strait of Hormuz is currently ${status.state}. Tension level: ${status.tensionLevel}.`,
+        url: window.location.href,
+      }).catch(() => {});
+    }
+  };
+
   return (
     <section className="relative overflow-hidden rounded-2xl border border-divider bg-gradient-to-br from-bg1 via-bg1 to-bg2">
       <div
@@ -79,9 +92,19 @@ export default function HeroStatus({ status }: Props) {
             <Shield size={13} className="text-accent" />
             {t.hero.statusLabel}
           </div>
-          <div className="flex items-center gap-1.5 text-text3 text-[11px] font-mono">
-            <Clock size={11} />
-            <span suppressHydrationWarning>{fmtTime(status.lastUpdated, lang === 'en' ? 'en-US' : 'pt-BR')}</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={shareStatus}
+              className="flex items-center gap-1.5 text-text3 hover:text-accent transition-colors duration-180 text-[11px] font-mono"
+              aria-label="Share current status"
+            >
+              <Share2 size={11} />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+            <div className="flex items-center gap-1.5 text-text3 text-[11px] font-mono">
+              <Clock size={11} />
+              <span suppressHydrationWarning>{fmtTime(status.lastUpdated, lang === 'en' ? 'en-US' : 'pt-BR')}</span>
+            </div>
           </div>
         </div>
 
@@ -116,20 +139,42 @@ export default function HeroStatus({ status }: Props) {
             <p className="text-text leading-relaxed text-[15px] md:text-base">
               {status.reason}
             </p>
-            {status.reasonUrl && (
-              <a
-                href={status.reasonUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-mono text-accent hover:text-accent-hi transition-colors duration-180"
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              {status.reasonUrl && (
+                <a
+                  href={status.reasonUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-mono text-accent hover:text-accent-hi transition-colors duration-180"
+                >
+                  <ExternalLink size={12} />
+                  {lang === 'en' ? 'Open source' : 'Ver fonte'}
+                  {status.reasonSource ? ` · ${status.reasonSource}` : ''}
+                </a>
+              )}
+              <button
+                onClick={() => setShowWhy(!showWhy)}
+                className="inline-flex items-center gap-1.5 text-[11px] font-mono text-text3 hover:text-text2 transition-colors"
               >
-                <ExternalLink size={12} />
-                {lang === 'en' ? 'Open source' : 'Ver fonte'}
-                {status.reasonSource ? ` · ${status.reasonSource}` : ''}
-              </a>
-            )}
+                <Info size={12} />
+                {lang === 'en' ? 'Why this status?' : 'Por que este status?'}
+              </button>
+            </div>
           </div>
         </div>
+
+        {showWhy && (
+          <div className="mt-6 p-5 rounded-xl border border-divider bg-bg2/40 animate-fadeInUp">
+            <h4 className="text-[12px] font-mono font-semibold text-text uppercase tracking-wider mb-2">
+              {lang === 'en' ? 'Signal Analysis' : 'Análise de Sinais'}
+            </h4>
+            <p className="text-[12px] text-text3 leading-relaxed">
+              {lang === 'en'
+                ? `The current ${status.state} state is derived from ${status.confidence > 0.8 ? 'highly reliable' : 'multiple'} indicators including: maritime news frequency, oil market volatility, and live vessel movement signals. Tension index ${tIdx}/100 reflects current geopolitical event density in the past 72 hours.`
+                : `O estado atual ${status.state} é derivado de indicadores ${status.confidence > 0.8 ? 'altamente confiáveis' : 'múltiplos'}, incluindo: frequência de notícias marítimas, volatilidade do mercado de petróleo e sinais de movimento de navios ao vivo. O índice de tensão ${tIdx}/100 reflete a densidade de eventos geopolíticos nas últimas 72 horas.`}
+            </p>
+          </div>
+        )}
 
         {/* Tension index — 0..100 numeric */}
         <div className="mt-8">

@@ -253,15 +253,30 @@ export default function VesselMap() {
         )}
       </div>
 
-      {/* No-data overlay — center message when AIS is offline */}
+      {/* Professional degraded-state panel when AIS is offline */}
       {!loading && !live && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 pointer-events-none">
-          <span className="text-[11px] font-mono text-text3">
-            {lang === 'en' ? 'No vessel data' : 'Sem dados de embarcações'}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 pointer-events-none bg-[#0B0F18]/60 backdrop-blur-[2px]">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-caution animate-[pulse-dot_2.4s_ease-in-out_infinite]" />
+            <span className="text-[11px] font-mono text-caution uppercase tracking-[0.14em]">
+              {lang === 'en' ? 'AIS Feed Unavailable' : 'Feed AIS Indisponível'}
+            </span>
+          </div>
+          <span className="text-[10px] font-mono text-text3 text-center max-w-[220px] leading-relaxed">
+            {lang === 'en'
+              ? 'Monitoring alternative open-source maritime indicators'
+              : 'Monitorando indicadores marítimos alternativos'}
           </span>
-          <span className="text-[9px] font-mono text-text3/60">
-            {lang === 'en' ? 'AIS collector offline or key not set' : 'Coletor AIS offline ou chave não configurada'}
-          </span>
+          <a
+            href={process.env.NEXT_PUBLIC_SUPPORT_URL || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pointer-events-auto mt-1 px-3 py-1 rounded text-[9px] font-mono uppercase tracking-[0.12em]
+              text-text2 border border-divider hover:border-accent/40 hover:text-accent
+              bg-bg2/60 transition-all duration-200"
+          >
+            {lang === 'en' ? 'Help fund AIS coverage' : 'Ajude a financiar cobertura AIS'}
+          </a>
         </div>
       )}
 
