@@ -1,0 +1,60 @@
+# ============================================================
+# Deploy to Cloudflare Pages
+#
+# Triggers:   push to main  |  manual (workflow_dispatch)
+# Builds:     @cloudflare/next-on-pages  →  .vercel/output/static
+# Deploys:    wrangler pages deploy  (picks up wrangler.toml for D1 bindings)
+#
+# Required repository secrets (Settings → Secrets → Actions):
+#   CLOUDFLARE_API_TOKEN   — CF API token with "Cloudflare Pages:Edit" permission
+#   CLOUDFLARE_ACCOUNT_ID  — Your Cloudflare account ID
+#
+# Required repository variables (Settings → Variables → Actions):
+#   CF_PROJECT_NAME        — Cloudflare Pages project name (e.g. strait-of-hormuz-monitor)
+# ============================================================
+
+name: Deploy → Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Build for Cloudflare Pages
+        run: npx @cloudflare/next-on-pages@1
+        env:
+          # Expose public env vars at build time
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://strait-of-hormuz-monitor.pages.dev' }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy .vercel/output/static --project-name=${{ vars.CF_PROJECT_NAME || 'strait-of-hormuz-monitor' }} --commit-dirty=true

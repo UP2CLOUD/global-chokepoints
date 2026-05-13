@@ -1,0 +1,44 @@
+# ============================================================
+# Hourly alert check fallback
+#
+# This is a GitHub Actions fallback for environments where the
+# Cloudflare Cron Trigger (configured in wrangler.toml) is not
+# running (e.g. during local testing or if the CF project is paused).
+#
+# On Cloudflare Pages, the cron trigger in wrangler.toml runs every
+# 10 minutes and calls /api/alert-check directly — this GHA runs hourly
+# as a backup to ensure no status change goes unnoticed.
+#
+# Required secrets:
+#   ALERT_CRON_SECRET  — must match ALERT_CRON_SECRET in CF Pages secrets
+#   SITE_URL           — production URL, e.g. https://strait-of-hormuz-monitor.pages.dev
+# ============================================================
+
+name: Hourly Alert Check
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # every hour at :00
+  workflow_dispatch:        # manual trigger for testing
+
+jobs:
+  check:
+    name: Check strait status & send alerts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Trigger alert-check endpoint
+        run: |
+          SITE_URL="${{ secrets.SITE_URL || vars.NEXT_PUBLIC_SITE_URL || 'https://strait-of-hormuz-monitor.pages.dev' }}"
+          RESPONSE=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Alert-Secret: ${{ secrets.ALERT_CRON_SECRET }}" \
+            "${SITE_URL}/api/alert-check")
+          echo "HTTP status: $RESPONSE"
+          cat /tmp/response.json
+          if [ "$RESPONSE" != "200" ]; then
+            echo "Alert check failed with HTTP $RESPONSE"
+            exit 1
+          fi

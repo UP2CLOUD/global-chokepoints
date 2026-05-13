@@ -1,0 +1,39 @@
+# ============================================================
+# Cloudflare Pages + Workers configuration
+# Docs: https://developers.cloudflare.com/pages/
+#
+# Setup checklist (one-time):
+#   1. Install wrangler:   npm install -g wrangler
+#   2. Login:              wrangler login
+#   3. Create D1 DB:       wrangler d1 create strait-subscriptions
+#      → copy the database_id into [[d1_databases]] below
+#   4. Run migration:      wrangler d1 execute strait-subscriptions --file=migrations/0001_subscriptions.sql
+#   5. Add secrets:
+#        wrangler pages secret put RESEND_API_KEY
+#        wrangler pages secret put ALERT_CRON_SECRET
+#        wrangler pages secret put AISSTREAM_KEY
+#        wrangler pages secret put EIA_API_KEY
+# ============================================================
+
+name = "strait-of-hormuz-monitor"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Output directory produced by `npx @cloudflare/next-on-pages`
+pages_build_output_dir = ".vercel/output/static"
+
+# ── Cloudflare D1 (SQLite) — email subscriptions ─────────────
+[[d1_databases]]
+binding = "DB"
+database_name = "strait-subscriptions"
+database_id = "REPLACE_WITH_REAL_D1_DATABASE_ID"
+
+# ── Public environment variables ─────────────────────────────
+[vars]
+NEXT_PUBLIC_SITE_URL = "https://strait-of-hormuz-monitor.pages.dev"
+
+# ── Cron Triggers — alert check every 10 minutes ─────────────
+# Calls /api/alert-check to detect strait status changes and
+# send email alerts to confirmed subscribers.
+[triggers]
+crons = ["*/10 * * * *"]
