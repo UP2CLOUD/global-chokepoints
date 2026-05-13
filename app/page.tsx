@@ -16,7 +16,7 @@ import NewsFeed from '@/app/components/NewsFeed';
 import Timeline from '@/app/components/Timeline';
 import Footer from '@/app/components/Footer';
 import RefreshButton from '@/app/components/RefreshButton';
-import LoadingScreen from '@/app/components/LoadingScreen';
+// LoadingScreen removed — dashboard renders instantly with progressive loading
 import ScrollIndicator from '@/app/components/ScrollIndicator';
 import { TrendingUp, Navigation, Activity } from 'lucide-react';
 
@@ -69,7 +69,7 @@ function DashboardContent() {
       eventsDown: true, lastIncident: null,
     },
   }));
-  const [loading, setLoading] = useState(true);
+  const [dataReady, setDataReady] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -95,7 +95,7 @@ function DashboardContent() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => { await loadData(); if (!cancelled) setLoading(false); })();
+    (async () => { await loadData(); if (!cancelled) setDataReady(true); })();
     return () => { cancelled = true; };
   }, [loadData]);
 
@@ -110,7 +110,7 @@ function DashboardContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
-  if (loading) return <LoadingScreen />;
+  // No loading gate — render immediately with seed data + shimmer skeletons
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -185,13 +185,17 @@ function DashboardContent() {
       <main className="max-w-[1280px] mx-auto px-4 py-8 md:px-6 md:py-10 flex flex-col gap-6 md:gap-8">
 
         {/* Status card — full width below hero */}
-        <HeroStatus status={data.status} />
+        <div className="animate-fadeInUp" style={{ animationDelay: '0.05s' }}>
+          <HeroStatus status={data.status} />
+        </div>
 
-        {/* Metrics */}
-        <MetricsGrid metrics={data.metrics} />
+        {/* Metrics — shimmer skeletons until real data arrives */}
+        <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
+          <MetricsGrid metrics={data.metrics} loading={!dataReady} />
+        </div>
 
         {/* Brent chart + Vessel map (two column) */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 md:gap-6 animate-fadeInUp" style={{ animationDelay: '0.18s' }}>
           <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
@@ -217,13 +221,13 @@ function DashboardContent() {
         </div>
 
         {/* Markets + Weather */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 animate-fadeInUp" style={{ animationDelay: '0.26s' }}>
           <MarketsRail />
           <WeatherPanel />
         </div>
 
         {/* Intelligence — News + Timeline */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 animate-fadeInUp" style={{ animationDelay: '0.34s' }}>
           <div>
             <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-3">
               <Activity size={13} className="text-accent" />

@@ -8,9 +8,10 @@ import { fmtDateShort } from '@/app/lib/utils';
 
 interface Props {
   metrics: MetricsData;
+  loading?: boolean;
 }
 
-export default function MetricsGrid({ metrics }: Props) {
+export default function MetricsGrid({ metrics, loading = false }: Props) {
   const { lang, t } = useLang();
   const locale = lang === 'en' ? 'en-US' : 'pt-BR';
 
@@ -37,6 +38,7 @@ export default function MetricsGrid({ metrics }: Props) {
         refreshSec={300}
         down={brentDown}
         delay={0.05}
+        loading={loading}
       />
       <MetricCard
         title={t.metrics.events24h}
@@ -49,6 +51,7 @@ export default function MetricsGrid({ metrics }: Props) {
         refreshSec={60}
         down={eventsDown}
         delay={0.1}
+        loading={loading}
       />
       <MetricCard
         title={t.metrics.lastIncident}
@@ -62,6 +65,7 @@ export default function MetricsGrid({ metrics }: Props) {
         asOf={metrics.eventsAsOf}
         refreshSec={60}
         delay={0.15}
+        loading={loading}
       />
       <MetricCard
         title={t.metrics.variation24h}
@@ -74,6 +78,7 @@ export default function MetricsGrid({ metrics }: Props) {
         down={brentDown}
         tone={Math.abs(metrics.brentChangePercent) >= 3 ? 'caution' : 'default'}
         delay={0.2}
+        loading={loading}
       />
     </div>
   );
