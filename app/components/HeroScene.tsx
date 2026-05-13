@@ -76,10 +76,12 @@ function OceanPlane() {
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
       <planeGeometry args={[40, 28, 1, 1]} />
       <meshStandardMaterial
-        color="#05101f"
-        metalness={0.35}
-        roughness={0.75}
-        envMapIntensity={0.4}
+        color="#0a2a45"
+        emissive="#051828"
+        emissiveIntensity={0.55}
+        metalness={0.6}
+        roughness={0.45}
+        envMapIntensity={0.8}
       />
     </mesh>
   );
@@ -247,10 +249,11 @@ function SceneContents({ status, vessels }: { status: StatusData; vessels: AisVe
       <CameraIntro />
 
       {/* Lighting */}
-      <ambientLight intensity={0.12} />
-      <directionalLight position={[8, 12, 4]}  intensity={0.55} color="#4a6bff" castShadow />
-      <directionalLight position={[-8, 6, -4]} intensity={0.2}  color="#06B6D4" />
-      <pointLight position={[0, 4, 0]} intensity={0.4} color="#06B6D4" distance={20} />
+      <ambientLight intensity={0.35} />
+      <directionalLight position={[8, 12, 4]}  intensity={0.85} color="#5a7bff" castShadow />
+      <directionalLight position={[-8, 6, -4]} intensity={0.45} color="#06B6D4" />
+      <pointLight position={[0, 4, 0]}   intensity={0.9} color="#0ea5e9" distance={28} />
+      <pointLight position={[0, 0.5, 0]} intensity={0.5} color="#0d4f8c" distance={18} />
 
       {/* Stars backdrop */}
       <Stars radius={90} depth={40} count={1800} factor={2.5} fade speed={0.4} />

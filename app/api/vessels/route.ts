@@ -31,7 +31,9 @@ export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 
 // ── Config ────────────────────────────────────────────────────
-const BBOX: [[number, number], [number, number]] = [[25.2, 54.6], [27.8, 58.4]];
+// AISStream BoundingBoxes format: [[top_left_lat, top_left_lon], [bottom_right_lat, bottom_right_lon]]
+// i.e. NW corner → SE corner (NOT SW→NE). Strait of Hormuz coverage.
+const BBOX: [[number, number], [number, number]] = [[27.8, 54.6], [25.2, 58.4]];
 const KV_CACHE_KEY  = 'vessels:cache';
 const KV_LOCK_KEY   = 'vessels:lock';
 const CACHE_TTL_SEC = 120;          // serve cached data for up to 2 min
