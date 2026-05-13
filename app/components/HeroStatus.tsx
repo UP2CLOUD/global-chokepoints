@@ -81,7 +81,7 @@ export default function HeroStatus({ status }: Props) {
           </div>
           <div className="flex items-center gap-1.5 text-text3 text-[11px] font-mono">
             <Clock size={11} />
-            <span>{fmtTime(status.lastUpdated, lang === 'en' ? 'en-US' : 'pt-BR')}</span>
+            <span suppressHydrationWarning>{fmtTime(status.lastUpdated, lang === 'en' ? 'en-US' : 'pt-BR')}</span>
           </div>
         </div>
 
