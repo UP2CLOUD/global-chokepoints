@@ -9,7 +9,6 @@ import { Heart } from 'lucide-react';
  * (Ko-fi, Buy Me a Coffee, GitHub Sponsors, etc.)
  *
  * Controlled by NEXT_PUBLIC_SUPPORT_URL env var.
- * If not set, renders nothing.
  */
 
 interface Props {
@@ -21,20 +20,29 @@ interface Props {
 export default function SupportButton({ variant = 'header', className = '' }: Props) {
   const url = process.env.NEXT_PUBLIC_SUPPORT_URL;
 
-  // Always render in development for layout preview; in production, hide if no URL
-  const href = url || '#';
-  const isConfigured = Boolean(url);
+  const handleClick = (e: React.MouseEvent) => {
+    if (!url) {
+      e.preventDefault();
+      alert('Support URL not configured. Please set NEXT_PUBLIC_SUPPORT_URL in your .env.local file.');
+    }
+  };
 
-  if (!isConfigured && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+  // In production, hide if no URL is set
+  if (!url && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
     return null;
   }
+
+  const commonProps = {
+    href: url || '#',
+    target: url ? "_blank" : undefined,
+    rel: url ? "noopener noreferrer" : undefined,
+    onClick: handleClick,
+  };
 
   if (variant === 'header') {
     return (
       <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
+        {...commonProps}
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono
           text-text2 hover:text-accent border border-divider hover:border-accent/40
           bg-bg2/40 backdrop-blur-sm transition-all duration-200 uppercase tracking-[0.12em]
@@ -50,9 +58,7 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
   if (variant === 'footer') {
     return (
       <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
+        {...commonProps}
         className={`hover:text-accent transition-colors duration-180 ${className}`}
         aria-label="Support this project"
       >
@@ -64,9 +70,7 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
   // variant === 'inline'
   return (
     <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      {...commonProps}
       className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-mono
         text-text border border-accent/30 hover:border-accent/60 hover:bg-accent/5
         transition-all duration-200 ${className}`}

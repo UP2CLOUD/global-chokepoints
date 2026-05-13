@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bell, X, CheckCircle, AlertCircle, Loader2, Mail } from 'lucide-react';
 import { Turnstile } from '@marsidev/react-turnstile';
+import { createPortal } from 'react-dom';
 import { useLang } from './LangContext';
 
 type Phase = 'idle' | 'loading' | 'success' | 'error' | 'already';
@@ -41,7 +42,7 @@ export function SubscribeBellButton() {
 }
 
 function SubscribeModal({ onClose }: { onClose: () => void }) {
-  const { lang } = useLang();
+  const { lang, t: translations } = useLang();
   const [email, setEmail] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -101,9 +102,14 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
       : 'Sem spam. Cancelamento com um clique em cada email.',
   };
 
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog"
       aria-modal="true"
@@ -205,7 +211,8 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
