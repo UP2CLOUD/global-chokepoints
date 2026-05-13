@@ -93,3 +93,4 @@ Works on any static host:
 ## License
 
 MIT — For informational purposes only. Data accuracy depends on third-party APIs.
+# strait-of-hormuz-monitor
