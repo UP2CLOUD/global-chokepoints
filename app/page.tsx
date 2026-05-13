@@ -136,14 +136,9 @@ function DashboardContent() {
                 <Navigation size={13} className="text-accent" />
                 {t.map.title}
               </div>
-              <span className="text-[10px] text-text3 font-mono">
-                {lang === 'en' ? 'Simulated lanes (no AIS key)' : 'Faixas simuladas (sem AIS)'}
-              </span>
+              <span className="text-[10px] text-text3 font-mono">aisstream.io</span>
             </div>
             <VesselMap />
-            <p className="mt-2 text-center text-[10px] text-text3 font-mono">
-              {t.map.disclaimer}
-            </p>
           </section>
         </div>
 

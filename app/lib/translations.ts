@@ -33,7 +33,7 @@ export const translations = {
       lat: 'LAT',
       lon: 'LON',
       zoom: 'ZOOM',
-      disclaimer: '* Simulated data for demonstration',
+      disclaimer: '* Requires AISStream key for live vessel data',
     },
     news: {
       title: 'Real-Time Intelligence',
@@ -101,7 +101,7 @@ export const translations = {
       lat: 'LAT',
       lon: 'LON',
       zoom: 'ZOOM',
-      disclaimer: '* Dados simulados para demonstração',
+      disclaimer: '* Requer chave AISStream para dados ao vivo',
     },
     news: {
       title: 'Inteligência em Tempo Real',

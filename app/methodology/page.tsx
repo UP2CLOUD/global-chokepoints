@@ -138,9 +138,10 @@ GET /feed.xml               # RSS 2.0 for journalists`}</pre>
         <Section title="6. Known limitations">
           <ul className="list-disc list-inside space-y-1 text-[#A9B4C2]">
             <li>
-              Real-time AIS (vessel positions) requires a paid feed; the map
-              currently uses a simulated shipping-lane animation and is
-              explicitly labelled as such.
+              Real-time AIS (vessel positions) requires an AISStream.io key. When
+              the collector is offline or no key is configured, the map shows an
+              empty chart with a clear &ldquo;AIS Offline&rdquo; notice — no simulated
+              data is displayed.
             </li>
             <li>
               Sentiment is a keyword-matching heuristic. It can mislabel ironic

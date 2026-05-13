@@ -6,16 +6,10 @@ import { useLang } from './LangContext';
 /**
  * VesselMap
  *
- * Two render modes, picked automatically:
- *
- *  1) LIVE AIS (when the collector script is running and /api/vessels
- *     returns at least one vessel) — real positions, projected into the
- *     map bounding box, dot color by ship type.
- *
- *  2) SIMULATED LANES (no key / collector not running) — calm two-lane
- *     drift labelled "simulated" so the user never confuses it for AIS.
- *
- * Either mode honors prefers-reduced-motion.
+ * Shows real AIS vessel positions fetched from /api/vessels (aisstream.io).
+ * When no live data is available (collector not running / no key / stale),
+ * renders the map background with a clear "no data" notice.
+ * No simulated or fake vessel positions are ever drawn.
  */
 
 type AisVessel = {
@@ -39,7 +33,7 @@ type AisResponse = {
   bbox?: [[number, number], [number, number]];
 };
 
-// Bounding box used by the collector — keep in sync.
+// Bounding box used by the collector — keep in sync with ais-collector.
 const BBOX: [[number, number], [number, number]] = [[25.2, 54.6], [27.8, 58.4]];
 
 const TYPE_COLOR: Record<string, string> = {
@@ -53,23 +47,50 @@ const TYPE_COLOR: Record<string, string> = {
   Unknown:   '#A9B4C2',
 };
 
-type Simulated = {
-  x: number; y: number; vx: number; size: number; pulse: number; lane: 'in' | 'out';
-};
+function drawMapBase(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+) {
+  // Background
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0B0F18';
+  ctx.fillRect(0, 0, W, H);
 
-function initSimulated(count = 14): Simulated[] {
-  return Array.from({ length: count }, (_, i) => {
-    const lane: 'in' | 'out' = i % 2 === 0 ? 'in' : 'out';
-    const yBase = lane === 'in' ? 0.38 : 0.62;
-    return {
-      x: Math.random(),
-      y: yBase + (Math.random() - 0.5) * 0.08,
-      vx: (lane === 'in' ? 1 : -1) * (0.025 + Math.random() * 0.02),
-      size: 1.6 + Math.random() * 1.4,
-      pulse: Math.random() * Math.PI * 2,
-      lane,
-    };
-  });
+  // Coastline hints — Iran top-left, Oman bottom-right
+  ctx.strokeStyle = '#1E2533';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.18, 0);
+  ctx.lineTo(W * 0.22, H * 0.4);
+  ctx.lineTo(W * 0.28, H * 0.55);
+  ctx.lineTo(W * 0.26, H);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(W * 0.82, 0);
+  ctx.lineTo(W * 0.78, H * 0.4);
+  ctx.lineTo(W * 0.72, H * 0.55);
+  ctx.lineTo(W * 0.74, H);
+  ctx.stroke();
+
+  // TSS lane guides (faint dashed reference lines only — no fake vessels)
+  ctx.strokeStyle = 'rgba(6,182,212,0.07)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 6]);
+  ctx.beginPath();
+  ctx.moveTo(W * 0.28, H * 0.38);
+  ctx.lineTo(W * 0.72, H * 0.38);
+  ctx.moveTo(W * 0.28, H * 0.62);
+  ctx.lineTo(W * 0.72, H * 0.62);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function projectVessel(v: AisVessel, W: number, H: number) {
+  const [[swLat, swLon], [neLat, neLon]] = BBOX;
+  const x = ((v.lon - swLon) / (neLon - swLon)) * W;
+  const y = H - ((v.lat - swLat) / (neLat - swLat)) * H;
+  return { x, y };
 }
 
 export default function VesselMap() {
@@ -77,6 +98,7 @@ export default function VesselMap() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const [ais, setAis] = useState<AisResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Poll /api/vessels every 6 seconds for fresh AIS positions
   useEffect(() => {
@@ -86,8 +108,13 @@ export default function VesselMap() {
         const res = await fetch('/api/vessels', { cache: 'no-store' });
         if (!res.ok) return;
         const j = (await res.json()) as AisResponse;
-        if (alive) setAis(j);
-      } catch { /* keep last */ }
+        if (alive) {
+          setAis(j);
+          setLoading(false);
+        }
+      } catch {
+        if (alive) setLoading(false);
+      }
     };
     load();
     const id = setInterval(load, 6000);
@@ -100,8 +127,6 @@ export default function VesselMap() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const simulated = initSimulated();
-    let lastTs = performance.now();
     const reducedMotion =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -121,76 +146,34 @@ export default function VesselMap() {
     resize();
     window.addEventListener('resize', resize);
 
-    function projectAis(v: AisVessel, W: number, H: number) {
-      // Map latitude (SW.lat → NE.lat) to canvas Y (top → bottom),
-      // longitude (SW.lon → NE.lon) to canvas X (left → right).
-      const [[swLat, swLon], [neLat, neLon]] = BBOX;
-      const x = ((v.lon - swLon) / (neLon - swLon)) * W;
-      // higher latitude = "up" in geography but canvas y grows downward,
-      // so we invert.
-      const y = H - ((v.lat - swLat) / (neLat - swLat)) * H;
-      return { x, y };
-    }
+    const hasLiveVessels = ais && ais.running && !ais.stale && ais.vessels?.length > 0;
 
-    function draw(now: number) {
-      const dt = Math.min(0.05, (now - lastTs) / 1000);
-      lastTs = now;
-
+    function draw() {
       const dpr = window.devicePixelRatio || 1;
       const W = canvas!.width / dpr;
       const H = canvas!.height / dpr;
 
-      ctx!.clearRect(0, 0, W, H);
-      ctx!.fillStyle = '#0B0F18';
-      ctx!.fillRect(0, 0, W, H);
+      drawMapBase(ctx!, W, H);
 
-      // Coastlines — Iran top-left, Oman bottom-right
-      ctx!.strokeStyle = '#1E2533';
-      ctx!.lineWidth = 2;
-      ctx!.beginPath();
-      ctx!.moveTo(W * 0.18, 0);
-      ctx!.lineTo(W * 0.22, H * 0.4);
-      ctx!.lineTo(W * 0.28, H * 0.55);
-      ctx!.lineTo(W * 0.26, H);
-      ctx!.stroke();
-      ctx!.beginPath();
-      ctx!.moveTo(W * 0.82, 0);
-      ctx!.lineTo(W * 0.78, H * 0.4);
-      ctx!.lineTo(W * 0.72, H * 0.55);
-      ctx!.lineTo(W * 0.74, H);
-      ctx!.stroke();
-
-      // Lane guides
-      ctx!.strokeStyle = 'rgba(6,182,212,0.07)';
-      ctx!.lineWidth = 1;
-      ctx!.setLineDash([4, 6]);
-      ctx!.beginPath();
-      ctx!.moveTo(W * 0.28, H * 0.38);
-      ctx!.lineTo(W * 0.72, H * 0.38);
-      ctx!.moveTo(W * 0.28, H * 0.62);
-      ctx!.lineTo(W * 0.72, H * 0.62);
-      ctx!.stroke();
-      ctx!.setLineDash([]);
-
-      const useAis = ais && ais.running && ais.vessels?.length > 0;
-
-      if (useAis) {
-        // ===== Real AIS =====
+      if (hasLiveVessels) {
         for (const v of ais!.vessels) {
-          const { x, y } = projectAis(v, W, H);
+          const { x, y } = projectVessel(v, W, H);
           if (x < -10 || x > W + 10 || y < -10 || y > H + 10) continue;
           const color = TYPE_COLOR[v.type] ?? TYPE_COLOR.Unknown;
-          // Glow
+
+          // Glow ring
           ctx!.fillStyle = color;
           ctx!.globalAlpha = 0.14;
           ctx!.beginPath();
           ctx!.arc(x, y, 6, 0, Math.PI * 2);
           ctx!.fill();
-          // Dot
+
+          // Solid dot
           ctx!.globalAlpha = 0.95;
           ctx!.beginPath();
           ctx!.arc(x, y, 2.3, 0, Math.PI * 2);
           ctx!.fill();
+
           // Heading tick
           if (v.heading != null) {
             const rad = (v.heading * Math.PI) / 180;
@@ -204,35 +187,9 @@ export default function VesselMap() {
           }
           ctx!.globalAlpha = 1;
         }
-      } else {
-        // ===== Simulated lanes =====
-        for (const v of simulated) {
-          v.x += v.vx * dt;
-          if (v.x > 1.05) v.x = -0.05;
-          if (v.x < -0.05) v.x = 1.05;
-          const yBase = v.lane === 'in' ? 0.38 : 0.62;
-          v.y += Math.sin(now * 0.0005 + v.pulse) * 0.00008;
-          v.y += (yBase - v.y) * 0.02 * dt * 60;
-          v.pulse += dt * 1.6;
-
-          const px = v.x * W;
-          const py = v.y * H;
-
-          ctx!.fillStyle = '#06B6D4';
-          ctx!.globalAlpha = 0.16 - 0.04 * Math.sin(v.pulse);
-          ctx!.beginPath();
-          ctx!.arc(px, py, v.size * 3, 0, Math.PI * 2);
-          ctx!.fill();
-
-          ctx!.globalAlpha = 0.9;
-          ctx!.beginPath();
-          ctx!.arc(px, py, v.size, 0, Math.PI * 2);
-          ctx!.fill();
-          ctx!.globalAlpha = 1;
-        }
       }
 
-      // Labels
+      // Static labels
       ctx!.fillStyle = '#6B7787';
       ctx!.font = '9px monospace';
       ctx!.fillText(lang === 'en' ? 'IRAN' : 'IRÃ', W * 0.03, H * 0.48);
@@ -243,10 +200,12 @@ export default function VesselMap() {
         H * 0.52
       );
 
-      if (!reducedMotion) {
+      // Only request next frame when animating live vessels
+      if (hasLiveVessels && !reducedMotion) {
         rafRef.current = requestAnimationFrame(draw);
       }
     }
+
     rafRef.current = requestAnimationFrame(draw);
 
     return () => {
@@ -255,21 +214,36 @@ export default function VesselMap() {
     };
   }, [lang, ais]);
 
-  const live = ais && ais.running && ais.vessels?.length > 0;
+  const live = ais && ais.running && !ais.stale && ais.vessels?.length > 0;
+
+  // Determine the status badge content
+  let badge: { text: string; cls: string };
+  if (loading) {
+    badge = { text: lang === 'en' ? 'LOADING…' : 'CARREGANDO…', cls: 'bg-bg2/80 text-text3 border border-divider' };
+  } else if (live) {
+    badge = { text: `LIVE · ${ais!.count} ${lang === 'en' ? 'ships' : 'navios'}`, cls: 'bg-ok/15 text-ok border border-ok/30' };
+  } else if (ais?.stale) {
+    badge = { text: lang === 'en' ? 'STALE · reconnecting' : 'DESATUALIZADO · reconectando', cls: 'bg-warning/15 text-warning border border-warning/30' };
+  } else {
+    badge = { text: lang === 'en' ? 'AIS OFFLINE' : 'AIS OFFLINE', cls: 'bg-bg2/80 text-text3 border border-divider' };
+  }
+
   return (
     <div
       className="relative h-[220px] md:h-[280px] rounded-lg overflow-hidden border border-divider bg-[#0B0F18]"
       role="img"
-      aria-label={live ? `Live AIS vessels in the Strait of Hormuz — ${ais!.count} ships` : 'Simulated shipping lanes — set up AISStream key for live data'}
+      aria-label={
+        live
+          ? `Live AIS vessels in the Strait of Hormuz — ${ais!.count} ships`
+          : 'Strait of Hormuz map — no live AIS data available'
+      }
     >
       <canvas ref={canvasRef} className="w-full h-full block" />
+
+      {/* Status badge — top left */}
       <div className="absolute top-2 left-2 right-2 flex justify-between text-[10px] font-mono">
-        <span
-          className={`px-1.5 py-0.5 rounded ${live ? 'bg-ok/15 text-ok border border-ok/30' : 'bg-bg2/80 text-text3 border border-divider'}`}
-        >
-          {live
-            ? `LIVE · ${ais!.count} ${lang === 'en' ? 'ships' : 'navios'}`
-            : (lang === 'en' ? 'SIMULATED · no AIS key' : 'SIMULADO · sem chave AIS')}
+        <span className={`px-1.5 py-0.5 rounded ${badge.cls}`}>
+          {badge.text}
         </span>
         {live && (
           <span className="text-text3">
@@ -277,6 +251,20 @@ export default function VesselMap() {
           </span>
         )}
       </div>
+
+      {/* No-data overlay — center message when AIS is offline */}
+      {!loading && !live && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 pointer-events-none">
+          <span className="text-[11px] font-mono text-text3">
+            {lang === 'en' ? 'No vessel data' : 'Sem dados de embarcações'}
+          </span>
+          <span className="text-[9px] font-mono text-text3/60">
+            {lang === 'en' ? 'AIS collector offline or key not set' : 'Coletor AIS offline ou chave não configurada'}
+          </span>
+        </div>
+      )}
+
+      {/* Coordinate footer */}
       <div className="absolute bottom-2 left-2 right-2 flex justify-between text-[9px] text-text3 font-mono">
         <span>{t.map.lat}: 26.5°N</span>
         <span>{t.map.lon}: 56.4°E</span>
