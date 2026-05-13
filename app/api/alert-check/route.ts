@@ -20,7 +20,7 @@ import { sendEmail, alertEmailHtml } from '@/app/lib/email';
 export const dynamic = 'force-dynamic';
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.workers.dev').replace(/\/$/, '');
 }
 
 interface StatusResponse {

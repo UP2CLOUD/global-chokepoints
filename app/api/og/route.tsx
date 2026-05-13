@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
                 background: color,
               }}
             />
-            ishormuzstraitopen.pages.dev
+            ishormuzstraitopen.workers.dev
           </div>
         </div>
       </div>

@@ -192,7 +192,7 @@ async function fetchFeed(
     const res = await fetch(url, {
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (compatible; IsHormuzOpenBot/1.0; +https://ishormuzstraitopen.pages.dev)',
+          'Mozilla/5.0 (compatible; IsHormuzOpenBot/1.0; +https://strait-of-hormuz-monitor.workers.dev)',
         Accept: 'application/rss+xml, application/xml, text/xml, */*',
       },
       // Per-feed cache window (slightly shorter than route revalidate)

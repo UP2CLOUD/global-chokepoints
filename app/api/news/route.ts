@@ -172,9 +172,11 @@ export async function GET() {
       } catch (err) {}
     }
 
+    // Return 200 OK so the browser doesn't log scary red network errors.
+    // The frontend gracefully handles empty news arrays.
     return NextResponse.json(
-      { error: String(err), news: [] },
-      { status: 502 }
+      { error: String(err), news: [], source: 'GDELT (Failed)' },
+      { status: 200, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30' } }
     );
   }
 }

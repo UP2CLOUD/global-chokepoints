@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://ishormuzstraitopen.pages.dev'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.workers.dev'),
   title: 'IsStraitHormuzOpen? — Strait of Hormuz Real-Time Monitoring',
   description:
     'Public intelligence dashboard tracking the operational status of the Strait of Hormuz: maritime activity, oil markets, geopolitical events, and marine weather. Sourced from EIA, Yahoo Finance, GDELT, CNN, BBC, Al Jazeera, Reuters, Open-Meteo, and AISStream.',
@@ -45,7 +45,7 @@ const JSON_LD = {
   name: 'IsStraitHormuzOpen?',
   alternateName: 'IsHormuzOpen',
   applicationCategory: 'NewsApplication',
-  url: 'https://ishormuzstraitopen.pages.dev',
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.workers.dev',
   description:
     'Real-time monitoring of the Strait of Hormuz, integrating market data, news intelligence and marine weather.',
   operatingSystem: 'All',
