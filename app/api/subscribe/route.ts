@@ -111,6 +111,17 @@ export async function POST(req: NextRequest) {
 
   // ── Send confirmation email ──────────────────────────────
   const confirmUrl = `${siteUrl()}/api/confirm?token=${confirmToken}`;
+
+  // If RESEND_API_KEY is not configured, still accept the subscription
+  // but inform the user. The confirmation email will be sent once the key is set.
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[subscribe] RESEND_API_KEY not set — subscription saved, email not sent to:', email);
+    return NextResponse.json({
+      ok: true,
+      message: 'Subscription recorded. Email confirmation is temporarily unavailable.',
+    });
+  }
+
   const result = await sendEmail({
     to: email,
     subject: 'Confirm your Strait of Hormuz alerts',
@@ -118,10 +129,12 @@ export async function POST(req: NextRequest) {
   });
 
   if (!result.ok) {
-    return NextResponse.json(
-      { error: 'Failed to send confirmation email. Please try again.' },
-      { status: 500 }
-    );
+    // Still return success since the subscription was saved in D1
+    console.error('[subscribe] Email send failed but subscription saved for:', email);
+    return NextResponse.json({
+      ok: true,
+      message: 'Subscription recorded, but we could not send the confirmation email. We will retry shortly.',
+    });
   }
 
   return NextResponse.json({

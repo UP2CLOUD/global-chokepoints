@@ -4,11 +4,11 @@
 
 export function getKV(): KVNamespace | null {
   try {
-    // @opennextjs/cloudflare exposes bindings via getCloudflareContext()
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getCloudflareContext } = require('@opennextjs/cloudflare');
-    const ctx = getCloudflareContext();
-    return (ctx.env as { HORMUZ_KV?: KVNamespace }).HORMUZ_KV ?? null;
+    // In Cloudflare Workers, the global scope has the cloudflare context symbol
+    const sym = Symbol.for('__cloudflare-context__');
+    const ctx = (globalThis as any)[sym];
+    if (ctx?.env?.HORMUZ_KV) return ctx.env.HORMUZ_KV;
+    return null;
   } catch {
     return null; // local dev — no KV available
   }

@@ -18,11 +18,11 @@ export interface Subscription {
 
 export function getD1(): D1Database | null {
   try {
-    // @opennextjs/cloudflare exposes bindings via getCloudflareContext()
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getCloudflareContext } = require('@opennextjs/cloudflare');
-    const ctx = getCloudflareContext();
-    return (ctx.env as { DB?: D1Database }).DB ?? null;
+    // In Cloudflare Workers, the global scope has the cloudflare context symbol
+    const sym = Symbol.for('__cloudflare-context__');
+    const ctx = (globalThis as any)[sym];
+    if (ctx?.env?.DB) return ctx.env.DB;
+    return null;
   } catch {
     return null; // local dev — no D1 available
   }
