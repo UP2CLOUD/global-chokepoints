@@ -68,7 +68,7 @@ function DashboardContent() {
     state:        'PARTIALLY_CLOSED' as const,
     tensionLevel: 'NORMAL'           as const,
     tensionIndex: 0,
-    lastUpdated:  new Date().toISOString(),
+    lastUpdated:  '2026-05-14T00:00:00.000Z', // static — avoids SSR/client hydration mismatch
     confidence:   0,
     reason:       lang === 'en'
       ? 'Fetching live intelligence data…'

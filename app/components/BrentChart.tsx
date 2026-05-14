@@ -8,11 +8,15 @@ import { getBrentHistory } from '@/app/lib/mockData';
 import { fetchBrent } from '@/app/lib/api';
 
 export default function BrentChart() {
-  const [data, setData] = useState<{ date: string; price: number }[]>(() => getBrentHistory());
+  // Empty initial state — avoids SSR/client hydration mismatch.
+  // getBrentHistory() uses static seed data but we still defer to useEffect
+  // to ensure identical server and client render on first paint.
+  const [data, setData] = useState<{ date: string; price: number }[]>([]);
   const [down, setDown] = useState(false);
 
   useEffect(() => {
     let active = true;
+    setData(getBrentHistory()); // seed immediately on client mount
     const load = async () => {
       const b = await fetchBrent();
       if (!active) return;

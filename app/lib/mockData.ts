@@ -1,10 +1,14 @@
 import { DashboardData } from './types';
 
+// Static seed date — never use new Date() at module level or in useState initializers;
+// it produces different values on server vs client and causes React hydration errors.
+const SEED_DATE = '2026-05-14T00:00:00.000Z';
+
 export const mockDataEn: DashboardData = {
   status: {
     state: 'OPEN',
     tensionLevel: 'ELEVATED',
-    lastUpdated: new Date().toISOString(),
+    lastUpdated: SEED_DATE,
     confidence: 0.91,
     reason: 'Maritime traffic operational. Elevated diplomatic tension due to Iranian naval exercises.'
   },
@@ -36,7 +40,7 @@ export const mockDataPt: DashboardData = {
   status: {
     state: 'OPEN',
     tensionLevel: 'ELEVATED',
-    lastUpdated: new Date().toISOString(),
+    lastUpdated: SEED_DATE,
     confidence: 0.91,
     reason: 'Tráfego marítimo operacional. Tensão diplomática elevada devido a exercícios navais iranianos.'
   },
@@ -68,25 +72,25 @@ export function getMockData(lang: 'en' | 'pt') {
   return lang === 'en' ? mockDataEn : mockDataPt;
 }
 
+// Static seed prices — no Math.random(), no new Date() at module level.
+// BrentChart replaces this with real API data inside useEffect.
+const SEED_PRICES = [77.1, 77.8, 78.3, 77.9, 78.5, 79.1, 78.4];
+const SEED_DATES  = ['05/08', '05/09', '05/10', '05/11', '05/12', '05/13', '05/14'];
+
 export function getBrentHistory() {
-  const data = [];
-  const base = 77;
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    data.push({
-      date: d.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' }),
-      price: base + Math.random() * 4 - 1 + (6 - i) * 0.3
-    });
-  }
-  return data;
+  return SEED_PRICES.map((price, i) => ({ date: SEED_DATES[i], price }));
 }
 
 export function getVesselPositions() {
-  return Array.from({ length: 15 }, () => ({
-    x: Math.random(),
-    y: Math.random(),
-    dx: (Math.random() - 0.5) * 0.6,
-    dy: (Math.random() - 0.5) * 0.4,
-    size: Math.random() * 2.5 + 1.5,
-  }));
+  // Deterministic pseudo-random positions — no Math.random()
+  return [
+    { x: 0.12, y: 0.34, dx: 0.15,  dy: -0.10, size: 2.1 },
+    { x: 0.28, y: 0.52, dx: -0.20, dy:  0.08,  size: 3.2 },
+    { x: 0.45, y: 0.23, dx: 0.25,  dy:  0.12,  size: 1.8 },
+    { x: 0.61, y: 0.67, dx: -0.18, dy: -0.14,  size: 2.7 },
+    { x: 0.77, y: 0.41, dx: 0.10,  dy:  0.20,  size: 1.5 },
+    { x: 0.35, y: 0.78, dx: 0.22,  dy: -0.08,  size: 3.0 },
+    { x: 0.55, y: 0.15, dx: -0.12, dy:  0.18,  size: 2.3 },
+    { x: 0.82, y: 0.59, dx: 0.18,  dy: -0.22,  size: 1.9 },
+  ];
 }

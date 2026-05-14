@@ -72,7 +72,7 @@ export default function StatusBar() {
         </button>
 
         <span className="text-text4">·</span>
-        <span className="text-text3"><Activity size={11} className="inline mr-1 -mt-0.5" />{time} UTC</span>
+        <span className="text-text3" suppressHydrationWarning><Activity size={11} className="inline mr-1 -mt-0.5" />{time} UTC</span>
 
         <div className="ml-auto hidden md:flex items-center gap-3 text-text3">
           <a href="/methodology" className="hover:text-cyan transition-colors duration-180">Methodology</a>

@@ -15,7 +15,7 @@ export default function Footer() {
       {/* Top row — links and actions */}
       <div className="flex flex-wrap gap-x-6 gap-y-3 items-center justify-between mb-6">
         <div className="flex flex-wrap items-center gap-3">
-          <span>© {new Date().getFullYear()} IsStraitHormuzOpen?</span>
+          <span suppressHydrationWarning>© {new Date().getFullYear()} IsStraitHormuzOpen?</span>
           <span className="text-text4">·</span>
           <Link href="/methodology" className="hover:text-accent transition-colors duration-180">
             {lang === 'en' ? 'Methodology' : 'Metodologia'}

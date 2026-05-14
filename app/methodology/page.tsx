@@ -196,7 +196,7 @@ GET /feed.xml               # RSS 2.0 for journalists`}</pre>
           </p>
         </Section>
 
-        <footer className="mt-12 pt-6 border-t border-[#1E2533] text-[11px] text-[#6B7787] font-mono">
+        <footer className="mt-12 pt-6 border-t border-[#1E2533] text-[11px] text-[#6B7787] font-mono" suppressHydrationWarning>
           © {new Date().getFullYear()} IsStraitHormuzOpen? ·{' '}
           <Link href="/" className="hover:text-[#06B6D4]">Dashboard</Link> ·{' '}
           <a href="/feed.xml" className="hover:text-[#06B6D4]">RSS</a> ·{' '}
