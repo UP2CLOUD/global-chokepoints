@@ -298,22 +298,32 @@ interface HeroSceneProps {
 }
 
 export default function HeroScene({ status, vessels = [] }: HeroSceneProps) {
+  // Disable manual rotate on touch devices so single-finger scroll passes through
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
+
   return (
     <Canvas
       shadows
       camera={{ position: [2, 18, 14], fov: 50, near: 0.1, far: 200 }}
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       dpr={[1, 1.5]}
-      style={{ background: '#07090F' }}
+      style={{
+        background: '#07090F',
+        // Allow browser to handle vertical scroll natively on touch screens
+        touchAction: isTouch ? 'pan-y' : 'none',
+      }}
     >
       <Suspense fallback={null}>
         <SceneContents status={status} vessels={vessels} />
       </Suspense>
-      {/* subtle drag/pinch to explore on desktop */}
+      {/* Desktop: drag to explore. Mobile: rotate disabled so scroll is unblocked. */}
       <OrbitControls
         enablePan={false}
         enableZoom={false}
-        enableRotate
+        enableRotate={!isTouch}
         maxPolarAngle={Math.PI / 2.4}
         minPolarAngle={Math.PI / 6}
         rotateSpeed={0.25}
