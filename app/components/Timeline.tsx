@@ -57,12 +57,14 @@ export default function Timeline({ events }: Props) {
 
     ensureGsap().then(() => {
       if (!gsapLib || !containerRef.current) return;
-      const items = containerRef.current.querySelectorAll<HTMLElement>('.tl-item');
+      const items = Array.from(
+        containerRef.current.querySelectorAll<HTMLElement>('.tl-item'),
+      );
+      if (items.length === 0) return; // nothing to animate — avoids GSAP NodeList warning
       gsapLib.set(items, { opacity: 0, x: 18 });
       const triggers: { kill(): void }[] = [];
 
       items.forEach((item, i) => {
-        const { ScrollTrigger } = require('gsap/ScrollTrigger');
         const tween = gsapLib!.to(item, {
           opacity: 1, x: 0, duration: 0.45,
           ease: 'power2.out',
@@ -73,7 +75,7 @@ export default function Timeline({ events }: Props) {
             toggleActions: 'play none none none',
           },
         });
-        triggers.push(tween.scrollTrigger!);
+        if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
       });
 
       cleanup = () => triggers.forEach(t => t.kill());
