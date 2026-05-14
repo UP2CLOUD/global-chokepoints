@@ -21,7 +21,7 @@ import RefreshButton from '@/app/components/RefreshButton';
 import ScrollIndicator from '@/app/components/ScrollIndicator';
 import AdSlot from '@/app/components/AdSlot';
 import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
-import { TrendingUp, BarChart2, Activity, Zap } from 'lucide-react';
+import { TrendingUp, BarChart2, Zap } from 'lucide-react';
 
 // ── Hero map — dynamic import, no SSR (Leaflet) ───────────────
 const HormuzMap = dynamic(() => import('@/app/components/HormuzMap'), {
@@ -254,20 +254,8 @@ function DashboardContent() {
 
         {/* Intelligence — News + Timeline */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 animate-fadeInUp" style={{ animationDelay: '0.34s' }}>
-          <div>
-            <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-3">
-              <Activity size={13} className="text-accent" />
-              {lang === 'en' ? 'Intelligence Feed' : 'Feed de Inteligência'}
-            </div>
-            <NewsFeed news={data.news} loading={newsLoading} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-3">
-              <Activity size={13} className="text-accent" />
-              {lang === 'en' ? 'Event Timeline' : 'Linha do Tempo'}
-            </div>
-            <Timeline events={data.timeline} />
-          </div>
+          <NewsFeed news={data.news} loading={newsLoading} />
+          <Timeline events={data.timeline} />
         </div>
 
         {/* Newsletter CTA — after intelligence sections */}

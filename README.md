@@ -1,96 +1,107 @@
-# IsHormuzOpen
+# IsStraitHormuzOpen?
 
-Real-time dashboard monitoring the Strait of Hormuz status, maritime traffic, oil prices (Brent), and geopolitical intelligence.
+**Live:** [strait-of-hormuz-monitor.pages.dev](https://strait-of-hormuz-monitor.pages.dev/)
 
-## Features
+Real-time public intelligence dashboard tracking the operational status of the Strait of Hormuz — maritime traffic, oil markets, geopolitical events, and marine weather.
 
-- **Global Status Indicator**: Immediate OPEN / PARTIALLY CLOSED / CLOSED status
-- **Tension Gauge**: Normal / Elevated / Critical levels with animated bar
-- **Brent Oil Chart**: 7-day price history via Recharts
-- **Maritime Traffic Map**: Animated Canvas simulation (ready for AIS integration)
-- **Real-Time News**: GDELT API integration (free, no key required)
-- **Event Timeline**: Filterable by category (Incident, Military, Diplomatic, Economic)
-- **Bilingual**: English (default) / Portuguese with instant switch
-- **Mobile-First**: Fully responsive, stacks perfectly on small screens
+## Signals Monitored
+
+| Signal | Source | Update Freq |
+|--------|--------|-------------|
+| Strait status (OPEN / DISRUPTED / CLOSED) | Derived from Brent Δ% + news threat score | 5 min |
+| Vessel transits (daily count) | IMF PortWatch | Daily |
+| AIS vessel positions | AISStream.io WebSocket | 15 s |
+| Brent crude price + 7-day chart | Yahoo Finance → Stooq → EIA fallback | 5 min |
+| WTI, Natural Gas, Gold, DXY, S&P 500 | Yahoo Finance (MarketsRail) | 5 min |
+| Weather (Bandar Abbas) | Open-Meteo | 30 min |
+| Geopolitical news | GDELT Project | 10 min |
+| Event timeline | GDELT + curated | 1 min |
+
+## Status Algorithm
+
+Threat score blends two equal signals:
+
+1. **Market signal (50%)** — Brent Δ% mapped to 0–100 (≥+5 % → 100, ≤−2 % → 0)
+2. **News signal (50%)** — GDELT article count weighted by keywords (`attack`, `seized`, `closure`, …)
+
+| Score | State | Label |
+|-------|-------|-------|
+| ≥ 60 | CLOSED | danger |
+| 30–59 | PARTIALLY\_CLOSED | caution |
+| < 30 | OPEN | ok |
 
 ## Stack
 
-- **Framework**: Next.js 14 (App Router, Static Export)
-- **Language**: TypeScript (strict)
-- **Styling**: Tailwind CSS (custom design system)
-- **Charts**: Recharts
-- **Icons**: Lucide React
-- **Fonts**: JetBrains Mono + Inter
+| Layer | Tech |
+|-------|------|
+| Framework | Next.js 15 (App Router, Edge Runtime) |
+| Deploy | Cloudflare Pages + Workers |
+| KV cache | Cloudflare KV (Brent, FRED/NG, transits) |
+| DB | Cloudflare D1 (newsletter subscriptions) |
+| Language | TypeScript (strict) |
+| Styling | Tailwind CSS |
+| Charts | Recharts |
+| Map | React-Leaflet + Leaflet |
+| 3D globe | Three.js + React Three Fiber |
+| Animations | GSAP + ScrollTrigger |
 
-## Real APIs Integrated
+## Environment Variables
 
-| Source | Endpoint | Data | Cost |
-|--------|----------|------|------|
-| **Commodities-API** | `commodities-api.com/api/latest` | Brent crude price | **Free** (100 req/month) |
-| **GDELT Project** | `api.gdeltproject.org/api/v2/doc/doc` | Geopolitical news/events | **Free** (no key) |
-| **MarineTraffic** | AIS Web API (placeholder) | Vessel positions | Freemium |
+```bash
+# Required for full functionality
+EIA_API_KEY=                        # EIA.gov — Brent/WTI/NG fallback prices
+FRED_API_KEY=                       # St. Louis Fed — Henry Hub natural gas
+AISSTREAM_API_KEY=                  # AISStream.io — live vessel WebSocket
+CRON_SECRET=                        # Internal cron auth (any random string)
+ALERT_CRON_SECRET=                  # GitHub Actions alert check auth
+
+# Cloudflare (set in wrangler.toml or Pages dashboard)
+# KV namespace: STRAIT_KV
+# D1 database: strait-subscriptions
+```
+
+## GitHub Actions Secrets
+
+| Secret | Purpose |
+|--------|---------|
+| `ALERT_CRON_SECRET` | Must match Cloudflare Pages secret exactly |
+| `SITE_URL` | e.g. `https://strait-of-hormuz-monitor.pages.dev` |
+
+## Getting Started
+
+```bash
+npm install
+
+# Dev server (Next.js, port 3000)
+npm run dev
+
+# Cloudflare Pages build
+npm run build:cf
+
+# Preview CF build locally
+npm run preview:cf
+
+# D1 migration
+npm run db:migrate
+```
+
+> **Note:** `build:cf` cleans `.next` after the Cloudflare build to prevent dev server corruption on subsequent `npm run dev`.
 
 ## Project Structure
 
 ```
 app/
-  components/
-    Header.tsx              # Sticky header + Language Switcher
-    HeroStatus.tsx          # Giant status indicator + tension gauge
-    MetricsGrid.tsx         # 4 metric cards (Brent, vessels, incident, variation)
-    MetricCard.tsx          # Reusable metric card
-    BrentChart.tsx          # Area chart with tooltip
-    VesselMap.tsx           # Animated Canvas map
-    NewsFeed.tsx            # Scrollable news list with sentiment
-    Timeline.tsx            # Filterable vertical timeline
-    Footer.tsx              # API status + latency
-    RefreshButton.tsx       # Floating action button
-    LoadingScreen.tsx       # Initial loading overlay
-    LangContext.tsx         # React Context for i18n
-    LanguageSwitcher.tsx    # EN/PT toggle button
-  lib/
-    types.ts                # TypeScript interfaces
-    translations.ts         # EN + PT translation dictionaries
-    mockData.ts             # Bilingual mock data + helpers
-    utils.ts                # Formatting utilities
-    api.ts                  # Real API fetchers with fallback
-  globals.css               # Tailwind + custom keyframes
-  layout.tsx                # Root layout (metadata, viewport)
-  page.tsx                  # Main dashboard composition
+  api/                    # Edge API routes (brent, ng, vessels, timeline, news, og, alert-check, subscribe)
+  components/             # React UI components
+  lib/                    # Types, translations, API fetchers, EIA/FRED clients, KV helpers
+  page.tsx                # Main dashboard
+  layout.tsx              # Root layout + metadata + AdSense
+scripts/
+  ais-collector.mjs       # Standalone AIS WebSocket collector
+.github/workflows/
+  alert-check.yml         # Hourly threat-level check via GitHub Actions
 ```
-
-## Environment Variables
-
-```bash
-# Optional — only needed for premium features
-NEXT_PUBLIC_NEWS_API_KEY=your_key        # NewsAPI (alternative to GDELT)
-NEXT_PUBLIC_ALPHA_VANTAGE_KEY=your_key   # Alpha Vantage (alternative Brent)
-NEXT_PUBLIC_MARINE_TRAFFIC_KEY=your_key  # Real AIS vessel tracking
-```
-
-## Getting Started
-
-```bash
-# Install dependencies
-npm install
-
-# Development server
-npm run dev
-
-# Static build (for CDN deploy)
-npm run build
-# Output: out/
-```
-
-## Deploy
-
-Works on any static host:
-- **Vercel**: `vercel --prod`
-- **Netlify**: Drag `out/` folder
-- **Cloudflare Pages**: Connect repo
-- **GitHub Pages**: Use GitHub Actions
 
 ## License
 
-MIT — For informational purposes only. Data accuracy depends on third-party APIs.
-# strait-of-hormuz-monitor
+MIT — For informational purposes only. Data accuracy depends on third-party APIs and may be delayed.
