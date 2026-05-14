@@ -40,9 +40,17 @@ type AisResponse = { running: boolean; vessels: AisVessel[] };
 function useAisVessels() {
   const [vessels, setVessels] = useState<AisVessel[]>([]);
   useEffect(() => {
+    let abortController: AbortController | null = null;
     const load = async () => {
+      abortController?.abort();
+      abortController = new AbortController();
       try {
-        const r = await fetch('/api/vessels', { cache: 'no-store' });
+        const r = await fetch('/api/vessels', {
+          cache: 'no-store',
+          signal: AbortSignal.any
+            ? AbortSignal.any([abortController.signal, AbortSignal.timeout(10_000)])
+            : abortController.signal,
+        });
         if (!r.ok) return;
         const j = (await r.json()) as AisResponse;
         if (j.running && j.vessels?.length > 0) setVessels(j.vessels);
@@ -50,7 +58,7 @@ function useAisVessels() {
     };
     load();
     const id = setInterval(load, 15_000);
-    return () => clearInterval(id);
+    return () => { clearInterval(id); abortController?.abort(); };
   }, []);
   return vessels;
 }

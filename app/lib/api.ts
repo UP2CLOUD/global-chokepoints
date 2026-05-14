@@ -144,10 +144,10 @@ export function deriveStatus(
   if (threatScore >= 80 || state === 'CLOSED') tensionLevel = 'CRITICAL';
   else if (threatScore >= 40 || state === 'PARTIALLY_CLOSED') tensionLevel = 'ELEVATED';
 
-  // Override rule-based state if threat score is extremely high but no direct words matched
-  if (state === 'OPEN') {
-    if (threatScore > 85) state = 'CLOSED';
-    else if (threatScore > 65) state = 'PARTIALLY_CLOSED';
+  // Override rule-based state only when timeline events corroborate high market volatility.
+  // Pure Brent spike without timeline events never escalates state — prevents false positives.
+  if (state === 'OPEN' && last24.length > 0) {
+    if (threatScore > 85) state = 'PARTIALLY_CLOSED';
   }
 
   // 3) Confidence — diversity of sources backing recent events

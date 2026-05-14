@@ -6,6 +6,10 @@
 // ============================================================
 export const runtime = 'edge';
 import { NextResponse } from 'next/server';
+import { getKV } from '@/app/lib/kv';
+
+const KV_TIMELINE_KEY = 'timeline:cache';
+const KV_TIMELINE_TTL = 60; // 1 min
 
 export const revalidate = 60; // 1 minute
 export const dynamic = 'force-dynamic';
@@ -210,6 +214,14 @@ async function fetchFeed(
 }
 
 export async function GET() {
+  const kv = getKV();
+  if (kv) {
+    try {
+      const cached = await kv.get(KV_TIMELINE_KEY, 'json') as { events: TimelineEvent[]; sources: string[]; generatedAt: string; fetchMs: number } | null;
+      if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } });
+    } catch { /* fall through */ }
+  }
+
   const startedAt = Date.now();
   const results = await Promise.all(
     FEEDS.map((f) => fetchFeed(f.name, f.url))
@@ -231,17 +243,16 @@ export async function GET() {
   merged.sort((a, b) => +new Date(b.date) - +new Date(a.date));
   const events = merged.slice(0, 30);
 
-  return NextResponse.json(
-    {
-      events,
-      sources: FEEDS.map((f) => f.name),
-      generatedAt: new Date().toISOString(),
-      fetchMs: Date.now() - startedAt,
-    },
-    {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
-      },
-    }
-  );
+  const payload = {
+    events,
+    sources: FEEDS.map((f) => f.name),
+    generatedAt: new Date().toISOString(),
+    fetchMs: Date.now() - startedAt,
+  };
+
+  if (kv) kv.put(KV_TIMELINE_KEY, JSON.stringify(payload), { expirationTtl: KV_TIMELINE_TTL }).catch(() => {});
+
+  return NextResponse.json(payload, {
+    headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
+  });
 }

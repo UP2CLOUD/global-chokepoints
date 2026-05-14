@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.workers.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
 }
 
 export async function POST(req: NextRequest) {
@@ -64,11 +64,10 @@ export async function POST(req: NextRequest) {
   }
 
   const db = getD1();
+  let confirmToken = randomToken(); // fallback for local dev (no DB)
 
-  // ── Local dev: no D1 available ────────────────────────────
   if (!db) {
     console.log(`[subscribe] LOCAL DEV (No D1) — proceeding with email send for: ${email}`);
-    // We continue without DB persistence for local testing
   } else {
     // ── Check if already confirmed (only if DB exists) ──────────
     const existing = await db
@@ -86,7 +85,7 @@ export async function POST(req: NextRequest) {
 
     // ── Upsert (insert or refresh tokens for unconfirmed) ────
     const id = existing?.id ?? randomId();
-    const confirmToken = randomToken();
+    confirmToken = randomToken(); // fresh token saved to DB
     const unsubToken = randomToken();
 
     if (existing) {
@@ -105,9 +104,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Generate tokens for local dev if DB is missing
-  const testToken = randomToken();
-  const confirmUrl = `${siteUrl()}/api/confirm?token=${testToken}`;
+  const confirmUrl = `${siteUrl()}/api/confirm?token=${confirmToken}`;
 
   // If RESEND_API_KEY is not configured, still accept the subscription
   // but inform the user. The confirmation email will be sent once the key is set.

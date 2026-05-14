@@ -5,17 +5,21 @@ import { RefreshCw } from 'lucide-react';
 import { useLang } from './LangContext';
 
 interface Props {
-  onRefresh: () => void;
+  onRefresh: () => Promise<void> | void;
 }
 
 export default function RefreshButton({ onRefresh }: Props) {
   const { t } = useLang();
   const [spinning, setSpinning] = useState(false);
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    if (spinning) return;
     setSpinning(true);
-    onRefresh();
-    setTimeout(() => setSpinning(false), 800);
+    try {
+      await onRefresh();
+    } finally {
+      setSpinning(false);
+    }
   };
 
   return (

@@ -6,6 +6,7 @@
 // ============================================================
 export const runtime = 'edge';
 import { NextResponse } from 'next/server';
+import { getKV } from '@/app/lib/kv';
 
 export const revalidate = 900; // 15 min
 export const dynamic = 'force-dynamic';
@@ -22,6 +23,9 @@ const MARINE_URL =
   `https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}` +
   `&current=wave_height,wave_period,wind_wave_height,swell_wave_height` +
   `&timezone=UTC`;
+
+const KV_WEATHER_KEY = 'weather:cache';
+const KV_WEATHER_TTL = 900; // 15 min
 
 const WEATHER_CODES: Record<number, string> = {
   0: 'Clear',
@@ -69,6 +73,14 @@ function navRisk(windKn: number, waveM: number, visM: number, code: number): num
 }
 
 export async function GET() {
+  const kv = getKV();
+  if (kv) {
+    try {
+      const cached = await kv.get(KV_WEATHER_KEY, 'json');
+      if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800' } });
+    } catch { /* fall through to live fetch */ }
+  }
+
   try {
     const [fRes, mRes] = await Promise.all([
       fetch(FORECAST_URL, { next: { revalidate: 900 }, signal: AbortSignal.timeout(8000) }),
@@ -90,33 +102,32 @@ export async function GET() {
 
     const risk = navRisk(windKn, waveM, visM, code);
 
-    return NextResponse.json(
-      {
-        location: { lat: LAT, lon: LON, label: 'Strait of Hormuz' },
-        temperatureC: Number(fc.temperature_2m ?? 0),
-        wind: {
-          speedKn: Number(windKn.toFixed(1)),
-          direction: compass(windDeg),
-          directionDeg: windDeg,
-        },
-        visibilityM: visM,
-        weather: WEATHER_CODES[code] ?? 'Unknown',
-        weatherCode: code,
-        sea: {
-          waveHeightM: Number(waveM.toFixed(2)),
-          wavePeriodS: mc.wave_period != null ? Number(mc.wave_period) : null,
-          windWaveM: mc.wind_wave_height != null
-            ? Number(mc.wind_wave_height) : null,
-          swellM: mc.swell_wave_height != null
-            ? Number(mc.swell_wave_height) : null,
-        },
-        navRisk: risk,
-        navRiskLabel: risk < 25 ? 'CALM' : risk < 50 ? 'MODERATE' : risk < 75 ? 'ROUGH' : 'SEVERE',
-        source: 'Open-Meteo',
-        generatedAt: new Date().toISOString(),
+    const payload = {
+      location: { lat: LAT, lon: LON, label: 'Strait of Hormuz' },
+      temperatureC: Number(fc.temperature_2m ?? 0),
+      wind: {
+        speedKn: Number(windKn.toFixed(1)),
+        direction: compass(windDeg),
+        directionDeg: windDeg,
       },
-      { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800' } }
-    );
+      visibilityM: visM,
+      weather: WEATHER_CODES[code] ?? 'Unknown',
+      weatherCode: code,
+      sea: {
+        waveHeightM: Number(waveM.toFixed(2)),
+        wavePeriodS: mc.wave_period != null ? Number(mc.wave_period) : null,
+        windWaveM: mc.wind_wave_height != null ? Number(mc.wind_wave_height) : null,
+        swellM: mc.swell_wave_height != null ? Number(mc.swell_wave_height) : null,
+      },
+      navRisk: risk,
+      navRiskLabel: risk < 25 ? 'CALM' : risk < 50 ? 'MODERATE' : risk < 75 ? 'ROUGH' : 'SEVERE',
+      source: 'Open-Meteo',
+      generatedAt: new Date().toISOString(),
+    };
+
+    if (kv) kv.put(KV_WEATHER_KEY, JSON.stringify(payload), { expirationTtl: KV_WEATHER_TTL }).catch(() => {});
+
+    return NextResponse.json(payload, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800' } });
   } catch (err) {
     console.error('[api/weather] failed:', err);
     return NextResponse.json(
