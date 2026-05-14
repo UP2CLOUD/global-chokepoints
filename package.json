@@ -10,7 +10,7 @@
     "type-check": "tsc --noEmit",
     "ais": "node scripts/ais-collector.mjs",
     "start:local": "bash scripts/run.sh",
-    "build:cf": "npx @cloudflare/next-on-pages",
+    "build:cf": "npx @cloudflare/next-on-pages && rm -rf .next",
     "preview:cf": "npm run build:cf && wrangler pages dev .vercel/output/static",
     "db:migrate": "wrangler d1 execute strait-subscriptions --remote --file=migrations/0001_subscriptions.sql",
     "db:migrate:local": "wrangler d1 execute strait-subscriptions --local --file=migrations/0001_subscriptions.sql",
