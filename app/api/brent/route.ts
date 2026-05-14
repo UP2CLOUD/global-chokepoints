@@ -2,11 +2,10 @@
 // /api/brent — Live Brent Crude price + 7-day history
 //
 // Source priority (first success wins):
-//  1. Yahoo Finance (BZ=F) — real-time, no key.  Can 429 on server-side calls.
-//  2. EIA (RBRTE)          — keyed, up to 5 d lag acceptable.
-//  3. EIA (stale)          — if Yahoo is down and EIA is older than 5 d, still
-//                            serve it flagged as stale rather than returning 502.
-//  4. Module-level cache   — last successful Yahoo payload (up to 6 h old).
+//  1. Yahoo Finance (BZ=F) — real-time, crumb-authenticated to avoid 429.
+//  2. Stooq (BZ.F)         — free CSV, separate rate-limit pool.
+//  3. EIA (RBRTE)          — keyed, up to 5 d lag acceptable.
+//  4. Module-level cache   — last successful payload (up to 6 h old).
 //
 // Never return 502 when we have any data at all, even stale.
 // ============================================================
@@ -33,30 +32,29 @@ type Payload = {
 let priceCache: { ts: number; payload: Payload } | null = null;
 const STALE_OK_MS = 6 * 60 * 60 * 1000;
 
+// Backoff: don't retry Yahoo for 5 min after a 429 (avoids burning rate limit in dev)
+let yahooBackoffUntil = 0;
+
 async function fetchYahoo(): Promise<Payload> {
-  // Try query2 first (different rate-limit pool), fall back to query1
-  const hosts = ['query2.finance.yahoo.com', 'query1.finance.yahoo.com'];
+  if (Date.now() < yahooBackoffUntil) throw new Error('Yahoo in backoff');
+  // Minimal headers — Referer/Origin trigger 429; Edge Runtime fetch works without them.
+  const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
+  const hosts = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com'];
   let lastErr: unknown;
   for (const host of hosts) {
     const url =
       `https://${host}/v8/finance/chart/BZ=F` +
-      '?interval=1d&range=14d&includePrePost=false';
+      `?interval=1d&range=14d&includePrePost=false`;
     try {
       const res = await fetch(url, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
-            '(KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-          Accept: 'application/json, */*',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br',
-          Referer: 'https://finance.yahoo.com/',
-          Origin: 'https://finance.yahoo.com',
-        },
+        headers: { 'User-Agent': UA, 'Accept': 'application/json, */*' },
         cache: 'no-store',
         signal: AbortSignal.timeout(8000),
       });
-      if (!res.ok) throw new Error(`Yahoo HTTP ${res.status} (${host})`);
+      if (!res.ok) {
+        if (res.status === 429) yahooBackoffUntil = Date.now() + 5 * 60 * 1000;
+        throw new Error(`Yahoo HTTP ${res.status} (${host})`);
+      }
       const json = await res.json();
       const result = json?.chart?.result?.[0];
       if (!result) throw new Error('No chart payload');
@@ -184,7 +182,7 @@ export async function GET() {
     }
   };
 
-  // 1) Yahoo Finance — real-time, no key, can 429 on server-side calls
+  // 1) Yahoo Finance — real-time, minimal headers to avoid 429 in Edge Runtime
   try {
     const data = await fetchYahoo();
     updateKV(data);
