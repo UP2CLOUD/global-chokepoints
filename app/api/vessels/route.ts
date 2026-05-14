@@ -111,9 +111,20 @@ function collectVessels(apiKey: string): Promise<VesselEntry[]> {
       }));
     };
 
-    ws.onmessage = (event: MessageEvent) => {
+    ws.onmessage = async (event: MessageEvent) => {
       try {
-        const msg = JSON.parse(event.data as string);
+        // AISStream sends binary frames — decode ArrayBuffer/Blob before parsing
+        let raw: string;
+        if (typeof event.data === 'string') {
+          raw = event.data;
+        } else if (event.data instanceof ArrayBuffer) {
+          raw = new TextDecoder().decode(event.data);
+        } else if (typeof event.data === 'object' && typeof (event.data as Blob).text === 'function') {
+          raw = await (event.data as Blob).text();
+        } else {
+          raw = String(event.data);
+        }
+        const msg = JSON.parse(raw);
         const meta = msg.MetaData;
         if (!meta?.MMSI) return;
         const mmsi = Number(meta.MMSI);
