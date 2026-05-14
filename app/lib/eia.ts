@@ -6,7 +6,9 @@
 // Series we use:
 //   RBRTE   Europe Brent Spot FOB ($/bbl), daily      [dataset: petroleum/pri/spt]
 //   RWTC    WTI Cushing Spot ($/bbl), daily            [dataset: petroleum/pri/spt]
-//   RNGWHHD Henry Hub Natural Gas Spot ($/MMBtu), daily [dataset: natural-gas/pri/sum]
+//
+// NOTE: RNGWHHD (Henry Hub daily) is NOT available in EIA v2 (monthly only).
+//       Use fetchFredNatGas() below instead.
 // ============================================================
 
 export type EiaSeries = 'RBRTE' | 'RWTC' | 'RNGWHHD';
@@ -96,5 +98,84 @@ export function eiaToTicker(r: EiaSeriesResult) {
     changePercent: Number(changePercent.toFixed(2)),
     history,
     asOf: r.asOf,
+  };
+}
+
+// ============================================================
+// FRED (Federal Reserve) — Henry Hub Natural Gas Spot Price
+//
+// Series: DHHNGSP — daily spot price, $/MMBtu
+// Docs:   https://fred.stlouisfed.org/series/DHHNGSP
+// Free API key: https://fred.stlouisfed.org/docs/api/api_key.html
+//
+// FRED typically lags by 1 business day but has no rate limits
+// and no cloud-IP blocking (unlike Yahoo Finance).
+// ============================================================
+export type FredPoint = { ts: number; date: string; price: number };
+
+export interface FredResult {
+  points: FredPoint[];
+  asOf: string;
+}
+
+export async function fetchFredNatGas(length = 14): Promise<FredResult | null> {
+  const key = process.env.FRED_API_KEY;
+  if (!key) return null;
+
+  // FRED observations endpoint — sort desc, take most recent N
+  const url =
+    `https://api.stlouisfed.org/fred/series/observations` +
+    `?series_id=DHHNGSP` +
+    `&api_key=${encodeURIComponent(key)}` +
+    `&file_type=json` +
+    `&sort_order=desc` +
+    `&limit=${length}` +
+    `&observation_start=2020-01-01`;
+
+  const res = await fetch(url, {
+    headers: { Accept: 'application/json', 'User-Agent': 'IsStraitHormuzOpen/1.0' },
+    next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) throw new Error(`FRED HTTP ${res.status}`);
+
+  const json = await res.json();
+  const obs: { date: string; value: string }[] = json?.observations ?? [];
+
+  // Filter out "." (missing values) and reverse to oldest→newest
+  const points: FredPoint[] = obs
+    .filter(o => o.value !== '.')
+    .map(o => ({
+      ts:    +new Date(o.date),
+      date:  o.date,
+      price: parseFloat(o.value),
+    }))
+    .filter(p => !isNaN(p.price))
+    .reverse();
+
+  if (points.length < 2) throw new Error('FRED: insufficient DHHNGSP observations');
+
+  return {
+    points,
+    asOf: new Date(points[points.length - 1].ts).toISOString(),
+  };
+}
+
+/** Convert FRED result to the same shape as eiaToTicker() */
+export function fredToTicker(r: FredResult) {
+  const last = r.points[r.points.length - 1];
+  const prev = r.points[r.points.length - 2];
+  const change        = last.price - prev.price;
+  const changePercent = (change / prev.price) * 100;
+  const history = r.points.slice(-7).map(p => ({
+    date:  new Date(p.ts).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' }),
+    price: Number(p.price.toFixed(3)),
+  }));
+  return {
+    price:         Number(last.price.toFixed(3)),
+    change:        Number(change.toFixed(3)),
+    changePercent: Number(changePercent.toFixed(2)),
+    history,
+    asOf:          r.asOf,
   };
 }

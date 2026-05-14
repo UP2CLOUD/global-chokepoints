@@ -11,7 +11,7 @@
 // On 429, both layers are checked before giving up.
 // ============================================================
 import { NextResponse } from 'next/server';
-import { fetchEiaSpot, eiaToTicker, type EiaSeries } from '@/app/lib/eia';
+import { fetchEiaSpot, eiaToTicker, fetchFredNatGas, fredToTicker, type EiaSeries } from '@/app/lib/eia';
 import { getKV } from '@/app/lib/kv';
 
 export const revalidate = 300;
@@ -143,7 +143,25 @@ async function fetchYahoo(symbol: string): Promise<Ticker> {
 }
 
 async function fetchOne(symbol: typeof SYMBOLS[number]): Promise<Ticker> {
-  // Prefer EIA when keyed — official, no rate limits, no Yahoo dependence.
+  // ── Natgas: FRED is the primary source (official, no rate limits) ──
+  if (symbol.key === 'natgas') {
+    try {
+      const fred = await fetchFredNatGas();
+      if (fred) {
+        return {
+          ...fredToTicker(fred),
+          label: symbol.label,
+          symbol: 'FRED.DHHNGSP',
+          unit: symbol.unit,
+          provider: 'FRED (St. Louis Fed)',
+        };
+      }
+    } catch (err) {
+      console.warn('[markets] FRED natgas failed, falling back to Yahoo:', err);
+    }
+  }
+
+  // ── Brent / WTI: prefer EIA ────────────────────────────────────
   if (symbol.eia) {
     try {
       const eia = await fetchEiaSpot(symbol.eia);
@@ -160,6 +178,8 @@ async function fetchOne(symbol: typeof SYMBOLS[number]): Promise<Ticker> {
       console.warn(`[markets] EIA ${symbol.key} failed, falling back to Yahoo:`, err);
     }
   }
+
+  // ── Yahoo Finance fallback ────────────────────────────────────
   const payload = await fetchYahoo(symbol.symbol);
   return {
     ...payload,
