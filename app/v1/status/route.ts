@@ -2,6 +2,7 @@
 // /v1/status — Public, stable API for the headline strait state.
 // CORS allow-all; cache 30s; partner embeds friendly.
 // ============================================================
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { deriveStatus } from '@/app/lib/api';
 

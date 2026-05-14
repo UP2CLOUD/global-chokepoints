@@ -2,6 +2,7 @@
 // /api/health — Feed health probe used by the StatusBar
 // Probes each upstream and returns (ok|degraded|down) + age.
 // ============================================================
+export const runtime = 'edge';
 import { NextResponse } from 'next/server';
 
 export const revalidate = 30;

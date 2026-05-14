@@ -238,9 +238,8 @@ function countLast24h(timeline: TimelineEvent[]): {
 
 // --- Combined fetcher used on page load + auto-refresh ---------------
 export async function fetchDashboardData(): Promise<Partial<DashboardData>> {
-  const [brent, news, timeline] = await Promise.all([
+  const [brent, timeline] = await Promise.all([
     fetchBrent(),
-    fetchNews(),
     fetchTimeline(),
   ]);
 
@@ -287,7 +286,6 @@ export async function fetchDashboardData(): Promise<Partial<DashboardData>> {
     };
   }
 
-  if (news && news.length > 0) updates.news = news;
   if (timeline && timeline.length > 0) updates.timeline = timeline;
 
   return updates;

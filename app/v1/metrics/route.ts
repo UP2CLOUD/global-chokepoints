@@ -1,6 +1,7 @@
 // ============================================================
 // /v1/metrics — Public read-only metrics endpoint
 // ============================================================
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const revalidate = 60;

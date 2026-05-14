@@ -4,6 +4,7 @@
 //   - Forecast: current wind, visibility, temperature
 //   - Marine:   wave height, swell, wind-wave
 // ============================================================
+export const runtime = 'edge';
 import { NextResponse } from 'next/server';
 
 export const revalidate = 900; // 15 min

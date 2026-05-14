@@ -10,7 +10,7 @@
 # as a backup to ensure no status change goes unnoticed.
 #
 # Required secrets:
-#   ALERT_CRON_SECRET  — must match ALERT_CRON_SECRET in CF Pages secrets
+#   ALERT_CRON_SECRET  — must match ALERT_CRON_SECRET in CF Workers secrets
 #   SITE_URL           — production URL, e.g. https://strait-of-hormuz-monitor.pages.dev
 # ============================================================
 

@@ -10,6 +10,7 @@
 //
 // Never return 502 when we have any data at all, even stale.
 // ============================================================
+export const runtime = 'edge';
 import { NextResponse } from 'next/server';
 import { fetchEiaSpot, eiaToTicker } from '@/app/lib/eia';
 import { getKV } from '@/app/lib/kv';

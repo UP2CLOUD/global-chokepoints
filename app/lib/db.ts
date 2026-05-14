@@ -1,10 +1,11 @@
 // ============================================================
 // Cloudflare D1 helpers — subscription system
 //
-// getD1() obtains the D1 binding from the CF Workers request
-// context via OpenNext.  Returns null in local `next dev` mode
-// so API routes degrade gracefully without crashing.
+// getD1() obtains the D1 binding from the CF Pages request
+// context via next-on-pages.  Returns null in local `next dev`
+// mode so API routes degrade gracefully without crashing.
 // ============================================================
+import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export interface Subscription {
   id: string;
@@ -18,11 +19,7 @@ export interface Subscription {
 
 export function getD1(): D1Database | null {
   try {
-    // In Cloudflare Workers, the global scope has the cloudflare context symbol
-    const sym = Symbol.for('__cloudflare-context__');
-    const ctx = (globalThis as any)[sym];
-    if (ctx?.env?.DB) return ctx.env.DB;
-    return null;
+    return (getRequestContext().env as any).DB ?? null;
   } catch {
     return null; // local dev — no D1 available
   }

@@ -1,29 +1,27 @@
 # ============================================================
-# Cloudflare Workers configuration (OpenNext adapter)
-# Docs: https://opennext.js.org/cloudflare
+# Cloudflare Pages configuration (next-on-pages adapter)
+# Docs: https://developers.cloudflare.com/pages/framework-guides/nextjs/
 #
 # Setup checklist (one-time):
 #   1. Install wrangler:   npm install -g wrangler
 #   2. Login:              wrangler login
-#   3. Create D1 DB:       wrangler d1 create strait-subscriptions
+#   3. Create Pages project: wrangler pages project create strait-of-hormuz-monitor
+#   4. Create D1 DB:       wrangler d1 create strait-subscriptions
 #      → database_id is already filled in below
-#   4. Run migration:      npm run db:migrate
-#   5. Add secrets:
-#        wrangler secret put RESEND_API_KEY
-#        wrangler secret put ALERT_CRON_SECRET
-#        wrangler secret put AISSTREAM_KEY
-#        wrangler secret put EIA_API_KEY
-#        wrangler secret put RESEND_FROM_EMAIL
-#   6. Deploy:             npm run deploy:cf
+#   5. Run migration:      npm run db:migrate
+#   6. Add secrets (use wrangler pages secret put):
+#        wrangler pages secret put RESEND_API_KEY
+#        wrangler pages secret put ALERT_CRON_SECRET
+#        wrangler pages secret put AISSTREAM_KEY
+#        wrangler pages secret put EIA_API_KEY
+#        wrangler pages secret put RESEND_FROM_EMAIL
+#   7. Deploy:             npm run deploy:cf
 # ============================================================
 
 name = "strait-of-hormuz-monitor"
+pages_build_output_dir = ".vercel/output/static"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-
-# OpenNext build output
-main = ".open-next/worker.js"
-assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
 # ── Cloudflare D1 (SQLite) — email subscriptions ─────────────
 [[d1_databases]]
@@ -32,12 +30,10 @@ database_name = "strait-subscriptions"
 database_id = "27666582-3b79-4e35-bce0-961f37ea655a"
 
 # ── Cloudflare KV — persistent API response cache ────────────
-# Create with: wrangler kv namespace create HORMUZ_KV
-# Then replace the id below with the real namespace ID.
 [[kv_namespaces]]
 binding = "HORMUZ_KV"
 id = "015d621e444a42d0a18a07bcb6dc0188"
 
 # ── Public environment variables ─────────────────────────────
 [vars]
-NEXT_PUBLIC_SITE_URL = "https://strait-of-hormuz-monitor.workers.dev"
+NEXT_PUBLIC_SITE_URL = "https://strait-of-hormuz-monitor.pages.dev"

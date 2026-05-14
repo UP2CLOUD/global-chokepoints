@@ -7,6 +7,7 @@
 //   3. Send confirmation email via Resend
 //   4. Return 200 (idempotent — resends confirmation if already unconfirmed)
 // ============================================================
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { getD1, randomId, randomToken } from '@/app/lib/db';
 import { sendEmail, confirmationEmailHtml } from '@/app/lib/email';

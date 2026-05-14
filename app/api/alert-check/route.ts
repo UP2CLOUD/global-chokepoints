@@ -13,6 +13,7 @@
 //   3. If changed → send alert emails to all confirmed subscribers
 //   4. Update system_state with new status
 // ============================================================
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { getD1 } from '@/app/lib/db';
 import { sendEmail, alertEmailHtml } from '@/app/lib/email';

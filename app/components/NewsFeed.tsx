@@ -7,6 +7,7 @@ import { Newspaper, ExternalLink, TrendingUp, TrendingDown, Minus } from 'lucide
 
 interface Props {
   news: NewsItem[];
+  loading?: boolean;
 }
 
 const SENTIMENT = {
@@ -15,7 +16,24 @@ const SENTIMENT = {
   neutral:  { Icon: Minus,        color: 'text-text3',  label: 'NEUTRAL' },
 } as const;
 
-export default function NewsFeed({ news }: Props) {
+function NewsSkeleton() {
+  return (
+    <div className="flex flex-col gap-2">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="p-3 rounded-lg bg-bg1/60 border border-divider animate-pulse">
+          <div className="h-3 bg-divider rounded w-3/4 mb-2" />
+          <div className="h-3 bg-divider rounded w-1/2" />
+          <div className="mt-2 flex gap-2">
+            <div className="h-2 bg-divider rounded w-16" />
+            <div className="h-2 bg-divider rounded w-12" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function NewsFeed({ news, loading = false }: Props) {
   const { lang, t } = useLang();
   const locale = lang === 'en' ? 'en-US' : 'pt-BR';
 
@@ -37,17 +55,18 @@ export default function NewsFeed({ news }: Props) {
           {t.news.title}
         </div>
         <span className="text-[10px] text-text3 font-mono">
-          {news.length} {t.news.sources}
+          {loading ? '—' : `${news.length} ${t.news.sources}`}
         </span>
       </div>
 
       <div className="flex flex-col gap-2 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
-        {items.length === 0 && (
+        {loading && <NewsSkeleton />}
+        {!loading && items.length === 0 && (
           <div className="text-[12px] font-mono text-text3 py-8 text-center">
-            {lang === 'en' ? 'No matching articles yet. Polling…' : 'Nenhum artigo correspondente ainda. Atualizando…'}
+            {lang === 'en' ? 'No articles found' : 'Nenhum artigo encontrado'}
           </div>
         )}
-        {items.map((item, i) => {
+        {!loading && items.map((item, i) => {
           const s = SENTIMENT[item.sentiment];
           const hasLink = item.url && item.url !== '#';
           return (

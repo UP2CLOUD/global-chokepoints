@@ -23,6 +23,7 @@
 //   CF Workers isolates are torn down between requests; the vessel
 //   Map was always empty when a new isolate handled a request.
 // ============================================================
+export const runtime = 'edge';
 
 import { NextResponse } from 'next/server';
 import { getKV } from '@/app/lib/kv';

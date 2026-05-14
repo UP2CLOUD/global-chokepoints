@@ -10,6 +10,7 @@
 //  2. Module-level in-memory — local dev / non-CF environments
 // On 429, both layers are checked before giving up.
 // ============================================================
+export const runtime = 'edge';
 import { NextResponse } from 'next/server';
 import { fetchEiaSpot, eiaToTicker, fetchFredNatGas, fredToTicker, type EiaSeries } from '@/app/lib/eia';
 import { getKV } from '@/app/lib/kv';

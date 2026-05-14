@@ -7,6 +7,7 @@
 //
 // Returns last 30 days of daily transit counts by vessel type.
 // ============================================================
+export const runtime = 'edge';
 
 import { NextResponse } from 'next/server';
 import { getKV } from '@/app/lib/kv';

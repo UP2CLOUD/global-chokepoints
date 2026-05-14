@@ -2,6 +2,7 @@
 // /feed.xml — Public RSS feed of timeline events
 // Journalists can subscribe to be alerted to incidents.
 // ============================================================
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const revalidate = 60;

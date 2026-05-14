@@ -3,6 +3,7 @@
 // One-click unsubscribe — deletes the subscription row and
 // redirects to the homepage with ?unsubscribed=1.
 // ============================================================
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { getD1 } from '@/app/lib/db';
 

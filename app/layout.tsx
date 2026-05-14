@@ -78,7 +78,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
         />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased" suppressHydrationWarning>{children}</body>
     </html>
   );
 }

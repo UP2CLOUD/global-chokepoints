@@ -1,6 +1,7 @@
 // ============================================================
 // /v1/events — Public stream of timeline events
 // ============================================================
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const revalidate = 60;

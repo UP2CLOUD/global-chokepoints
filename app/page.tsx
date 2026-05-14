@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { DashboardData } from '@/app/lib/types';
 import { getMockData } from '@/app/lib/mockData';
-import { fetchDashboardData, fetchTimeline, deriveStatus } from '@/app/lib/api';
+import { fetchDashboardData, fetchTimeline, fetchNews, deriveStatus } from '@/app/lib/api';
 import { LangProvider, useLang } from '@/app/components/LangContext';
 import Header from '@/app/components/Header';
 import HeroStatus from '@/app/components/HeroStatus';
@@ -23,12 +23,12 @@ import AdSlot from '@/app/components/AdSlot';
 import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
 import { TrendingUp, BarChart2, Activity, Zap } from 'lucide-react';
 
-// ── 3D hero — dynamic import, no SSR (WebGL) ─────────────────
-const HeroScene = dynamic(() => import('@/app/components/HeroScene'), {
+// ── Hero map — dynamic import, no SSR (Leaflet) ───────────────
+const HormuzMap = dynamic(() => import('@/app/components/HormuzMap'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full bg-[#07090F] flex items-center justify-center">
-      <span className="text-[11px] font-mono text-text3 tracking-[0.2em]">INITIALISING 3D…</span>
+      <span className="text-[11px] font-mono text-text3 tracking-[0.2em]">LOADING MAP…</span>
     </div>
   ),
 });
@@ -88,6 +88,7 @@ function DashboardContent() {
     },
   }));
   const [dataReady, setDataReady] = useState(false);
+  const [newsLoading, setNewsLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
@@ -100,6 +101,18 @@ function DashboardContent() {
       console.warn('Dashboard fetch failed:', err);
     }
   }, [lang]);
+
+  const loadNews = useCallback(async () => {
+    setNewsLoading(true);
+    try {
+      const news = await fetchNews();
+      if (news && news.length > 0) setData((prev) => ({ ...prev, news }));
+    } catch {
+      // fail silently — news is non-critical
+    } finally {
+      setNewsLoading(false);
+    }
+  }, []);
 
   const refreshTimeline = useCallback(async () => {
     const events = await fetchTimeline();
@@ -117,8 +130,12 @@ function DashboardContent() {
     return () => { cancelled = true; };
   }, [loadData]);
 
+  // News loads independently — GDELT is slow (2–9s) and must not block status/metrics
+  useEffect(() => { loadNews(); }, [loadNews]);
+
   useEffect(() => { const id = setInterval(loadData,        5 * 60_000); return () => clearInterval(id); }, [loadData]);
   useEffect(() => { const id = setInterval(refreshTimeline, 60_000);     return () => clearInterval(id); }, [refreshTimeline]);
+  useEffect(() => { const id = setInterval(loadNews,       10 * 60_000); return () => clearInterval(id); }, [loadNews]);
 
   useEffect(() => {
     setData((prev) => ({
@@ -138,10 +155,11 @@ function DashboardContent() {
       {/* ── HERO — full viewport 3D scene ──────────────────── */}
       <section
         id="hero"
-        className="relative w-full h-screen overflow-hidden"
-        aria-label="3D Strait of Hormuz overview"
+        className="relative w-full overflow-hidden"
+        style={{ height: 'min(62vh, 520px)', minHeight: '340px' }}
+        aria-label="Strait of Hormuz live map"
       >
-        <HeroScene status={data.status} vessels={vessels} />
+        <HormuzMap status={data.status} vessels={vessels} />
 
         {/* Overlay: bottom-left status pill */}
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
@@ -150,7 +168,7 @@ function DashboardContent() {
         </div>
 
         {/* Status badge — top right */}
-        <div className="absolute top-16 right-4 md:right-6 pointer-events-none">
+        <div className="absolute top-16 right-4 md:right-6 pointer-events-none z-[600]">
           <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-md text-[11px] font-mono transition-colors duration-500 ${
             !dataReady
               ? 'bg-caution/10 border-caution/30 text-caution'
@@ -176,32 +194,8 @@ function DashboardContent() {
           </div>
         </div>
 
-        {/* Lane legend — bottom left */}
-        <div className="absolute bottom-10 left-4 md:left-6 flex flex-col gap-1.5 pointer-events-none">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-[2px] bg-cyan-400 rounded" />
-            <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">
-              {lang === 'en' ? 'Inbound lane' : 'Faixa entrada'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-[2px] bg-amber-400 rounded" />
-            <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">
-              {lang === 'en' ? 'Outbound lane' : 'Faixa saída'}
-            </span>
-          </div>
-          {vessels.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span className="text-[9px] font-mono text-text3">
-                {vessels.length} AIS {lang === 'en' ? 'vessels' : 'navios'}
-              </span>
-            </div>
-          )}
-        </div>
-
         {/* Scroll cue */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
           <ScrollIndicator />
         </div>
       </section>
@@ -257,7 +251,7 @@ function DashboardContent() {
               <Activity size={13} className="text-accent" />
               {lang === 'en' ? 'Intelligence Feed' : 'Feed de Inteligência'}
             </div>
-            <NewsFeed news={data.news} />
+            <NewsFeed news={data.news} loading={newsLoading} />
           </div>
           <div>
             <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-3">

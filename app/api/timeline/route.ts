@@ -4,6 +4,7 @@
 // plus GDELT as a real-time supplement.
 // Refreshes every 60 seconds; clients should poll at the same cadence.
 // ============================================================
+export const runtime = 'edge';
 import { NextResponse } from 'next/server';
 
 export const revalidate = 60; // 1 minute

@@ -3,6 +3,7 @@
 // Confirms a subscription and redirects to the homepage with
 // a ?subscribed=1 query param so the UI can show a success banner.
 // ============================================================
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { getD1 } from '@/app/lib/db';
 

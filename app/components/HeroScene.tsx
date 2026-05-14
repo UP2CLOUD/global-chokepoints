@@ -312,6 +312,8 @@ export default function HeroScene({ status, vessels = [] }: HeroSceneProps) {
       dpr={[1, 1.5]}
       style={{
         background: '#07090F',
+        position: 'relative',
+        zIndex: 0,
         // Allow browser to handle vertical scroll natively on touch screens
         touchAction: isTouch ? 'pan-y' : 'none',
       }}

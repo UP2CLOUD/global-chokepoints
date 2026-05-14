@@ -5,6 +5,7 @@
 // We retry up to 2 times with a short delay and serve a module-level
 // stale cache (up to 1 h) when GDELT is fully unavailable.
 // ============================================================
+export const runtime = 'edge';
 import { NextResponse } from 'next/server';
 import { getKV } from '@/app/lib/kv';
 

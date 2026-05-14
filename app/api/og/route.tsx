@@ -5,6 +5,7 @@
 //   CLOSED            → NO   (red)
 //   PARTIALLY_CLOSED  → DISRUPTED (amber)
 // ============================================================
+export const runtime = 'edge';
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 
