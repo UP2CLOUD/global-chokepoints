@@ -60,8 +60,23 @@ function DashboardContent() {
   const vessels = useAisVessels();
 
   const seed = getMockData(lang);
+
+  // Neutral loading status — PARTIALLY_CLOSED/yellow, confidence=0.
+  // Prevents the green "YES" flash before the real API result lands.
+  const loadingStatus = {
+    state:        'PARTIALLY_CLOSED' as const,
+    tensionLevel: 'NORMAL'           as const,
+    tensionIndex: 0,
+    lastUpdated:  new Date().toISOString(),
+    confidence:   0,
+    reason:       lang === 'en'
+      ? 'Fetching live intelligence data…'
+      : 'Obtendo dados de inteligência ao vivo…',
+  };
+
   const [data, setData] = useState<DashboardData>(() => ({
     ...seed,
+    status: loadingStatus,   // override seed's hard-coded OPEN state
     news: [],
     timeline: [],
     metrics: {
@@ -135,17 +150,24 @@ function DashboardContent() {
 
         {/* Status badge — top right */}
         <div className="absolute top-16 right-4 md:right-6 pointer-events-none">
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-md text-[11px] font-mono ${
-            data.status.state === 'OPEN'
+          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-md text-[11px] font-mono transition-colors duration-500 ${
+            !dataReady
+              ? 'bg-caution/10 border-caution/30 text-caution'
+              : data.status.state === 'OPEN'
               ? 'bg-ok/10 border-ok/30 text-ok'
               : data.status.state === 'CLOSED'
               ? 'bg-danger/10 border-danger/35 text-danger'
               : 'bg-caution/10 border-caution/30 text-caution'
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-              data.status.state === 'OPEN' ? 'bg-ok' : data.status.state === 'CLOSED' ? 'bg-danger' : 'bg-caution'
+              !dataReady ? 'bg-caution'
+              : data.status.state === 'OPEN' ? 'bg-ok'
+              : data.status.state === 'CLOSED' ? 'bg-danger'
+              : 'bg-caution'
             }`} />
-            {data.status.state === 'OPEN'
+            {!dataReady
+              ? (lang === 'en' ? 'SYNCING…' : 'SINCRONIZANDO…')
+              : data.status.state === 'OPEN'
               ? (lang === 'en' ? 'STRAIT OPEN' : 'ESTREITO ABERTO')
               : data.status.state === 'CLOSED'
               ? (lang === 'en' ? 'STRAIT CLOSED' : 'ESTREITO FECHADO')
@@ -188,7 +210,7 @@ function DashboardContent() {
 
         {/* Status card — full width below hero */}
         <div className="animate-fadeInUp" style={{ animationDelay: '0.05s' }}>
-          <HeroStatus status={data.status} />
+          <HeroStatus status={data.status} loading={!dataReady} />
         </div>
 
         {/* Metrics — shimmer skeletons until real data arrives */}

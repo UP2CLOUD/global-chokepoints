@@ -8,6 +8,8 @@ import { Shield, Clock, ExternalLink, Info, Share2 } from 'lucide-react';
 
 interface Props {
   status: StatusData;
+  /** True while initial API data is still loading — renders shimmer skeleton */
+  loading?: boolean;
 }
 
 /**
@@ -35,9 +37,9 @@ const TONE = {
   danger:  { color: 'text-danger',  border: 'border-danger/35',  bg: 'bg-danger/[0.08]',  dot: 'bg-danger',  shadow: 'animate-[closed-pulse_3s_ease-in-out_infinite]' },
 } as const;
 
-export default function HeroStatus({ status }: Props) {
+export default function HeroStatus({ status, loading = false }: Props) {
   const { lang, t } = useLang();
-  const { word, tone } = displayAnswer(status.state);
+  const { word, tone } = loading ? { word: 'YES' as const, tone: 'caution' as const } : displayAnswer(status.state);
   const styles = TONE[tone];
 
   const tIdx = status.tensionIndex ?? (status.tensionLevel === 'CRITICAL' ? 85 : status.tensionLevel === 'ELEVATED' ? 55 : 20);
@@ -115,24 +117,40 @@ export default function HeroStatus({ status }: Props) {
 
         <div className="mt-3 grid grid-cols-1 md:grid-cols-[auto_1fr] items-center gap-6 md:gap-10">
           <div
-            className={`relative inline-flex flex-col items-center px-7 md:px-10 py-4 md:py-5 rounded-xl border ${styles.border} ${styles.bg} ${styles.shadow}`}
+            className={`relative inline-flex flex-col items-center px-7 md:px-10 py-4 md:py-5 rounded-xl border ${styles.border} ${styles.bg} ${styles.shadow} overflow-hidden transition-colors duration-500`}
             role="status"
             aria-live="polite"
-            aria-label={`${question} — ${answerWord}`}
+            aria-label={loading ? 'Loading status…' : `${question} — ${answerWord}`}
           >
+            {/* shimmer sweep while loading */}
+            {loading && (
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.6s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/[0.05] to-transparent pointer-events-none" />
+            )}
             <span
               className={`absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full ${styles.dot} animate-[status-dot_2.4s_ease-in-out_infinite]`}
               aria-hidden
             />
-            <h2 className={`text-6xl md:text-8xl font-black tracking-tighter font-mono ${styles.color} leading-none`}>
-              {answerWord}
-            </h2>
-            <span className="mt-1 text-[10px] font-mono text-text3 uppercase tracking-[0.18em]">
-              {/* secondary line: canonical state, for clarity */}
-              {status.state === 'OPEN' ? (lang === 'en' ? 'strait open' : 'estreito aberto')
-                : status.state === 'CLOSED' ? (lang === 'en' ? 'strait closed' : 'estreito fechado')
-                : (lang === 'en' ? 'traffic disrupted' : 'tráfego interrompido')}
-            </span>
+            {loading ? (
+              <>
+                <span className="text-6xl md:text-8xl font-black tracking-tighter font-mono text-caution/40 leading-none select-none">
+                  ···
+                </span>
+                <span className="mt-1 text-[10px] font-mono text-text4 uppercase tracking-[0.18em]">
+                  {lang === 'en' ? 'syncing data' : 'sincronizando'}
+                </span>
+              </>
+            ) : (
+              <>
+                <h2 className={`text-6xl md:text-8xl font-black tracking-tighter font-mono ${styles.color} leading-none`}>
+                  {answerWord}
+                </h2>
+                <span className="mt-1 text-[10px] font-mono text-text3 uppercase tracking-[0.18em]">
+                  {status.state === 'OPEN' ? (lang === 'en' ? 'strait open' : 'estreito aberto')
+                    : status.state === 'CLOSED' ? (lang === 'en' ? 'strait closed' : 'estreito fechado')
+                    : (lang === 'en' ? 'traffic disrupted' : 'tráfego interrompido')}
+                </span>
+              </>
+            )}
           </div>
 
           <div className="min-w-0">
