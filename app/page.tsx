@@ -10,6 +10,7 @@ import Header from '@/app/components/Header';
 import HeroStatus from '@/app/components/HeroStatus';
 import MetricsGrid from '@/app/components/MetricsGrid';
 import BrentChart from '@/app/components/BrentChart';
+import TransitChart from '@/app/components/TransitChart';
 import MarketsRail from '@/app/components/MarketsRail';
 import WeatherPanel from '@/app/components/WeatherPanel';
 import NewsFeed from '@/app/components/NewsFeed';
@@ -20,7 +21,7 @@ import RefreshButton from '@/app/components/RefreshButton';
 import ScrollIndicator from '@/app/components/ScrollIndicator';
 import AdSlot from '@/app/components/AdSlot';
 import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
-import { TrendingUp, Navigation, Activity, Zap } from 'lucide-react';
+import { TrendingUp, BarChart2, Activity, Zap } from 'lucide-react';
 
 // ── 3D hero — dynamic import, no SSR (WebGL) ─────────────────
 const HeroScene = dynamic(() => import('@/app/components/HeroScene'), {
@@ -218,7 +219,7 @@ function DashboardContent() {
           <MetricsGrid metrics={data.metrics} loading={!dataReady} />
         </div>
 
-        {/* Brent chart + Vessel map (two column) */}
+        {/* Brent chart + Daily Transit count (two column) */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 md:gap-6 animate-fadeInUp" style={{ animationDelay: '0.18s' }}>
           <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
             <div className="flex items-center justify-between mb-4">
@@ -234,13 +235,12 @@ function DashboardContent() {
           <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-                <Navigation size={13} className="text-accent" />
-                {t.map.title}
+                <BarChart2 size={13} className="text-accent" />
+                {lang === 'en' ? 'Vessel Transits · Hormuz' : 'Trânsitos de Navios · Ormuz'}
               </div>
-              <span className="text-[10px] text-text3 font-mono">aisstream.io</span>
+              <span className="text-[10px] text-text3 font-mono">IMF PortWatch</span>
             </div>
-            {/* Compact 2D vessel map in panel */}
-            <VesselMapPanel vessels={vessels} />
+            <TransitChart />
           </section>
         </div>
 
@@ -307,16 +307,6 @@ function DashboardContent() {
       <RefreshButton onRefresh={loadData} />
     </div>
   );
-}
-
-// ── Compact AIS panel (2D canvas) ─────────────────────────────
-type VesselMapPanelProps = { vessels: AisVessel[] };
-
-function VesselMapPanel({ vessels }: VesselMapPanelProps) {
-  const { lang } = useLang();
-  // Reuse the existing canvas-based VesselMap
-  const VesselMap = dynamic(() => import('@/app/components/VesselMap'), { ssr: false });
-  return <VesselMap />;
 }
 
 export default function Dashboard() {

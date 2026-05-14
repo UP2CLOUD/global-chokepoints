@@ -3,7 +3,8 @@
 import { MetricsData } from '@/app/lib/types';
 import { useLang } from './LangContext';
 import MetricCard from './MetricCard';
-import { DollarSign, Radio, AlertTriangle, TrendingUp } from 'lucide-react';
+import TransitMetricCard from './TransitMetricCard';
+import { DollarSign, Radio, AlertTriangle } from 'lucide-react';
 import { fmtDateShort } from '@/app/lib/utils';
 
 interface Props {
@@ -67,19 +68,7 @@ export default function MetricsGrid({ metrics, loading = false }: Props) {
         delay={0.15}
         loading={loading}
       />
-      <MetricCard
-        title={t.metrics.variation24h}
-        value={`${metrics.brentChangePercent >= 0 ? '+' : ''}${metrics.brentChangePercent.toFixed(2)}%`}
-        icon={<TrendingUp size={14} />}
-        changeType={metrics.brentChangePercent >= 0 ? 'up' : 'down'}
-        source="Yahoo Finance"
-        asOf={metrics.brentAsOf}
-        refreshSec={300}
-        down={brentDown}
-        tone={Math.abs(metrics.brentChangePercent) >= 3 ? 'caution' : 'default'}
-        delay={0.2}
-        loading={loading}
-      />
+      <TransitMetricCard loading={loading} delay={0.2} />
     </div>
   );
 }

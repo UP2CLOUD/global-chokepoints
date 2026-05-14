@@ -66,51 +66,47 @@ export async function POST(req: NextRequest) {
 
   // ── Local dev: no D1 available ────────────────────────────
   if (!db) {
-    console.log(`[subscribe] LOCAL DEV — would send confirmation to: ${email}`);
-    return NextResponse.json({
-      ok: true,
-      message: 'Check your email to confirm your subscription.',
-      dev: true,
-    });
-  }
-
-  // ── Check if already confirmed ───────────────────────────
-  const existing = await db
-    .prepare('SELECT id, confirmed, confirm_token FROM subscriptions WHERE email = ?')
-    .bind(email)
-    .first<{ id: string; confirmed: number; confirm_token: string }>();
-
-  if (existing?.confirmed === 1) {
-    return NextResponse.json({
-      ok: true,
-      message: 'You are already subscribed.',
-      alreadyConfirmed: true,
-    });
-  }
-
-  // ── Upsert (insert or refresh tokens for unconfirmed) ────
-  const id = existing?.id ?? randomId();
-  const confirmToken = randomToken();
-  const unsubToken = randomToken();
-
-  if (existing) {
-    // Refresh confirmation token so old link can't be used
-    await db
-      .prepare('UPDATE subscriptions SET confirm_token = ? WHERE id = ?')
-      .bind(confirmToken, id)
-      .run();
+    console.log(`[subscribe] LOCAL DEV (No D1) — proceeding with email send for: ${email}`);
+    // We continue without DB persistence for local testing
   } else {
-    await db
-      .prepare(
-        `INSERT INTO subscriptions (id, email, confirm_token, unsubscribe_token, confirmed, created_at)
-         VALUES (?, ?, ?, ?, 0, unixepoch())`
-      )
-      .bind(id, email, confirmToken, unsubToken)
-      .run();
+    // ── Check if already confirmed (only if DB exists) ──────────
+    const existing = await db
+      .prepare('SELECT id, confirmed, confirm_token FROM subscriptions WHERE email = ?')
+      .bind(email)
+      .first<{ id: string; confirmed: number; confirm_token: string }>();
+
+    if (existing?.confirmed === 1) {
+      return NextResponse.json({
+        ok: true,
+        message: 'You are already subscribed.',
+        alreadyConfirmed: true,
+      });
+    }
+
+    // ── Upsert (insert or refresh tokens for unconfirmed) ────
+    const id = existing?.id ?? randomId();
+    const confirmToken = randomToken();
+    const unsubToken = randomToken();
+
+    if (existing) {
+      await db
+        .prepare('UPDATE subscriptions SET confirm_token = ? WHERE id = ?')
+        .bind(confirmToken, id)
+        .run();
+    } else {
+      await db
+        .prepare(
+          `INSERT INTO subscriptions (id, email, confirm_token, unsubscribe_token, confirmed, created_at)
+           VALUES (?, ?, ?, ?, 0, unixepoch())`
+        )
+        .bind(id, email, confirmToken, unsubToken)
+        .run();
+    }
   }
 
-  // ── Send confirmation email ──────────────────────────────
-  const confirmUrl = `${siteUrl()}/api/confirm?token=${confirmToken}`;
+  // Generate tokens for local dev if DB is missing
+  const testToken = randomToken();
+  const confirmUrl = `${siteUrl()}/api/confirm?token=${testToken}`;
 
   // If RESEND_API_KEY is not configured, still accept the subscription
   // but inform the user. The confirmation email will be sent once the key is set.
