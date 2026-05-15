@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -76,15 +77,17 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
-        />
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4771109071232940"
-          crossOrigin="anonymous"
+          suppressHydrationWarning
         />
       </head>
       <body className="antialiased" suppressHydrationWarning>{children}</body>
+      {/* AdSense loaded after hydration to prevent DOM mutation during SSR reconciliation */}
+      <Script
+        id="adsbygoogle"
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4771109071232940"
+        strategy="afterInteractive"
+        crossOrigin="anonymous"
+      />
     </html>
   );
 }

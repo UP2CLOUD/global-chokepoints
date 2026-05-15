@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StatusData } from '@/app/lib/types';
 import { useLang } from './LangContext';
 import { fmtTime } from '@/app/lib/utils';
@@ -8,20 +8,9 @@ import { Shield, Clock, ExternalLink, Info, Share2 } from 'lucide-react';
 
 interface Props {
   status: StatusData;
-  /** True while initial API data is still loading — renders shimmer skeleton */
   loading?: boolean;
 }
 
-/**
- * The site is "IsStraitHormuzOpen?". Headline answer:
- *
- *   state OPEN                → YES   (the strait is open)
- *   state CLOSED              → NO    (the strait is not open)
- *   state PARTIALLY_CLOSED    → DISRUPTED
- *
- * Canonical state value (used by /v1/status, the OG image, etc.)
- * stays unchanged. Only the displayed glyph changes.
- */
 function displayAnswer(state: StatusData['state']): {
   word: 'YES' | 'NO' | 'DISRUPTED';
   tone: 'danger' | 'ok' | 'caution';
@@ -32,37 +21,73 @@ function displayAnswer(state: StatusData['state']): {
 }
 
 const TONE = {
-  ok:      { color: 'text-ok',      border: 'border-ok/30',      bg: 'bg-ok/[0.06]',      dot: 'bg-ok',      shadow: '' },
-  caution: { color: 'text-caution', border: 'border-caution/30', bg: 'bg-caution/[0.07]', dot: 'bg-caution', shadow: '' },
-  danger:  { color: 'text-danger',  border: 'border-danger/35',  bg: 'bg-danger/[0.08]',  dot: 'bg-danger',  shadow: 'animate-[closed-pulse_3s_ease-in-out_infinite]' },
+  ok: {
+    color:  'text-ok',
+    border: 'border-ok/30',
+    bg:     'bg-ok/[0.06]',
+    dot:    'bg-ok',
+    shadow: '',
+    glow:   'animate-ok-glow',
+    bracket:'border-ok/40',
+    bar:    'bg-ok',
+  },
+  caution: {
+    color:  'text-caution',
+    border: 'border-caution/30',
+    bg:     'bg-caution/[0.07]',
+    dot:    'bg-caution',
+    shadow: '',
+    glow:   'animate-caution-glow',
+    bracket:'border-caution/40',
+    bar:    'bg-caution',
+  },
+  danger: {
+    color:  'text-danger',
+    border: 'border-danger/35',
+    bg:     'bg-danger/[0.08]',
+    dot:    'bg-danger',
+    shadow: 'animate-[closed-pulse_3s_ease-in-out_infinite]',
+    glow:   'animate-danger-glow',
+    bracket:'border-danger/40',
+    bar:    'bg-danger',
+  },
 } as const;
 
 export default function HeroStatus({ status, loading = false }: Props) {
   const { lang, t } = useLang();
-  const { word, tone } = loading ? { word: 'YES' as const, tone: 'caution' as const } : displayAnswer(status.state);
+  const { word, tone } = loading
+    ? { word: 'YES' as const, tone: 'caution' as const }
+    : displayAnswer(status.state);
   const styles = TONE[tone];
 
-  const tIdx = status.tensionIndex ?? (status.tensionLevel === 'CRITICAL' ? 85 : status.tensionLevel === 'ELEVATED' ? 55 : 20);
+  const tIdx = status.tensionIndex ?? (
+    status.tensionLevel === 'CRITICAL' ? 85 :
+    status.tensionLevel === 'ELEVATED' ? 55 : 20
+  );
   const tensionLabel =
     status.tensionLevel === 'CRITICAL' ? t.hero.tensionCritical
-      : status.tensionLevel === 'ELEVATED' ? t.hero.tensionElevated
-      : t.hero.tensionNormal;
+    : status.tensionLevel === 'ELEVATED' ? t.hero.tensionElevated
+    : t.hero.tensionNormal;
   const tensionColor =
     status.tensionLevel === 'CRITICAL' ? 'text-danger'
-      : status.tensionLevel === 'ELEVATED' ? 'text-caution'
-      : 'text-ok';
-  const tensionBar =
-    status.tensionLevel === 'CRITICAL' ? 'bg-danger'
-      : status.tensionLevel === 'ELEVATED' ? 'bg-caution'
-      : 'bg-ok';
+    : status.tensionLevel === 'ELEVATED' ? 'text-caution'
+    : 'text-ok';
+
+  // Animate tension bar from 0 when data arrives
+  const [displayTIdx, setDisplayTIdx] = useState(0);
+  useEffect(() => {
+    if (!loading) {
+      const id = setTimeout(() => setDisplayTIdx(tIdx), 120);
+      return () => clearTimeout(id);
+    }
+  }, [loading, tIdx]);
 
   const question = lang === 'en'
     ? 'Is the Strait of Hormuz open?'
     : 'O Estreito de Ormuz está aberto?';
   const answerWord =
-    lang === 'en'
-      ? word
-      : word === 'YES' ? 'SIM' : word === 'NO' ? 'NÃO' : 'INTERROMPIDO';
+    lang === 'en' ? word
+    : word === 'YES' ? 'SIM' : word === 'NO' ? 'NÃO' : 'INTERROMPIDO';
 
   const [showWhy, setShowWhy] = useState(false);
 
@@ -78,6 +103,8 @@ export default function HeroStatus({ status, loading = false }: Props) {
 
   return (
     <section className="relative overflow-hidden rounded-2xl border border-divider bg-gradient-to-br from-bg1 via-bg1 to-bg2">
+
+      {/* Grid pattern background */}
       <div
         aria-hidden
         className="absolute inset-0 opacity-[0.025] pointer-events-none"
@@ -88,7 +115,17 @@ export default function HeroStatus({ status, loading = false }: Props) {
         }}
       />
 
+      {/* Scan line sweep */}
+      <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent"
+          style={{ animation: 'scan-h 9s linear infinite', top: 0 }}
+        />
+      </div>
+
       <div className="relative z-10 p-5 md:p-8">
+
+        {/* ── Top row ── */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-text2 text-[11px] font-mono uppercase tracking-[0.18em]">
             <Shield size={13} className="text-accent" />
@@ -105,54 +142,74 @@ export default function HeroStatus({ status, loading = false }: Props) {
             </button>
             <div className="flex items-center gap-1.5 text-text3 text-[11px] font-mono">
               <Clock size={11} />
-              <span suppressHydrationWarning>{fmtTime(status.lastUpdated, lang === 'en' ? 'en-US' : 'pt-BR')}</span>
+              <span suppressHydrationWarning>
+                {fmtTime(status.lastUpdated, lang === 'en' ? 'en-US' : 'pt-BR')}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* The question above the answer */}
-        <p className="mt-6 md:mt-8 text-text2 text-[13px] md:text-[14px] font-medium tracking-tight">
+        {/* ── The question — primary headline ── */}
+        <h2 className="mt-5 md:mt-7 text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight text-text">
           {question}
-        </p>
+        </h2>
 
-        <div className="mt-3 grid grid-cols-1 md:grid-cols-[auto_1fr] items-center gap-6 md:gap-10">
+        {/* ── Answer + reason row ── */}
+        <div className="mt-5 md:mt-6 grid grid-cols-1 md:grid-cols-[auto_1fr] items-center gap-6 md:gap-10">
+
+          {/* Answer box */}
           <div
-            className={`relative inline-flex flex-col items-center px-7 md:px-10 py-4 md:py-5 rounded-xl border ${styles.border} ${styles.bg} ${styles.shadow} overflow-hidden transition-colors duration-500`}
+            className={`relative inline-flex flex-col items-center px-8 md:px-12 py-5 md:py-6 rounded-xl border ${styles.border} ${styles.bg} ${styles.shadow} ${!loading ? styles.glow : ''} overflow-hidden transition-colors duration-500`}
             role="status"
             aria-live="polite"
             aria-label={loading ? 'Loading status…' : `${question} — ${answerWord}`}
           >
-            {/* shimmer sweep while loading */}
+            {/* Corner brackets — mil-spec aesthetic */}
+            <span aria-hidden className={`absolute top-2.5 left-2.5 w-4 h-4 border-t-2 border-l-2 ${styles.bracket} pointer-events-none`} />
+            <span aria-hidden className={`absolute top-2.5 right-2.5 w-4 h-4 border-t-2 border-r-2 ${styles.bracket} pointer-events-none`} />
+            <span aria-hidden className={`absolute bottom-2.5 left-2.5 w-4 h-4 border-b-2 border-l-2 ${styles.bracket} pointer-events-none`} />
+            <span aria-hidden className={`absolute bottom-2.5 right-2.5 w-4 h-4 border-b-2 border-r-2 ${styles.bracket} pointer-events-none`} />
+
+            {/* Shimmer while loading */}
             {loading && (
               <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.6s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/[0.05] to-transparent pointer-events-none" />
             )}
+
+            {/* Live pulse dot */}
             <span
               className={`absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full ${styles.dot} animate-[status-dot_2.4s_ease-in-out_infinite]`}
               aria-hidden
             />
+
             {loading ? (
               <>
                 <span className="text-6xl md:text-8xl font-black tracking-tighter font-mono text-caution/40 leading-none select-none">
                   ···
                 </span>
-                <span className="mt-1 text-[10px] font-mono text-text4 uppercase tracking-[0.18em]">
+                <span className="mt-1.5 text-[10px] font-mono text-text4 uppercase tracking-[0.18em]">
                   {lang === 'en' ? 'syncing data' : 'sincronizando'}
                 </span>
               </>
             ) : (
               <>
-                <h2 className={`text-6xl md:text-8xl font-black tracking-tighter font-mono ${styles.color} leading-none`}>
+                <p
+                  key={answerWord}
+                  className={`text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter font-mono ${styles.color} leading-none animate-answer-pop`}
+                >
                   {answerWord}
-                </h2>
-                <span className="mt-1 text-[10px] font-mono text-text3 uppercase tracking-[0.18em]">
-                  {status.state === 'OPEN' ? (lang === 'en' ? 'strait open' : 'estreito aberto')
-                    : status.state === 'CLOSED' ? (lang === 'en' ? 'strait closed' : 'estreito fechado')
+                </p>
+                <span className="mt-1.5 text-[10px] font-mono text-text3 uppercase tracking-[0.18em]">
+                  {status.state === 'OPEN'
+                    ? (lang === 'en' ? 'strait open' : 'estreito aberto')
+                    : status.state === 'CLOSED'
+                    ? (lang === 'en' ? 'strait closed' : 'estreito fechado')
                     : (lang === 'en' ? 'traffic disrupted' : 'tráfego interrompido')}
                 </span>
               </>
             )}
           </div>
 
+          {/* Reason text */}
           <div className="min-w-0">
             <p className="text-text leading-relaxed text-[15px] md:text-base">
               {status.reason}
@@ -181,11 +238,12 @@ export default function HeroStatus({ status, loading = false }: Props) {
           </div>
         </div>
 
+        {/* Why panel */}
         {showWhy && (
           <div className="mt-6 p-5 rounded-xl border border-divider bg-bg2/40 animate-fadeInUp">
-            <h4 className="text-[12px] font-mono font-semibold text-text uppercase tracking-wider mb-2">
+            <h3 className="text-[12px] font-mono font-semibold text-text uppercase tracking-wider mb-2">
               {lang === 'en' ? 'Signal Analysis' : 'Análise de Sinais'}
-            </h4>
+            </h3>
             <p className="text-[12px] text-text3 leading-relaxed">
               {lang === 'en'
                 ? `The current ${status.state} state is derived from ${status.confidence > 0.8 ? 'highly reliable' : 'multiple'} indicators including: maritime news frequency, oil market volatility, and live vessel movement signals. Tension index ${tIdx}/100 reflects current geopolitical event density in the past 72 hours.`
@@ -194,7 +252,7 @@ export default function HeroStatus({ status, loading = false }: Props) {
           </div>
         )}
 
-        {/* Tension index — 0..100 numeric */}
+        {/* ── Tension index bar ── */}
         <div className="mt-8">
           <div className="flex items-center justify-between mb-2">
             <span className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
@@ -206,25 +264,37 @@ export default function HeroStatus({ status, loading = false }: Props) {
               <span className="text-text3 ml-2">{tensionLabel}</span>
             </span>
           </div>
-          <div className="relative h-1.5 bg-bg2 rounded-full overflow-hidden border border-divider">
+          <div className="relative h-2 bg-bg2 rounded-full overflow-hidden border border-divider">
             <div
-              className={`h-full rounded-full ${tensionBar} transition-all duration-500 ease-standard`}
-              style={{ width: `${tIdx}%` }}
+              className={`h-full rounded-full ${styles.bar} transition-all duration-700 ease-out`}
+              style={{ width: `${displayTIdx}%` }}
               role="progressbar"
               aria-valuenow={tIdx}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-label="Tension index"
             />
+            {/* Shimmer on the bar */}
+            {!loading && displayTIdx > 0 && (
+              <div
+                className="absolute inset-y-0 left-0 animate-[shimmer_2.5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                style={{ width: `${displayTIdx}%` }}
+                aria-hidden
+              />
+            )}
           </div>
           <div className="mt-1.5 flex justify-between text-[9px] text-text4 font-mono uppercase tracking-wider">
             <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
           </div>
         </div>
 
+        {/* ── Confidence ── */}
         <div className="mt-5 flex items-center gap-2 text-[11px] font-mono text-text3">
           <Info size={11} />
-          <span>{t.hero.confidence}: <span className="text-accent font-semibold">{(status.confidence * 100).toFixed(0)}%</span></span>
+          <span>
+            {t.hero.confidence}:{' '}
+            <span className="text-accent font-semibold">{(status.confidence * 100).toFixed(0)}%</span>
+          </span>
           <a href="/methodology" className="ml-auto text-text3 hover:text-accent transition-colors duration-180">
             {lang === 'en' ? 'How is this computed?' : 'Como isto é calculado?'} →
           </a>
