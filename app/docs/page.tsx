@@ -206,6 +206,13 @@ export default function DocsPage() {
           <span className="text-[11px] font-mono text-text2 tracking-[0.15em]">API DOCS</span>
           <div className="ml-auto flex items-center gap-3">
             <a
+              href="/api-reference"
+              className="inline-flex items-center gap-1.5 text-[10px] font-mono text-ok border border-ok/30 bg-ok/5 px-2.5 py-1 rounded hover:border-ok/60 hover:bg-ok/10 transition-all"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-ok animate-pulse" />
+              Try API →
+            </a>
+            <a
               href="/api/openapi"
               className="text-[10px] font-mono text-text3 hover:text-accent border border-divider/60 px-2.5 py-1 rounded hover:border-accent/30 transition-all"
             >
@@ -231,6 +238,9 @@ export default function DocsPage() {
               </a>
             ))}
             <div className="pt-4 border-t border-divider/40 mt-4">
+              <a href="/api-reference" className="block text-[12px] font-mono text-ok hover:text-ok/80 transition-colors py-0.5 px-2">
+                ▶ Try API live ↗
+              </a>
               <a href="/methodology" className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors py-0.5 px-2">
                 Methodology ↗
               </a>
@@ -264,6 +274,24 @@ export default function DocsPage() {
               <SeverityPill level="info"    label="Edge cached" />
               <SeverityPill level="neutral" label="CC-BY-4.0" />
               <SeverityPill level="caution" label="No SDK — plain JSON" />
+            </div>
+
+            {/* Interactive playground CTA */}
+            <div className="mt-6 flex items-center gap-4 p-4 rounded-xl border border-ok/20 bg-ok/5">
+              <div className="flex-1">
+                <p className="text-[12px] font-mono text-ok uppercase tracking-[0.14em] mb-0.5">Interactive Playground</p>
+                <p className="text-[12px] text-text2">
+                  Try every endpoint live — send real requests, inspect responses, and explore schemas in the browser.
+                </p>
+              </div>
+              <a
+                href="/api-reference"
+                className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
+                  text-bg bg-ok hover:bg-ok/90 transition-all duration-200 font-semibold"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-bg animate-pulse" />
+                Open Playground
+              </a>
             </div>
           </div>
 
@@ -570,13 +598,26 @@ if (weather) {
             <p>
               A machine-readable <a href="https://spec.openapis.org/oas/v3.0.3" className="text-accent hover:underline">OpenAPI 3.0.3</a> spec
               is served at <Code>/api/openapi</Code>. It can be imported into Postman, Insomnia, or any OpenAPI-compatible tool.
+              An interactive Scalar viewer is available at <a href="/api-reference" className="text-ok hover:underline font-mono">/api-reference</a>.
             </p>
             <Pre lang="bash">{`# Download spec
 curl ${SITE}/api/openapi -o openapi.json
 
 # Import into Postman (CLI)
 postman import openapi.json`}</Pre>
-            <p className="text-[12px] text-text3 mt-1">
+            <div className="flex items-center gap-3 mt-3 p-3 rounded-lg border border-divider bg-bg1/40">
+              <div className="flex-1 text-[12px] text-text3">
+                Prefer a visual explorer? The Scalar playground lets you send live requests directly from the browser.
+              </div>
+              <a
+                href="/api-reference"
+                className="shrink-0 px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-[0.12em]
+                  text-ok border border-ok/30 hover:border-ok/60 hover:bg-ok/5 transition-all"
+              >
+                Open Playground →
+              </a>
+            </div>
+            <p className="text-[12px] text-text3 mt-2">
               The spec is regenerated on each deploy and cached for 1 hour at the edge.
             </p>
           </Section>
