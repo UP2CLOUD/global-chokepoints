@@ -36,4 +36,5 @@ id = "015d621e444a42d0a18a07bcb6dc0188"
 
 # ── Public environment variables ─────────────────────────────
 [vars]
-NEXT_PUBLIC_SITE_URL = "https://strait-of-hormuz-monitor.pages.dev"
+NEXT_PUBLIC_SITE_URL  = "https://strait-of-hormuz-monitor.pages.dev"
+NEXT_PUBLIC_ADS_ENABLED = "true"
