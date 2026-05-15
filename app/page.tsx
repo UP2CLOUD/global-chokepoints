@@ -18,6 +18,7 @@ import RefreshButton   from '@/app/components/RefreshButton';
 import ScrollIndicator from '@/app/components/ScrollIndicator';
 import AdSlot          from '@/app/components/AdSlot';
 import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
+import Reveal from '@/app/components/Reveal';
 import { TrendingUp, BarChart2, Zap } from 'lucide-react';
 
 // Leaflet must not run in SSR / Edge context
@@ -95,70 +96,74 @@ function DashboardContent() {
           <MetricsGrid metrics={data.metrics} loading={!dataReady} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 md:gap-6 animate-fadeInUp" style={{ animationDelay: '0.18s' }}>
-          <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-                <TrendingUp size={13} className="text-accent" />
-                {t.chart.title}
+        <Reveal dir="up">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 md:gap-6">
+            <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
+                  <TrendingUp size={13} className="text-accent" />
+                  {t.chart.title}
+                </div>
+                <span className="text-[10px] text-text3 font-mono">Yahoo Finance · {t.chart.period}</span>
               </div>
-              <span className="text-[10px] text-text3 font-mono">Yahoo Finance · {t.chart.period}</span>
-            </div>
-            <BrentChart />
-          </section>
+              <BrentChart />
+            </section>
 
-          <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-                <BarChart2 size={13} className="text-accent" />
-                {lang === 'en' ? 'Vessel Transits · Hormuz' : 'Trânsitos de Navios · Ormuz'}
+            <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
+                  <BarChart2 size={13} className="text-accent" />
+                  {lang === 'en' ? 'Vessel Transits · Hormuz' : 'Trânsitos de Navios · Ormuz'}
+                </div>
+                <span className="text-[10px] text-text3 font-mono">IMF PortWatch</span>
               </div>
-              <span className="text-[10px] text-text3 font-mono">IMF PortWatch</span>
-            </div>
-            <TransitChart />
-          </section>
+              <TransitChart />
+            </section>
+          </div>
+        </Reveal>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+          <Reveal dir="left"><MarketsRail /></Reveal>
+          <Reveal dir="right"><WeatherPanel /></Reveal>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 animate-fadeInUp" style={{ animationDelay: '0.26s' }}>
-          <MarketsRail />
-          <WeatherPanel />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+          <Reveal dir="left"><NewsFeed news={data.news} loading={newsLoading} /></Reveal>
+          <Reveal dir="right"><Timeline events={data.timeline} /></Reveal>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 animate-fadeInUp" style={{ animationDelay: '0.34s' }}>
-          <NewsFeed news={data.news} loading={newsLoading} />
-          <Timeline events={data.timeline} />
-        </div>
-
-        <div className="animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+        <Reveal>
           <SubscribeInlineCTA />
-        </div>
+        </Reveal>
 
         {/* API Access CTA */}
-        <div className="animate-fadeInUp rounded-2xl border border-divider bg-card/40 backdrop-blur-sm p-5 md:p-6" style={{ animationDelay: '0.46s' }}>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-2">
-                <Zap size={13} className="text-accent" />
-                {lang === 'en' ? 'Public API' : 'API Pública'}
+        <Reveal>
+          <div className="rounded-2xl border border-divider bg-card/40 backdrop-blur-sm p-5 md:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-2">
+                  <Zap size={13} className="text-accent" />
+                  {lang === 'en' ? 'Public API' : 'API Pública'}
+                </div>
+                <p className="text-[12px] text-text3 leading-relaxed max-w-lg">
+                  {lang === 'en'
+                    ? 'Embed strait status in your platform. Free JSON API — CORS-open, edge-cached, CC-BY-4.0.'
+                    : 'Integre o status do Estreito em sua plataforma. API JSON gratuita — CORS aberto, cache na borda, CC-BY-4.0.'}
+                </p>
               </div>
-              <p className="text-[12px] text-text3 leading-relaxed max-w-lg">
-                {lang === 'en'
-                  ? 'Embed strait status in your platform. Free JSON API — CORS-open, edge-cached, CC-BY-4.0.'
-                  : 'Integre o status do Estreito em sua plataforma. API JSON gratuita — CORS aberto, cache na borda, CC-BY-4.0.'}
-              </p>
+              <a
+                href="/docs"
+                className="shrink-0 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
+                  text-accent border border-accent/30 hover:border-accent/60 hover:bg-accent/5
+                  transition-all duration-200"
+              >
+                {lang === 'en' ? 'API Docs →' : 'Docs da API →'}
+              </a>
             </div>
-            <a
-              href="/docs"
-              className="shrink-0 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
-                text-accent border border-accent/30 hover:border-accent/60 hover:bg-accent/5
-                transition-all duration-200"
-            >
-              {lang === 'en' ? 'API Docs →' : 'Docs da API →'}
-            </a>
           </div>
-        </div>
+        </Reveal>
 
-        <AdSlot position="below-intel" />
+        <Reveal><AdSlot position="below-intel" /></Reveal>
 
         <Footer />
       </main>
