@@ -102,6 +102,9 @@ function buildPortWatchVessels(day: PortWatchDay): PwVessel[] {
   return out;
 }
 
+// Anchor point for the status orb — middle of the strait
+const ORB_LATLNG: [number, number] = [26.5, 56.3];
+
 interface Props {
   status: StatusData;
   vessels?: AisVessel[];
@@ -189,13 +192,19 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       vesselLayer.current  = L.layerGroup().addTo(map);
       mapRef.current = map;
 
-      map.whenReady(() => {
-        const pt   = map.latLngToContainerPoint([26.5, 56.3]);
+      const updateOrbPos = () => {
+        const pt   = map.latLngToContainerPoint(ORB_LATLNG);
         const size = map.getSize();
         setOrbPos({ x: (pt.x / size.x) * 100, y: (pt.y / size.y) * 100 });
+      };
+
+      map.whenReady(() => {
+        updateOrbPos();
         setOrbReady(true);
         setMapReady(true);
       });
+
+      map.on('move zoom', updateOrbPos);
     })();
 
     return () => {
