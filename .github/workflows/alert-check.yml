@@ -5,13 +5,15 @@
 # Cloudflare Cron Trigger (configured in wrangler.toml) is not
 # running (e.g. during local testing or if the CF project is paused).
 #
-# On Cloudflare Pages, the cron trigger in wrangler.toml runs every
-# 10 minutes and calls /api/alert-check directly — this GHA runs hourly
-# as a backup to ensure no status change goes unnoticed.
+# On Cloudflare Pages, the cron trigger in wrangler.toml fires every
+# 10 minutes and calls /api/alert-check directly.  This GHA runs
+# hourly as a backup so no status change goes unnoticed.
 #
-# Required secrets:
-#   ALERT_CRON_SECRET  — must match ALERT_CRON_SECRET in CF Workers secrets
-#   SITE_URL           — production URL, e.g. https://strait-of-hormuz-monitor.pages.dev
+# Required secrets (Settings → Secrets → Actions):
+#   ALERT_CRON_SECRET  — must match the CF Workers secret of the same name
+#
+# Optional repository variables (Settings → Variables → Actions):
+#   NEXT_PUBLIC_SITE_URL  — production URL (default: pages.dev subdomain)
 # ============================================================
 
 name: Hourly Alert Check
@@ -28,17 +30,37 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Trigger alert-check endpoint
+      - name: Validate secrets
+        id: check_secrets
         run: |
-          SITE_URL="${{ secrets.SITE_URL || vars.NEXT_PUBLIC_SITE_URL || 'https://strait-of-hormuz-monitor.pages.dev' }}"
-          RESPONSE=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+          if [ -z "${ALERT_SECRET}" ]; then
+            echo "::warning::ALERT_CRON_SECRET is not configured in GitHub Secrets — skipping alert check."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          ALERT_SECRET: ${{ secrets.ALERT_CRON_SECRET }}
+
+      - name: Trigger alert-check endpoint
+        if: steps.check_secrets.outputs.skip == 'false'
+        env:
+          ALERT_SECRET: ${{ secrets.ALERT_CRON_SECRET }}
+        run: |
+          SITE="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://strait-of-hormuz-monitor.pages.dev' }}"
+          echo "POST ${SITE}/api/alert-check"
+
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
             -X POST \
             -H "Content-Type: application/json" \
-            -H "X-Alert-Secret: ${{ secrets.ALERT_CRON_SECRET }}" \
-            "${SITE_URL}/api/alert-check")
-          echo "HTTP status: $RESPONSE"
-          cat /tmp/response.json
-          if [ "$RESPONSE" != "200" ]; then
-            echo "Alert check failed with HTTP $RESPONSE"
+            -H "X-Alert-Secret: ${ALERT_SECRET}" \
+            --max-time 30 \
+            "${SITE}/api/alert-check")
+
+          echo "HTTP ${HTTP_STATUS}"
+          python3 -m json.tool /tmp/response.json 2>/dev/null || cat /tmp/response.json
+
+          if [ "${HTTP_STATUS}" != "200" ]; then
+            echo "::error::Alert check returned HTTP ${HTTP_STATUS}"
             exit 1
           fi

@@ -23,7 +23,7 @@ export default function Footer() {
           <span className="text-text4">·</span>
           <a href="/feed.xml" className="hover:text-accent transition-colors duration-180">RSS</a>
           <span className="text-text4">·</span>
-          <a href="/v1/status" className="hover:text-accent transition-colors duration-180">API</a>
+          <Link href="/docs" className="hover:text-accent transition-colors duration-180">API Docs</Link>
           <span className="text-text4">·</span>
           <SubscribeBellButton />
           <span className="text-text4">·</span>

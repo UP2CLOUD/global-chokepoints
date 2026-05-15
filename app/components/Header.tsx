@@ -53,6 +53,12 @@ export default function Header() {
           >
             Methodology
           </a>
+          <a
+            href="/docs"
+            className="hidden md:block text-[10px] font-mono text-text3 hover:text-accent transition-colors duration-180 uppercase tracking-[0.18em]"
+          >
+            API
+          </a>
           <SupportButton variant="header" />
         </div>
       </div>
