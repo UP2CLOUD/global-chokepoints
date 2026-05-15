@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
+import AdSenseLoader from '@/app/components/AdSenseLoader';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -84,17 +84,8 @@ export default function RootLayout({
         />
         {children}
       </body>
-      {/* AdSense — only load when ads are explicitly enabled (NEXT_PUBLIC_ADS_ENABLED=true).
-          Unconditional loading triggers Auto Ads even when no ad slots are rendered,
-          which causes Chrome's Heavy Ad Intervention to remove them and fill the console. */}
-      {process.env.NEXT_PUBLIC_ADS_ENABLED === 'true' && (
-        <Script
-          id="adsbygoogle"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4771109071232940"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
-      )}
+      {/* AdSense loaded client-side via useEffect to avoid data-nscript hydration error #418 */}
+      {process.env.NEXT_PUBLIC_ADS_ENABLED === 'true' && <AdSenseLoader />}
     </html>
   );
 }
