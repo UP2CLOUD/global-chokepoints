@@ -24,7 +24,7 @@ interface Props {
  * Shows today's vessel count vs. the pre-2026 baseline (~34/day).
  */
 export default function TransitMetricCard({ loading: parentLoading = false, delay = 0.2 }: Props) {
-  const { lang } = useLang();
+  const { t } = useLang();
   const [data, setData] = useState<PortWatchResp | null>(null);
   const [fetching, setFetching] = useState(true);
 
@@ -51,7 +51,7 @@ export default function TransitMetricCard({ loading: parentLoading = false, dela
   if (isLoading) {
     return (
       <MetricCard
-        title={lang === 'en' ? 'Daily Transits' : 'Trânsitos Diários'}
+        title={t.transit.dailyTransits}
         value="0"
         icon={<Ship size={14} />}
         loading={true}
@@ -63,7 +63,7 @@ export default function TransitMetricCard({ loading: parentLoading = false, dela
   if (!data) {
     return (
       <MetricCard
-        title={lang === 'en' ? 'Daily Transits' : 'Trânsitos Diários'}
+        title={t.transit.dailyTransits}
         value="—"
         icon={<Ship size={14} />}
         source="IMF PortWatch"
@@ -88,7 +88,7 @@ export default function TransitMetricCard({ loading: parentLoading = false, dela
 
   return (
     <MetricCard
-      title={lang === 'en' ? 'Daily Transits' : 'Trânsitos Diários'}
+      title={t.transit.dailyTransits}
       value={String(todayTotal)}
       icon={<Ship size={14} />}
       change={changeStr}

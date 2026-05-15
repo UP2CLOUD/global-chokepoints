@@ -13,14 +13,13 @@ interface Props {
 }
 
 export default function MetricsGrid({ metrics, loading = false }: Props) {
-  const { lang, t } = useLang();
-  const locale = lang === 'en' ? 'en-US' : 'pt-BR';
+  const { t, locale } = useLang();
 
   const eventsDelta = metrics.eventsChange;
   const eventsChangeStr =
     eventsDelta === 0
       ? '±0'
-      : `${eventsDelta > 0 ? '+' : ''}${eventsDelta} ${lang === 'en' ? 'vs prev. 24h' : 'vs. 24h ant.'}`;
+      : `${eventsDelta > 0 ? '+' : ''}${eventsDelta} ${t.metrics.vsPrev24h}`;
 
   const brentDown = !!metrics.brentDown;
   const eventsDown = !!metrics.eventsDown;
@@ -62,7 +61,7 @@ export default function MetricsGrid({ metrics, loading = false }: Props) {
             : t.none
         }
         icon={<AlertTriangle size={14} />}
-        source={lang === 'en' ? 'derived from RSS' : 'derivado do RSS'}
+        source={t.metrics.derivedFromRss}
         asOf={metrics.eventsAsOf}
         refreshSec={60}
         delay={0.15}

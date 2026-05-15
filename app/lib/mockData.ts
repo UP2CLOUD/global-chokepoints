@@ -68,8 +68,8 @@ export const mockDataPt: DashboardData = {
   ]
 };
 
-export function getMockData(lang: 'en' | 'pt') {
-  return lang === 'en' ? mockDataEn : mockDataPt;
+export function getMockData(lang: import('@/app/lib/types').Lang = 'en') {
+  return lang === 'pt' ? mockDataPt : mockDataEn;
 }
 
 // Static seed prices — no Math.random(), no new Date() at module level.

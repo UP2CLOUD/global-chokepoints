@@ -51,13 +51,13 @@ export default function Header() {
             href="/methodology"
             className="hidden md:block text-[10px] font-mono text-text3 hover:text-accent transition-colors duration-180 uppercase tracking-[0.18em]"
           >
-            Methodology
+            {t.header.methodology}
           </a>
           <a
             href="/docs"
             className="hidden md:block text-[10px] font-mono text-text3 hover:text-accent transition-colors duration-180 uppercase tracking-[0.18em]"
           >
-            API
+            {t.header.api}
           </a>
           <SupportButton variant="header" />
         </div>

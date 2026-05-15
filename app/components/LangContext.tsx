@@ -1,32 +1,50 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { Lang } from '@/app/lib/types';
-import { translations } from '@/app/lib/translations';
+import { translations, LANG_LOCALE, HTML_LANG } from '@/app/lib/translations';
+
+export { LANG_LOCALE };
 
 interface LangContextType {
   lang: Lang;
   setLang: (lang: Lang) => void;
   t: typeof translations.en;
+  locale: string;
 }
 
 const LangContext = createContext<LangContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'hormuz-lang';
+const VALID_LANGS = Object.keys(translations) as Lang[];
+
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('en');
 
-  const setLang = useCallback((newLang: Lang) => {
-    setLangState(newLang);
-    document.documentElement.lang = newLang === 'en' ? 'en' : 'pt-BR';
+  // Restore saved language preference on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
+      if (saved && VALID_LANGS.includes(saved)) {
+        setLangState(saved);
+        document.documentElement.lang = HTML_LANG[saved];
+      }
+    } catch {
+      // localStorage may be blocked in some environments
+    }
   }, []);
 
-  // `translations` is declared `as const` so each language has a distinct
-  // literal-string type. Cast to the EN shape — both branches are
-  // structurally identical, only string values differ.
+  const setLang = useCallback((newLang: Lang) => {
+    setLangState(newLang);
+    document.documentElement.lang = HTML_LANG[newLang];
+    try { localStorage.setItem(STORAGE_KEY, newLang); } catch { /* ignore */ }
+  }, []);
+
   const t = translations[lang] as typeof translations.en;
+  const locale = LANG_LOCALE[lang];
 
   return (
-    <LangContext.Provider value={{ lang, setLang, t }}>
+    <LangContext.Provider value={{ lang, setLang, t, locale }}>
       {children}
     </LangContext.Provider>
   );

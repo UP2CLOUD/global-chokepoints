@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useDashboardData } from '@/app/hooks/useDashboardData';
 import { useAisVessels }    from '@/app/hooks/useAisVessels';
-import { LangProvider, useLang } from '@/app/components/LangContext';
+import { useLang } from '@/app/components/LangContext';
 import Header          from '@/app/components/Header';
 import HeroStatus      from '@/app/components/HeroStatus';
 import MetricsGrid     from '@/app/components/MetricsGrid';
@@ -32,7 +32,7 @@ const HormuzMap = dynamic(() => import('@/app/components/HormuzMap'), {
 });
 
 function DashboardContent() {
-  const { lang, t }                         = useLang();
+  const { t }                               = useLang();
   const vessels                             = useAisVessels();
   const { data, dataReady, newsLoading, loadData } = useDashboardData();
 
@@ -71,12 +71,12 @@ function DashboardContent() {
               : 'bg-caution'
             }`} />
             {!dataReady
-              ? (lang === 'en' ? 'SYNCING…' : 'SINCRONIZANDO…')
+              ? t.map.statusSyncing
               : data.status.state === 'OPEN'
-              ? (lang === 'en' ? 'STRAIT OPEN' : 'ESTREITO ABERTO')
+              ? t.map.statusOpen
               : data.status.state === 'CLOSED'
-              ? (lang === 'en' ? 'STRAIT CLOSED' : 'ESTREITO FECHADO')
-              : (lang === 'en' ? 'DISRUPTED' : 'INTERROMPIDO')}
+              ? t.map.statusClosed
+              : t.map.statusDisrupted}
           </div>
         </div>
 
@@ -113,7 +113,7 @@ function DashboardContent() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
                   <BarChart2 size={13} className="text-accent" />
-                  {lang === 'en' ? 'Vessel Transits · Hormuz' : 'Trânsitos de Navios · Ormuz'}
+                  {t.nav.vesselTransits}
                 </div>
                 <span className="text-[10px] text-text3 font-mono">IMF PortWatch</span>
               </div>
@@ -143,12 +143,10 @@ function DashboardContent() {
               <div>
                 <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-2">
                   <Zap size={13} className="text-accent" />
-                  {lang === 'en' ? 'Public API' : 'API Pública'}
+                  {t.nav.publicApi}
                 </div>
                 <p className="text-[12px] text-text3 leading-relaxed max-w-lg">
-                  {lang === 'en'
-                    ? 'Embed strait status in your platform. Free JSON API — CORS-open, edge-cached, CC-BY-4.0.'
-                    : 'Integre o status do Estreito em sua plataforma. API JSON gratuita — CORS aberto, cache na borda, CC-BY-4.0.'}
+                  {t.nav.apiDescription}
                 </p>
               </div>
               <a
@@ -157,7 +155,7 @@ function DashboardContent() {
                   text-accent border border-accent/30 hover:border-accent/60 hover:bg-accent/5
                   transition-all duration-200"
               >
-                {lang === 'en' ? 'API Docs →' : 'Docs da API →'}
+                {t.nav.apiDocsLink}
               </a>
             </div>
           </div>
@@ -174,9 +172,5 @@ function DashboardContent() {
 }
 
 export default function Dashboard() {
-  return (
-    <LangProvider>
-      <DashboardContent />
-    </LangProvider>
-  );
+  return <DashboardContent />;
 }

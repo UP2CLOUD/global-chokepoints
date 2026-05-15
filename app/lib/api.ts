@@ -87,7 +87,7 @@ const PARTIAL_PATTERNS = [
 export function deriveStatus(
   timeline: TimelineEvent[],
   brentChangePercent: number | null,
-  lang: 'en' | 'pt' = 'en'
+  lang: import('@/app/lib/types').Lang = 'en'
 ): StatusData {
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
@@ -176,29 +176,29 @@ export function deriveStatus(
   if (state === 'CLOSED' && closureHit) {
     driver = closureHit;
     reason =
-      lang === 'en'
+      lang !== 'pt'
         ? `Closure signal detected: ${closureHit.title}`
         : `Sinal de fechamento detectado: ${closureHit.title}`;
   } else if (state === 'PARTIALLY_CLOSED' && partialHit) {
     driver = partialHit;
     reason =
-      lang === 'en'
+      lang !== 'pt'
         ? `Partial disruption reported: ${partialHit.title}`
         : `Interrupção parcial reportada: ${partialHit.title}`;
   } else if (top && (top.severity === 'critical' || top.severity === 'high')) {
     driver = top;
     reason =
-      lang === 'en'
+      lang !== 'pt'
         ? `Maritime traffic operational. Latest flag: ${top.title}`
         : `Tráfego marítimo operacional. Alerta recente: ${top.title}`;
   } else if (last24.length === 0) {
     reason =
-      lang === 'en'
+      lang !== 'pt'
         ? 'Maritime traffic operational. No notable incidents in the past 24 hours.'
         : 'Tráfego marítimo operacional. Sem incidentes notáveis nas últimas 24 horas.';
   } else {
     reason =
-      lang === 'en'
+      lang !== 'pt'
         ? `Maritime traffic operational. ${last24.length} relevant items in the past 24h across ${sources.size} sources.`
         : `Tráfego marítimo operacional. ${last24.length} itens relevantes nas últimas 24h em ${sources.size} fontes.`;
   }

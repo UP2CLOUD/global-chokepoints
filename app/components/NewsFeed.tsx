@@ -34,8 +34,7 @@ function NewsSkeleton() {
 }
 
 export default function NewsFeed({ news, loading = false }: Props) {
-  const { lang, t } = useLang();
-  const locale = lang === 'en' ? 'en-US' : 'pt-BR';
+  const { t, locale } = useLang();
 
   // Defensive uniqueness — even if upstream slips a duplicate id through
   // (it has historically), React still gets stable, unique keys.
@@ -63,7 +62,7 @@ export default function NewsFeed({ news, loading = false }: Props) {
         {loading && <NewsSkeleton />}
         {!loading && items.length === 0 && (
           <div className="text-[12px] font-mono text-text3 py-8 text-center">
-            {lang === 'en' ? 'No articles found' : 'Nenhum artigo encontrado'}
+            {t.news.noArticles}
           </div>
         )}
         {!loading && items.map((item, i) => {
