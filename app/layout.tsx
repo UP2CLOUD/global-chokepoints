@@ -74,13 +74,16 @@ export default function RootLayout({
           title="IsStraitHormuzOpen? — event feed"
           href="/feed.xml"
         />
+      </head>
+      <body className="antialiased" suppressHydrationWarning>
+        {/* JSON-LD in body avoids Next.js 15 head-script hydration collision with
+            afterInteractive Script placeholders (AdSense). Search engines read it here fine. */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
-          suppressHydrationWarning
         />
-      </head>
-      <body className="antialiased" suppressHydrationWarning>{children}</body>
+        {children}
+      </body>
       {/* AdSense — only load when ads are explicitly enabled (NEXT_PUBLIC_ADS_ENABLED=true).
           Unconditional loading triggers Auto Ads even when no ad slots are rendered,
           which causes Chrome's Heavy Ad Intervention to remove them and fill the console. */}
