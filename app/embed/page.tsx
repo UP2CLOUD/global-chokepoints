@@ -45,7 +45,7 @@ function EmbedContent() {
     <div className="flex flex-col gap-4">
       {/* Target a blank page when opening the link */}
       <a href="/" target="_blank" rel="noopener noreferrer" className="block hover:opacity-95 transition-opacity">
-        <HeroStatus status={data.status} />
+        <HeroStatus status={data.status} brentPrice={data.metrics?.brentPrice} />
       </a>
       <div className="text-center">
         <a href="/" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-text3 hover:text-accent transition-colors">

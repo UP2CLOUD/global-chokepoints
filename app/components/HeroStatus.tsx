@@ -9,6 +9,7 @@ import { Shield, Clock, ExternalLink, Info, Share2 } from 'lucide-react';
 interface Props {
   status: StatusData;
   loading?: boolean;
+  brentPrice?: number;
 }
 
 function displayAnswer(state: StatusData['state']): {
@@ -53,7 +54,7 @@ const TONE = {
   },
 } as const;
 
-export default function HeroStatus({ status, loading = false }: Props) {
+export default function HeroStatus({ status, loading = false, brentPrice }: Props) {
   const { lang, t, locale } = useLang();
   const { word, tone } = loading
     ? { word: 'YES' as const, tone: 'caution' as const }
@@ -90,11 +91,19 @@ export default function HeroStatus({ status, loading = false }: Props) {
 
   const [showWhy, setShowWhy] = useState(false);
 
+  const stateLabel = status.state === 'OPEN' ? t.hero.straitOpen
+    : status.state === 'CLOSED' ? t.hero.straitClosed
+    : t.hero.trafficDisrupted;
+
   const shareStatus = () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({
-        title: 'IsStraitHormuzOpen?',
-        text: fmt(t.hero.shareText, { state: status.state, tension: tIdx, brent: '—' }) + ' ' + window.location.href,
+        title: `${t.header.title}${t.header.titleAccent}`,
+        text: fmt(t.hero.shareText, {
+          state: stateLabel,
+          tension: tIdx,
+          brent: brentPrice ? brentPrice.toFixed(2) : '—',
+        }),
         url: window.location.href,
       }).catch(() => {});
     }

@@ -89,7 +89,7 @@ function DashboardContent() {
       <main className="max-w-[1280px] mx-auto px-4 py-8 md:px-6 md:py-10 flex flex-col gap-6 md:gap-8">
 
         <div className="animate-fadeInUp" style={{ animationDelay: '0.05s' }}>
-          <HeroStatus status={data.status} loading={!dataReady} />
+          <HeroStatus status={data.status} loading={!dataReady} brentPrice={data.metrics?.brentPrice} />
         </div>
 
         <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
