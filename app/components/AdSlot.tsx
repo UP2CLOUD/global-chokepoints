@@ -15,7 +15,7 @@ const CLIENT = 'ca-pub-4771109071232940';
 
 const SLOT_IDS: Record<Props['position'], string> = {
   'below-metrics': '5582525970',
-  'below-intel':   '5582525970',
+  'below-intel':   '8549417352',
   'footer':        '7236335683',
 };
 
