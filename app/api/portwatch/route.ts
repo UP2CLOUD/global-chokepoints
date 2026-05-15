@@ -20,9 +20,9 @@ const PORTWATCH_URL =
   'https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/Daily_Chokepoints_Data/FeatureServer/0/query';
 
 const PORTID        = 'chokepoint6';          // Strait of Hormuz
-const DAYS          = 30;
+const DAYS          = 60;
 const KV_CACHE_KEY  = 'portwatch:cache';
-const CACHE_TTL_SEC = 6 * 3600;              // 6 hours — data updates weekly
+const CACHE_TTL_SEC = 4 * 3600;              // 4 hours — data updates weekly but we want fresher display
 
 // Historical "normal" daily average (pre-2026 baseline: ~34 vessels/day)
 const BASELINE_DAILY = 34;
@@ -51,12 +51,27 @@ type PortWatchPayload = {
 // ── Module-level fallback ─────────────────────────────────────
 let moduleCache: PortWatchPayload | null = null;
 
+// ── Date parsing — ArcGIS returns esriFieldTypeDateOnly as "YYYY-MM-DD" strings
+// but legacy DATE fields come back as epoch ms numbers. Handle both.
+function toISODate(raw: unknown): string {
+  if (typeof raw === 'number') return new Date(raw).toISOString().slice(0, 10);
+  const s = String(raw ?? '');
+  const n = Number(s);
+  if (!isNaN(n) && n > 1_000_000_000_000) return new Date(n).toISOString().slice(0, 10);
+  return s.slice(0, 10);
+}
+
 // ── Fetch from IMF PortWatch ──────────────────────────────────
 async function fetchPortWatch(): Promise<PortWatchDay[]> {
+  // Request last DAYS days explicitly so ordering is reliable
+  const since = new Date(Date.now() - DAYS * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+
   const params = new URLSearchParams({
-    where: `portid = '${PORTID}'`,
+    where: `portid = '${PORTID}' AND date >= DATE '${since}'`,
     outFields: 'date,n_total,n_tanker,n_cargo,n_container,n_dry_bulk',
-    orderByFields: 'date DESC',
+    orderByFields: 'date ASC',
     resultRecordCount: String(DAYS),
     f: 'json',
   });
@@ -73,14 +88,14 @@ async function fetchPortWatch(): Promise<PortWatchDay[]> {
   return features.map((f) => {
     const a = f.attributes;
     return {
-      date:      String(a.date ?? ''),
+      date:      toISODate(a.date),
       total:     Number(a.n_total     ?? 0),
       tanker:    Number(a.n_tanker    ?? 0),
       cargo:     Number(a.n_cargo     ?? 0),
       container: Number(a.n_container ?? 0),
       dryBulk:   Number(a.n_dry_bulk  ?? 0),
     };
-  }).reverse(); // oldest → newest for charting
+  }); // already ASC from orderByFields
 }
 
 function buildPayload(days: PortWatchDay[]): PortWatchPayload {

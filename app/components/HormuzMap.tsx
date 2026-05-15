@@ -33,6 +33,14 @@ const PW_COLOR: Record<string, string> = {
   dryBulk:   '#94A3B8', // slate
 };
 
+// Vessel type radii — tankers are the key ships, make them largest
+const PW_RADIUS: Record<string, number> = {
+  tanker:    6,
+  cargo:     5,
+  container: 5,
+  dryBulk:   4,
+};
+
 type AisVessel = { mmsi: number; lat: number; lon: number; type: string; heading: number | null };
 
 type PortWatchDay = {
@@ -59,7 +67,7 @@ function lerpLane(pts: [number, number][], t: number): [number, number] {
 interface PwVessel {
   lane: 'in' | 'out';
   progress: number; // 0–1 along lane
-  speed: number;    // progress per 500ms tick
+  speed: number;    // progress per tick (150 ms)
   type: string;
 }
 
@@ -83,7 +91,10 @@ function buildPortWatchVessels(day: PortWatchDay): PwVessel[] {
         type,
         lane,
         progress: Math.max(0.02, Math.min(0.98, base + jitter)),
-        speed: 0.00018 + Math.random() * 0.00010,
+        // Speed scaled for 150 ms ticks — tankers move slower than cargo
+        speed: type === 'tanker'
+          ? 0.000055 + Math.random() * 0.000025
+          : 0.000075 + Math.random() * 0.000035,
       });
       idx++;
     }
@@ -116,11 +127,11 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
     return () => clearTimeout(t);
   }, [status.state]);
 
-  // Fetch PortWatch latest day
+  // Fetch PortWatch latest day — use .at(-1) since days are ordered oldest→newest
   useEffect(() => {
     fetch('/api/portwatch', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.days?.length) setPwDay(d.days[0]); })
+      .then(d => { if (d?.days?.length) setPwDay(d.days.at(-1)); })
       .catch(() => {});
   }, []);
 
@@ -194,19 +205,44 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
     };
   }, []);
 
-  // AIS vessel dots
+  // AIS vessel dots — glow ring + solid core
   useEffect(() => {
     if (!vesselLayer.current || !LRef.current) return;
     const L = LRef.current;
     vesselLayer.current.clearLayers();
     vessels.forEach((v) => {
       const color = AIS_TYPE_COLOR[v.type] ?? '#6B7787';
+      const isTanker = v.type === 'Tanker';
+      const r = isTanker ? 6 : 5;
+
+      // Outer pulse halo
       L.circleMarker([v.lat, v.lon], {
-        radius: 5,
-        color,
+        radius: r + 6,
+        color: 'transparent',
         fillColor: color,
-        fillOpacity: 0.9,
+        fillOpacity: 0.12,
+        weight: 0,
+        interactive: false,
+      }).addTo(vesselLayer.current);
+
+      // Mid glow
+      L.circleMarker([v.lat, v.lon], {
+        radius: r + 2,
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.22,
+        weight: 0,
+        interactive: false,
+      }).addTo(vesselLayer.current);
+
+      // Solid core
+      L.circleMarker([v.lat, v.lon], {
+        radius: r,
+        color: '#0B0F18',
+        fillColor: color,
+        fillOpacity: 1,
         weight: 1.5,
+        interactive: false,
       }).addTo(vesselLayer.current);
     });
   }, [vessels]);
@@ -220,28 +256,44 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
 
     const pwVessels = buildPortWatchVessels(pwDay);
 
-    // Create markers
+    // Create double-layer markers: outer glow ring + inner solid core
     const markers = pwVessels.map(v => {
       const pts = v.lane === 'in' ? LANE_IN : LANE_OUT;
       const pos = lerpLane(pts, v.progress);
       const color = PW_COLOR[v.type] ?? '#6B7787';
-      return L.circleMarker(pos, {
-        radius: 4,
-        color,
+      const r = PW_RADIUS[v.type] ?? 4;
+
+      const glow = L.circleMarker(pos, {
+        radius: r + 5,
+        color: 'transparent',
         fillColor: color,
-        fillOpacity: 0.85,
-        weight: 1,
+        fillOpacity: 0.15,
+        weight: 0,
+        interactive: false,
       }).addTo(layer);
+
+      const core = L.circleMarker(pos, {
+        radius: r,
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.92,
+        weight: 1.5,
+        interactive: false,
+      }).addTo(layer);
+
+      return { glow, core };
     });
 
-    // Animate — advance each vessel along its lane
+    // Animate at 150 ms for smooth movement
     const id = setInterval(() => {
       pwVessels.forEach((v, i) => {
         v.progress = (v.progress + v.speed) % 1;
         const pts = v.lane === 'in' ? LANE_IN : LANE_OUT;
-        markers[i].setLatLng(lerpLane(pts, v.progress));
+        const pos = lerpLane(pts, v.progress);
+        markers[i].glow.setLatLng(pos);
+        markers[i].core.setLatLng(pos);
       });
-    }, 500);
+    }, 150);
 
     return () => {
       clearInterval(id);
