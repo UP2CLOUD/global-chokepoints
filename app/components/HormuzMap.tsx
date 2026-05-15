@@ -150,14 +150,14 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       map = L.map(containerRef.current!, {
         center: [26.0, 56.3],
         zoom: 7,
-        zoomControl: false,
+        zoomControl: true,
         attributionControl: true,
-        scrollWheelZoom: false,
-        dragging: false,
-        touchZoom: false,
-        doubleClickZoom: false,
-        keyboard: false,
-        boxZoom: false,
+        scrollWheelZoom: true,
+        dragging: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        keyboard: true,
+        boxZoom: true,
       });
 
       L.tileLayer(

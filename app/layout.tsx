@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import AdSenseLoader from '@/app/components/AdSenseLoader';
+import { LangProvider } from '@/app/components/LangContext';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -82,7 +83,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
         />
-        {children}
+        <LangProvider>{children}</LangProvider>
       </body>
       {/* AdSense loaded client-side via useEffect to avoid data-nscript hydration error #418 */}
       {process.env.NEXT_PUBLIC_ADS_ENABLED === 'true' && <AdSenseLoader />}

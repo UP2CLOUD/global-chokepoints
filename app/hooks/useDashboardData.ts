@@ -28,9 +28,9 @@ export function useDashboardData(): DashboardDataState {
     tensionIndex: 0,
     lastUpdated:  LOADING_SEED_DATE,
     confidence:   0,
-    reason:       lang === 'en'
-      ? 'Fetching live intelligence data…'
-      : 'Obtendo dados de inteligência ao vivo…',
+    reason:       lang === 'pt'
+      ? 'Obtendo dados de inteligência ao vivo…'
+      : 'Fetching live intelligence data…',
   };
 
   const [data, setData] = useState<DashboardData>(() => ({

@@ -32,7 +32,7 @@ const RISK_BAR: Record<Weather['navRiskLabel'], string> = {
 };
 
 export default function WeatherPanel() {
-  const { lang } = useLang();
+  const { t, locale } = useLang();
   const [data, setData] = useState<Weather | null>(null);
   const [down, setDown] = useState(false);
 
@@ -58,32 +58,32 @@ export default function WeatherPanel() {
       <div className="flex items-center justify-between mb-3">
         <div className="text-[11px] font-mono uppercase tracking-[0.18em] text-text2 flex items-center gap-2">
           <Wind size={13} className="text-accent" />
-          {lang === 'en' ? 'Marine conditions · Hormuz' : 'Condições marítimas · Ormuz'}
+          {t.weather.title}
         </div>
         <div className="text-[10px] font-mono text-text3">
-          {data ? `via Open-Meteo · ${new Date(data.generatedAt).toLocaleTimeString(lang === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' })}` : '—'}
+          {data ? `via Open-Meteo · ${new Date(data.generatedAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}` : '—'}
         </div>
       </div>
 
       {down || !data ? (
         <div className="text-[12px] font-mono text-text3 py-6 text-center">
           <span className="inline-block px-2 py-1 rounded down">
-            {lang === 'en' ? 'Weather feed unavailable' : 'Feed meteorológico indisponível'}
+            {t.weather.unavailable}
           </span>
         </div>
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
-            <Stat icon={<Wind size={14} />} label={lang === 'en' ? 'Wind' : 'Vento'} value={`${data.wind.speedKn.toFixed(0)} kn`} sub={data.wind.direction} />
-            <Stat icon={<Waves size={14} />} label={lang === 'en' ? 'Waves' : 'Ondas'} value={`${data.sea.waveHeightM.toFixed(1)} m`} sub={data.sea.wavePeriodS ? `T ${data.sea.wavePeriodS.toFixed(0)}s` : '—'} />
-            <Stat icon={<Eye size={14} />} label={lang === 'en' ? 'Visibility' : 'Visibilidade'} value={data.visibilityM >= 10000 ? '>10 km' : `${(data.visibilityM / 1000).toFixed(1)} km`} sub={data.weather} />
+            <Stat icon={<Wind size={14} />} label={t.weather.wind} value={`${data.wind.speedKn.toFixed(0)} kn`} sub={data.wind.direction} />
+            <Stat icon={<Waves size={14} />} label={t.weather.waves} value={`${data.sea.waveHeightM.toFixed(1)} m`} sub={data.sea.wavePeriodS ? `T ${data.sea.wavePeriodS.toFixed(0)}s` : '—'} />
+            <Stat icon={<Eye size={14} />} label={t.weather.visibility} value={data.visibilityM >= 10000 ? '>10 km' : `${(data.visibilityM / 1000).toFixed(1)} km`} sub={data.weather} />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-text2 flex items-center gap-1.5">
                 <Compass size={11} />
-                {lang === 'en' ? 'Navigation risk' : 'Risco de navegação'}
+                {t.weather.navRisk}
               </span>
               <span className={`text-[11px] font-mono font-semibold ${RISK_COLOR[data.navRiskLabel]}`}>
                 {data.navRisk}<span className="text-text3">/100</span> · {data.navRiskLabel}

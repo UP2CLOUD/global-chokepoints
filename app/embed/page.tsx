@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { DashboardData } from '@/app/lib/types';
 import { fetchDashboardData, deriveStatus } from '@/app/lib/api';
 import { getMockData } from '@/app/lib/mockData';
-import { LangProvider, useLang } from '@/app/components/LangContext';
+import { useLang } from '@/app/components/LangContext';
 import HeroStatus from '@/app/components/HeroStatus';
 import LoadingScreen from '@/app/components/LoadingScreen';
 
@@ -57,9 +57,5 @@ function EmbedContent() {
 }
 
 export default function EmbedPage() {
-  return (
-    <LangProvider>
-      <EmbedContent />
-    </LangProvider>
-  );
+  return <EmbedContent />;
 }

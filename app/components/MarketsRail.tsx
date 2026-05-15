@@ -43,7 +43,7 @@ function Sparkline({ data, up }: { data: { date: string; price: number }[]; up: 
 }
 
 export default function MarketsRail() {
-  const { lang } = useLang();
+  const { t, locale } = useLang();
   const [data, setData] = useState<MarketsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -73,10 +73,10 @@ export default function MarketsRail() {
     <section className="rounded-xl border border-divider bg-card/70 p-4 md:p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-          {lang === 'en' ? 'Markets · futures' : 'Mercados · futuros'}
+          {t.markets.title}
         </div>
         <div className="text-[10px] font-mono text-text3">
-          {data ? `via Yahoo Finance · ${new Date(data.generatedAt).toLocaleTimeString(lang === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' })}` : '—'}
+          {data ? `via Yahoo Finance · ${new Date(data.generatedAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}` : '—'}
         </div>
       </div>
       <div className="grid grid-cols-3 gap-3 md:gap-4">

@@ -39,8 +39,7 @@ const SEV_BORDER: Record<string, string> = {
 };
 
 export default function Timeline({ events }: Props) {
-  const { lang, t } = useLang();
-  const locale = lang === 'en' ? 'en-US' : 'pt-BR';
+  const { t, locale } = useLang();
   const [filter, setFilter] = useState<'all' | Category>('all');
   const [expanded, setExpanded] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -101,7 +100,7 @@ export default function Timeline({ events }: Props) {
           {t.timeline.title}
         </div>
         <span className="text-[10px] text-text3 font-mono px-2 py-0.5 rounded bg-bg2 border border-divider">
-          {filtered.length} {lang === 'en' ? 'events' : 'eventos'}
+          {filtered.length} {t.timeline.events}
         </span>
       </div>
 
@@ -130,7 +129,7 @@ export default function Timeline({ events }: Props) {
 
         {filtered.length === 0 && (
           <div className="text-[12px] font-mono text-text3 py-10 text-center">
-            {lang === 'en' ? 'No events match this filter.' : 'Nenhum evento corresponde a este filtro.'}
+            {t.timeline.noEvents}
           </div>
         )}
 
@@ -193,7 +192,7 @@ export default function Timeline({ events }: Props) {
 
                 {/* Expand hint */}
                 <div className={`mt-1 text-[9px] font-mono text-text4 transition-opacity duration-180 ${isExpanded ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
-                  {lang === 'en' ? 'click to expand' : 'clique para expandir'} ↓
+                  {t.timeline.clickExpand} ↓
                 </div>
               </div>
             </div>

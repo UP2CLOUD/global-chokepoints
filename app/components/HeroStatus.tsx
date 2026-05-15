@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { StatusData } from '@/app/lib/types';
 import { useLang } from './LangContext';
-import { fmtTime } from '@/app/lib/utils';
+import { fmtTime, fmt } from '@/app/lib/utils';
 import { Shield, Clock, ExternalLink, Info, Share2 } from 'lucide-react';
 
 interface Props {
@@ -54,7 +54,7 @@ const TONE = {
 } as const;
 
 export default function HeroStatus({ status, loading = false }: Props) {
-  const { lang, t } = useLang();
+  const { lang, t, locale } = useLang();
   const { word, tone } = loading
     ? { word: 'YES' as const, tone: 'caution' as const }
     : displayAnswer(status.state);
@@ -82,12 +82,11 @@ export default function HeroStatus({ status, loading = false }: Props) {
     }
   }, [loading, tIdx]);
 
-  const question = lang === 'en'
-    ? 'Is the Strait of Hormuz open?'
-    : 'O Estreito de Ormuz está aberto?';
+  const question = t.hero.question;
   const answerWord =
-    lang === 'en' ? word
-    : word === 'YES' ? 'SIM' : word === 'NO' ? 'NÃO' : 'INTERROMPIDO';
+    word === 'YES' ? t.hero.answerYes
+    : word === 'NO' ? t.hero.answerNo
+    : t.hero.answerDisrupted;
 
   const [showWhy, setShowWhy] = useState(false);
 
@@ -95,7 +94,7 @@ export default function HeroStatus({ status, loading = false }: Props) {
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({
         title: 'IsStraitHormuzOpen?',
-        text: `The Strait of Hormuz is currently ${status.state}. Tension level: ${status.tensionLevel}.`,
+        text: fmt(t.hero.shareText, { state: status.state, tension: tIdx, brent: '—' }) + ' ' + window.location.href,
         url: window.location.href,
       }).catch(() => {});
     }
@@ -138,12 +137,12 @@ export default function HeroStatus({ status, loading = false }: Props) {
               aria-label="Share current status"
             >
               <Share2 size={11} />
-              <span className="hidden sm:inline">Share</span>
+              <span className="hidden sm:inline">{t.hero.share}</span>
             </button>
             <div className="flex items-center gap-1.5 text-text3 text-[11px] font-mono">
               <Clock size={11} />
               <span suppressHydrationWarning>
-                {fmtTime(status.lastUpdated, lang === 'en' ? 'en-US' : 'pt-BR')}
+                {fmtTime(status.lastUpdated, locale)}
               </span>
             </div>
           </div>
@@ -187,7 +186,7 @@ export default function HeroStatus({ status, loading = false }: Props) {
                   ···
                 </span>
                 <span className="mt-1.5 text-[10px] font-mono text-text4 uppercase tracking-[0.18em]">
-                  {lang === 'en' ? 'syncing data' : 'sincronizando'}
+                  {t.hero.syncingData}
                 </span>
               </>
             ) : (
@@ -200,10 +199,10 @@ export default function HeroStatus({ status, loading = false }: Props) {
                 </p>
                 <span className="mt-1.5 text-[10px] font-mono text-text3 uppercase tracking-[0.18em]">
                   {status.state === 'OPEN'
-                    ? (lang === 'en' ? 'strait open' : 'estreito aberto')
+                    ? t.hero.straitOpen
                     : status.state === 'CLOSED'
-                    ? (lang === 'en' ? 'strait closed' : 'estreito fechado')
-                    : (lang === 'en' ? 'traffic disrupted' : 'tráfego interrompido')}
+                    ? t.hero.straitClosed
+                    : t.hero.trafficDisrupted}
                 </span>
               </>
             )}
@@ -223,7 +222,7 @@ export default function HeroStatus({ status, loading = false }: Props) {
                   className="inline-flex items-center gap-1.5 text-[11px] font-mono text-accent hover:text-accent-hi transition-colors duration-180"
                 >
                   <ExternalLink size={12} />
-                  {lang === 'en' ? 'Open source' : 'Ver fonte'}
+                  {t.hero.openSource}
                   {status.reasonSource ? ` · ${status.reasonSource}` : ''}
                 </a>
               )}
@@ -232,7 +231,7 @@ export default function HeroStatus({ status, loading = false }: Props) {
                 className="inline-flex items-center gap-1.5 text-[11px] font-mono text-text3 hover:text-text2 transition-colors"
               >
                 <Info size={12} />
-                {lang === 'en' ? 'Why this status?' : 'Por que este status?'}
+                {t.hero.whyStatus}
               </button>
             </div>
           </div>
@@ -242,12 +241,14 @@ export default function HeroStatus({ status, loading = false }: Props) {
         {showWhy && (
           <div className="mt-6 p-5 rounded-xl border border-divider bg-bg2/40 animate-fadeInUp">
             <h3 className="text-[12px] font-mono font-semibold text-text uppercase tracking-wider mb-2">
-              {lang === 'en' ? 'Signal Analysis' : 'Análise de Sinais'}
+              {t.hero.signalAnalysis}
             </h3>
             <p className="text-[12px] text-text3 leading-relaxed">
-              {lang === 'en'
-                ? `The current ${status.state} state is derived from ${status.confidence > 0.8 ? 'highly reliable' : 'multiple'} indicators including: maritime news frequency, oil market volatility, and live vessel movement signals. Tension index ${tIdx}/100 reflects current geopolitical event density in the past 72 hours.`
-                : `O estado atual ${status.state} é derivado de indicadores ${status.confidence > 0.8 ? 'altamente confiáveis' : 'múltiplos'}, incluindo: frequência de notícias marítimas, volatilidade do mercado de petróleo e sinais de movimento de navios ao vivo. O índice de tensão ${tIdx}/100 reflete a densidade de eventos geopolíticos nas últimas 72 horas.`}
+              {fmt(t.hero.signalTemplate, {
+                state: status.state,
+                quality: status.confidence > 0.8 ? t.hero.signalHighlyReliable : t.hero.signalMultiple,
+                tIdx,
+              })}
             </p>
           </div>
         )}
@@ -296,7 +297,7 @@ export default function HeroStatus({ status, loading = false }: Props) {
             <span className="text-accent font-semibold">{(status.confidence * 100).toFixed(0)}%</span>
           </span>
           <a href="/methodology" className="ml-auto text-text3 hover:text-accent transition-colors duration-180">
-            {lang === 'en' ? 'How is this computed?' : 'Como isto é calculado?'} →
+            {t.hero.howComputed} →
           </a>
         </div>
       </div>

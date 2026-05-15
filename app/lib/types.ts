@@ -3,7 +3,7 @@ export type TensionLevel = 'NORMAL' | 'ELEVATED' | 'CRITICAL';
 export type Severity = 'low' | 'medium' | 'high' | 'critical';
 export type Category = 'incident' | 'military' | 'diplomatic' | 'economic';
 export type Sentiment = 'positive' | 'negative' | 'neutral';
-export type Lang = 'en' | 'pt';
+export type Lang = 'en' | 'pt' | 'es' | 'fr' | 'it' | 'ru';
 
 export interface StatusData {
   state: StraitStatus;
