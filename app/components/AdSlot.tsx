@@ -13,12 +13,10 @@ interface Props {
 
 const CLIENT = 'ca-pub-4771109071232940';
 
-// TODO: Replace these with real data-ad-slot IDs from your AdSense dashboard.
-//   Ads → By ad unit → Display ads → create a Responsive unit → copy data-ad-slot value.
 const SLOT_IDS: Record<Props['position'], string> = {
-  'below-metrics': '0000000001',
-  'below-intel':   '0000000002',
-  'footer':        '0000000003',
+  'below-metrics': '5582525970',
+  'below-intel':   '5582525970',
+  'footer':        '7236335683',
 };
 
 export default function AdSlot({ position, className = '' }: Props) {
