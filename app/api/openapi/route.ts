@@ -4,9 +4,7 @@ export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev';
+import { SITE_URL, CONTACT_EMAIL } from '@/app/lib/constants';
 
 // ── Shared schema fragments ────────────────────────────────────────────────────
 const TimelineEvent = {
@@ -59,7 +57,7 @@ const spec = {
     license: { name: 'CC-BY-4.0', url: 'https://creativecommons.org/licenses/by/4.0/' },
     contact: {
       url: `${SITE_URL}/docs`,
-      email: 'cesarnogueira1210@gmail.com',
+      email: CONTACT_EMAIL,
     },
   },
   servers: [{ url: SITE_URL, description: 'Production (Cloudflare Pages Edge)' }],

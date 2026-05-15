@@ -5,9 +5,7 @@ import { DashboardData } from '@/app/lib/types';
 import { getMockData } from '@/app/lib/mockData';
 import { fetchDashboardData, fetchTimeline, fetchNews, deriveStatus } from '@/app/lib/api';
 import { useLang } from '@/app/components/LangContext';
-
-// Static seed — must not use new Date() to avoid SSR/client hydration mismatch
-const LOADING_STATUS_UPDATED = '2026-05-14T00:00:00.000Z';
+import { LOADING_SEED_DATE } from '@/app/lib/constants';
 
 const DASHBOARD_REFRESH_MS = 5 * 60_000;  // 5 min
 const TIMELINE_REFRESH_MS  = 60_000;       // 60 s
@@ -28,7 +26,7 @@ export function useDashboardData(): DashboardDataState {
     state:        'PARTIALLY_CLOSED' as const,
     tensionLevel: 'NORMAL'           as const,
     tensionIndex: 0,
-    lastUpdated:  LOADING_STATUS_UPDATED,
+    lastUpdated:  LOADING_SEED_DATE,
     confidence:   0,
     reason:       lang === 'en'
       ? 'Fetching live intelligence data…'

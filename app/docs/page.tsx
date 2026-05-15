@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import CopyButton from './CopyButton';
+import { SITE_URL } from '@/app/lib/constants';
 
 export const metadata: Metadata = {
   title: 'API Docs — IsStraitHormuzOpen?',
@@ -189,7 +190,7 @@ const NAV = [
   { id: 'openapi',    label: 'OpenAPI spec' },
 ];
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev';
+const SITE = SITE_URL;
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 export default function DocsPage() {

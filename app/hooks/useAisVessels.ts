@@ -32,7 +32,11 @@ export function useAisVessels(): AisVessel[] {
         if (!r.ok) return;
         const j = (await r.json()) as AisResponse;
         if (j.running && j.vessels?.length > 0) setVessels(j.vessels);
-      } catch { /* retain last known state */ }
+      } catch (err) {
+        // Retain last known state — AIS is non-critical, but log so failures
+        // are visible in the browser console and any attached error tracker.
+        console.warn('[useAisVessels] fetch failed:', err);
+      }
     };
 
     load();

@@ -45,3 +45,22 @@ export const HORMUZ_LAT               = 26.5;
 export const HORMUZ_LON               = 56.4;
 export const PORTWATCH_CHOKEPOINT_ID  = 'chokepoint6';
 export const PORTWATCH_BASELINE_DAILY = 34;
+
+// ── Public deployment identity ────────────────────────────────────────────────
+/** Canonical site URL — overridden by NEXT_PUBLIC_SITE_URL at build time */
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev';
+
+/** Contact email surfaced in docs/methodology/OpenAPI spec */
+export const CONTACT_EMAIL =
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'contact@ishormuzopen.example';
+
+/**
+ * Static ISO date used to seed UI state before live data arrives.
+ *
+ * Must be a constant string — using new Date() at module level or in useState
+ * initialisers produces different values on server vs client and triggers a
+ * React hydration mismatch. The value is replaced as soon as the first /api
+ * fetch resolves (within ~1s of page load), so it is never user-visible.
+ */
+export const LOADING_SEED_DATE = '2026-05-14T00:00:00.000Z';
