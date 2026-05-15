@@ -38,12 +38,10 @@ async function deriveCurrentStatus(): Promise<{ status: StatusData | null; error
       fetch(`${base}/api/timeline`, {
         headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
         signal: AbortSignal.timeout(20_000),
-        cache: 'no-store',
       }),
       fetch(`${base}/api/brent`, {
         headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
         signal: AbortSignal.timeout(20_000),
-        cache: 'no-store',
       }),
     ]);
 

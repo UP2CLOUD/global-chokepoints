@@ -54,7 +54,6 @@ async function probe(p: Probe): Promise<{ key: string; label: string; status: St
     const res = await fetch(p.url, {
       method: 'GET',
       headers: { 'User-Agent': 'IsHormuzOpen/health' },
-      cache: 'no-store',
       signal: AbortSignal.timeout(timeout),
     });
     const latencyMs = Date.now() - start;

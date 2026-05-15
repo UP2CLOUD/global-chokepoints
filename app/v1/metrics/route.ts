@@ -19,11 +19,12 @@ export async function OPTIONS() {
 
 export async function GET(req: NextRequest) {
   const origin = new URL(req.url).origin;
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
 
   const [markets, weather, timeline] = await Promise.all([
-    fetch(`${origin}/api/markets`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(`${origin}/api/weather`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(`${origin}/api/timeline`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${base}/api/markets`).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${base}/api/weather`).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${base}/api/timeline`).then(r => r.ok ? r.json() : null).catch(() => null),
   ]);
 
   const events: any[] = timeline?.events ?? [];

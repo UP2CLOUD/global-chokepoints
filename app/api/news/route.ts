@@ -33,7 +33,6 @@ async function fetchGdelt(retries = 2): Promise<any> {
     try {
       const res = await fetch(GDELT_URL, {
         headers: { 'User-Agent': 'IsStraitHormuzOpen/1.0' },
-        cache: 'no-store',
         signal: AbortSignal.timeout(9000), // GDELT can be slow; give 9 s
       });
       if (!res.ok) throw new Error(`GDELT HTTP ${res.status}`);

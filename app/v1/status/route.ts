@@ -21,9 +21,12 @@ export async function OPTIONS() {
 
 export async function GET(req: NextRequest) {
   const origin = new URL(req.url).origin;
+  // Subrequests must use the canonical public URL — req.url origin inside CF Pages
+  // is an internal address that can't reach sibling functions.
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
   const [timelineRes, brentRes] = await Promise.all([
-    fetch(`${origin}/api/timeline`, { cache: 'no-store' }),
-    fetch(`${origin}/api/brent`, { cache: 'no-store' }),
+    fetch(`${base}/api/timeline`),
+    fetch(`${base}/api/brent`),
   ]);
 
   const timeline = timelineRes.ok ? (await timelineRes.json()).events ?? [] : [];
