@@ -8,15 +8,18 @@
 // Security: requires header  X-Alert-Secret: <ALERT_CRON_SECRET>
 //
 // Logic:
-//   1. Fetch current strait status from /v1/status
-//   2. Compare with last_alerted_status in D1 system_state
-//   3. If changed → send alert emails to all confirmed subscribers
-//   4. Update system_state with new status
+//   1. Fetch /api/timeline + /api/brent in parallel (no self-call chain)
+//   2. Derive status via deriveStatus()
+//   3. Compare with last_alerted_status in D1 system_state
+//   4. If changed → send alert emails to all confirmed subscribers
+//   5. Upsert system_state with new status
 // ============================================================
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { getD1 } from '@/app/lib/db';
 import { sendEmail, alertEmailHtml } from '@/app/lib/email';
+import { deriveStatus } from '@/app/lib/api';
+import type { StatusData } from '@/app/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,109 +27,123 @@ function siteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
 }
 
-interface StatusResponse {
-  state: 'OPEN' | 'PARTIALLY_CLOSED' | 'CLOSED';
-  tensionLevel: string;
-  reason?: string;
-  reasonUrl?: string;
-}
-
-async function fetchCurrentStatus(): Promise<StatusResponse | null> {
+async function deriveCurrentStatus(origin: string): Promise<StatusData | null> {
   try {
-    const res = await fetch(`${siteUrl()}/v1/status`, {
-      headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
-      signal: AbortSignal.timeout(10_000),
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    return await res.json() as StatusResponse;
+    const [timelineRes, brentRes] = await Promise.all([
+      fetch(`${origin}/api/timeline`, {
+        headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
+        signal: AbortSignal.timeout(10_000),
+        cache: 'no-store',
+      }),
+      fetch(`${origin}/api/brent`, {
+        headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
+        signal: AbortSignal.timeout(10_000),
+        cache: 'no-store',
+      }),
+    ]);
+
+    const timeline = timelineRes.ok ? ((await timelineRes.json()).events ?? []) : [];
+    const brent    = brentRes.ok    ? await brentRes.json()                     : null;
+
+    return deriveStatus(timeline, brent?.changePercent ?? null, 'en');
   } catch {
     return null;
   }
 }
 
 export async function POST(req: NextRequest) {
-  // ── Auth check ───────────────────────────────────────────
-  const secret = process.env.ALERT_CRON_SECRET;
+  // ── Auth ─────────────────────────────────────────────────
+  const secret   = process.env.ALERT_CRON_SECRET;
   const provided = req.headers.get('x-alert-secret');
   if (!secret || provided !== secret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const origin = new URL(req.url).origin;
   const db = getD1();
   if (!db) {
     return NextResponse.json({ ok: false, reason: 'D1 not available (local dev)' });
   }
 
-  // ── Get current status ───────────────────────────────────
-  const current = await fetchCurrentStatus();
-  if (!current) {
-    return NextResponse.json({ ok: false, reason: 'Could not fetch /v1/status' }, { status: 502 });
+  // ── Derive current status ────────────────────────────────
+  const status = await deriveCurrentStatus(origin);
+  if (!status) {
+    return NextResponse.json({ ok: false, reason: 'Could not derive current status' }, { status: 502 });
   }
+
+  const currentStatus = status.state;
 
   // ── Get last alerted status ──────────────────────────────
-  const stateRow = await db
-    .prepare("SELECT value FROM system_state WHERE key = 'last_alerted_status'")
-    .first<{ value: string }>();
-
-  const lastStatus = stateRow?.value ?? 'OPEN';
-  const currentStatus = current.state;
-
-  if (currentStatus === lastStatus) {
-    return NextResponse.json({
-      ok: true,
-      noChange: true,
-      status: currentStatus,
-    });
+  let lastStatus = 'OPEN';
+  try {
+    const row = await db
+      .prepare("SELECT value FROM system_state WHERE key = 'last_alerted_status'")
+      .first<{ value: string }>();
+    lastStatus = row?.value ?? 'OPEN';
+  } catch {
+    // system_state table missing (migration not run yet) — treat as first run
   }
 
-  // ── Status changed — fetch all confirmed subscribers ─────
-  const { results: subscribers } = await db
-    .prepare('SELECT id, email, unsubscribe_token FROM subscriptions WHERE confirmed = 1')
-    .all<{ id: string; email: string; unsubscribe_token: string }>();
+  if (currentStatus === lastStatus) {
+    return NextResponse.json({ ok: true, noChange: true, status: currentStatus });
+  }
 
-  if (!subscribers || subscribers.length === 0) {
-    // Still update the state even if no subscribers yet
+  // ── Fetch confirmed subscribers ──────────────────────────
+  let subscribers: { id: string; email: string; unsubscribe_token: string }[] = [];
+  try {
+    const { results } = await db
+      .prepare('SELECT id, email, unsubscribe_token FROM subscriptions WHERE confirmed = 1')
+      .all<{ id: string; email: string; unsubscribe_token: string }>();
+    subscribers = results ?? [];
+  } catch {
+    // subscriptions table missing — skip email sending
+  }
+
+  // ── Persist new status (UPSERT — safe even if seed row is missing) ──
+  try {
     await db
-      .prepare("UPDATE system_state SET value = ?, updated_at = unixepoch() WHERE key = 'last_alerted_status'")
+      .prepare(`
+        INSERT INTO system_state (key, value, updated_at)
+          VALUES ('last_alerted_status', ?, unixepoch())
+        ON CONFLICT(key) DO UPDATE
+          SET value = excluded.value, updated_at = excluded.updated_at
+      `)
       .bind(currentStatus)
       .run();
+  } catch (err) {
+    console.error('[alert-check] Failed to upsert system_state:', err);
+  }
+
+  if (subscribers.length === 0) {
     return NextResponse.json({ ok: true, changed: true, subscribers: 0, status: currentStatus });
   }
 
   // ── Send alert emails ────────────────────────────────────
   let sent = 0;
   let failed = 0;
+  const base = siteUrl();
 
   for (const sub of subscribers) {
-    const unsubUrl = `${siteUrl()}/api/unsubscribe?token=${sub.unsubscribe_token}`;
     const html = alertEmailHtml({
       newStatus: currentStatus,
       previousStatus: lastStatus,
-      reason: current.reason,
-      reasonUrl: current.reasonUrl,
-      unsubscribeUrl: unsubUrl,
+      reason:    status.reason,
+      reasonUrl: status.reasonUrl,
+      unsubscribeUrl: `${base}/api/unsubscribe?token=${sub.unsubscribe_token}`,
     });
 
-    const statusWord =
-      currentStatus === 'OPEN' ? 'OPEN ✓' :
-      currentStatus === 'PARTIALLY_CLOSED' ? 'DISRUPTED ⚠' : 'CLOSED ✗';
+    const label =
+      currentStatus === 'OPEN'             ? 'OPEN ✓'       :
+      currentStatus === 'PARTIALLY_CLOSED' ? 'DISRUPTED ⚠'  : 'CLOSED ✗';
 
     const result = await sendEmail({
-      to: sub.email,
-      subject: `Strait of Hormuz is now ${statusWord} — IsStraitHormuzOpen?`,
+      to:      sub.email,
+      subject: `Strait of Hormuz is now ${label} — IsStraitHormuzOpen?`,
       html,
     });
 
-    if (result.ok) sent++;
-    else failed++;
+    if (result.ok) sent++; else failed++;
   }
-
-  // ── Update last alerted status ───────────────────────────
-  await db
-    .prepare("UPDATE system_state SET value = ?, updated_at = unixepoch() WHERE key = 'last_alerted_status'")
-    .bind(currentStatus)
-    .run();
 
   return NextResponse.json({
     ok: true,
@@ -139,7 +156,7 @@ export async function POST(req: NextRequest) {
   });
 }
 
-// Also support GET for easy health-check/manual trigger in CF dashboard
+// Support GET for CF dashboard health-check / manual trigger
 export async function GET(req: NextRequest) {
   return POST(req);
 }
