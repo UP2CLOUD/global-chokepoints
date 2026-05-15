@@ -48,7 +48,6 @@ async function fetchYahoo(): Promise<Payload> {
     try {
       const res = await fetch(url, {
         headers: { 'User-Agent': UA, 'Accept': 'application/json, */*' },
-        cache: 'no-store',
         signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) {
@@ -105,7 +104,6 @@ async function fetchStooq(): Promise<Payload> {
   const url = 'https://stooq.com/q/d/l/?s=bz.f&i=d';
   const res = await fetch(url, {
     headers: { 'User-Agent': 'Mozilla/5.0' },
-    cache: 'no-store',
     signal: AbortSignal.timeout(8000),
   });
   if (!res.ok) throw new Error(`Stooq HTTP ${res.status}`);

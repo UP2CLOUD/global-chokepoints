@@ -19,9 +19,10 @@ function esc(s: string): string {
 
 export async function GET(req: NextRequest) {
   const origin = new URL(req.url).origin;
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
   let events: any[] = [];
   try {
-    const res = await fetch(`${origin}/api/timeline`, { cache: 'no-store' });
+    const res = await fetch(`${base}/api/timeline`);
     const json = await res.json();
     events = Array.isArray(json.events) ? json.events : [];
   } catch {

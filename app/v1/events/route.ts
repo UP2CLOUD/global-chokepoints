@@ -24,7 +24,8 @@ export async function GET(req: NextRequest) {
   const sinceMs = since ? +new Date(since) : 0;
 
   const origin = u.origin;
-  const res = await fetch(`${origin}/api/timeline`, { cache: 'no-store' });
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
+  const res = await fetch(`${base}/api/timeline`);
   const json = res.ok ? await res.json() : { events: [] };
   let events: any[] = Array.isArray(json.events) ? json.events : [];
 
