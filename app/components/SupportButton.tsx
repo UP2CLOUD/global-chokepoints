@@ -1,23 +1,15 @@
 'use client';
 
 import { Heart } from 'lucide-react';
-
-/**
- * SupportButton — tasteful donation/support CTA.
- *
- * Renders as a ghost button that links to the configured support platform
- * (Ko-fi, Buy Me a Coffee, GitHub Sponsors, etc.)
- *
- * Controlled by NEXT_PUBLIC_SUPPORT_URL env var.
- */
+import { useLang } from './LangContext';
 
 interface Props {
-  /** 'header' = compact pill, 'footer' = text link, 'inline' = full CTA */
   variant?: 'header' | 'footer' | 'inline';
   className?: string;
 }
 
 export default function SupportButton({ variant = 'header', className = '' }: Props) {
+  const { t } = useLang();
   const url = process.env.NEXT_PUBLIC_SUPPORT_URL;
 
   const handleClick = (e: React.MouseEvent) => {
@@ -50,7 +42,7 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
         aria-label="Support this project"
       >
         <Heart size={11} className="text-danger/70" />
-        <span className="hidden sm:inline">Support</span>
+        <span className="hidden sm:inline">{t.footer.supportBtn}</span>
       </a>
     );
   }
@@ -62,7 +54,7 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
         className={`hover:text-accent transition-colors duration-180 ${className}`}
         aria-label="Support this project"
       >
-        Support
+        {t.footer.supportBtn}
       </a>
     );
   }
@@ -77,7 +69,7 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
       aria-label="Support this project"
     >
       <Heart size={13} className="text-danger/70" />
-      Help keep this monitor online
+      {t.footer.supportInline}
     </a>
   );
 }
