@@ -66,3 +66,13 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy .vercel/output/static --project-name=strait-of-hormuz-monitor
+
+      - name: Sync secrets to Cloudflare Pages
+        if: ${{ secrets.ALERT_CRON_SECRET != '' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ALERT_CRON_SECRET: ${{ secrets.ALERT_CRON_SECRET }}
+        run: |
+          echo "$ALERT_CRON_SECRET" | npx wrangler pages secret put ALERT_CRON_SECRET \
+            --project-name=strait-of-hormuz-monitor
