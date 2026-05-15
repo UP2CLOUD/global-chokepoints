@@ -81,13 +81,17 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased" suppressHydrationWarning>{children}</body>
-      {/* AdSense loaded after hydration to prevent DOM mutation during SSR reconciliation */}
-      <Script
-        id="adsbygoogle"
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4771109071232940"
-        strategy="afterInteractive"
-        crossOrigin="anonymous"
-      />
+      {/* AdSense — only load when ads are explicitly enabled (NEXT_PUBLIC_ADS_ENABLED=true).
+          Unconditional loading triggers Auto Ads even when no ad slots are rendered,
+          which causes Chrome's Heavy Ad Intervention to remove them and fill the console. */}
+      {process.env.NEXT_PUBLIC_ADS_ENABLED === 'true' && (
+        <Script
+          id="adsbygoogle"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4771109071232940"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
+      )}
     </html>
   );
 }
