@@ -75,7 +75,7 @@ const spec = {
         description:
           'Returns the computed operational state, tension level (0–100 threat score), ' +
           'confidence, and the driving reason string. Refreshed every 30 s at the edge.',
-        security: [{ ApiKeyHeader: [] }, {}],
+        security: [{}],
         responses: {
           '200': {
             description: 'Strait status',
@@ -102,7 +102,6 @@ const spec = {
               },
             },
           },
-          '401': { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -115,7 +114,7 @@ const spec = {
         description:
           'Returns classified events aggregated from CNN, BBC, Al Jazeera, and Google News RSS feeds. ' +
           'Use `since` for incremental polling. Cache TTL: 60 s.',
-        security: [{ ApiKeyHeader: [] }, {}],
+        security: [{}],
         parameters: [
           {
             name: 'limit',
@@ -139,7 +138,6 @@ const spec = {
               },
             },
           },
-          '401': { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -152,7 +150,7 @@ const spec = {
         description:
           'Returns Brent crude, WTI, Henry Hub prices, marine weather at Bandar Abbas, and 24-hour event delta. ' +
           'Cache TTL: 60 s.',
-        security: [{ ApiKeyHeader: [] }, {}],
+        security: [{}],
         responses: {
           '200': {
             description: 'Aggregated metrics',
@@ -160,7 +158,6 @@ const spec = {
               'application/json': { schema: { $ref: '#/components/schemas/MetricsResponse' } },
             },
           },
-          '401': { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },

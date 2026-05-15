@@ -152,7 +152,7 @@ Copy `.env.local.example` to `.env.local`. All keys are optional; the app degrad
 | `RESEND_API_KEY` + `RESEND_FROM_EMAIL` | Alert emails sent on status change |
 | `CRON_SECRET` | Authenticates internal cron calls to `/api/alert-check` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` | Spam protection on `/api/subscribe` |
-| `V1_API_KEY` | If set, gates all `/v1/*` routes behind Bearer auth (see `middleware.ts`) |
+| `V1_API_KEY` | If set, gates non-GET methods on `/v1/*` behind Bearer auth (see `middleware.ts`). GET/HEAD/OPTIONS are always public. |
 
 Cloudflare secrets (set via `wrangler pages secret put`): `RESEND_API_KEY`, `ALERT_CRON_SECRET`, `AISSTREAM_KEY`, `EIA_API_KEY`, `RESEND_FROM_EMAIL`.
 

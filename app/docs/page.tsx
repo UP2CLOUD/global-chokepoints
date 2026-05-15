@@ -321,17 +321,20 @@ export default function DocsPage() {
           {/* Auth */}
           <Section id="auth" title="Authentication">
             <p>
-              <Code>/v1/*</Code> endpoints are <strong className="text-text">publicly accessible by default</strong>.
-              Authentication is only enforced when the <Code>V1_API_KEY</Code> environment variable
-              is set in the deployment. If set, include the key in one of two ways:
+              <Code>GET</Code> requests to <Code>/v1/*</Code> are <strong className="text-text">always public</strong> —
+              no key, no header, no signup. CORS preflight (<Code>OPTIONS</Code>) and <Code>HEAD</Code> are also unauthenticated.
             </p>
-            <Pre lang="bash">{`# Option A — header
-curl -H "x-api-key: YOUR_KEY" ${SITE}/v1/status
+            <p>
+              Authentication only applies to non-GET methods on <Code>/v1/*</Code> and is enforced only when
+              the deployment&apos;s <Code>V1_API_KEY</Code> environment variable is set. If a key is required, send it in either form:
+            </p>
+            <Pre lang="bash">{`# Option A — x-api-key header
+curl -X POST -H "x-api-key: YOUR_KEY" ${SITE}/v1/...
 
 # Option B — Bearer token
-curl -H "Authorization: Bearer YOUR_KEY" ${SITE}/v1/status`}</Pre>
+curl -X POST -H "Authorization: Bearer YOUR_KEY" ${SITE}/v1/...`}</Pre>
             <p>
-              Requests without a key when one is required receive <Code>401 Unauthorized</Code>.
+              Requests without a valid key on a gated method receive <Code>401 Unauthorized</Code>.
               Internal <Code>/api/*</Code> routes are always same-origin and have no key requirement.
             </p>
           </Section>
