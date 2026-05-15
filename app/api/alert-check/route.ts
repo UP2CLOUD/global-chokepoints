@@ -27,17 +27,22 @@ function siteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
 }
 
-async function deriveCurrentStatus(origin: string): Promise<StatusData | null> {
+async function deriveCurrentStatus(): Promise<{ status: StatusData | null; error?: string }> {
+  // Always use the canonical public URL — the internal CF origin from req.url
+  // is an internal address that cannot reach sibling edge functions.
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev')
+    .replace(/\/$/, '');
+
   try {
     const [timelineRes, brentRes] = await Promise.all([
-      fetch(`${origin}/api/timeline`, {
+      fetch(`${base}/api/timeline`, {
         headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(20_000),
         cache: 'no-store',
       }),
-      fetch(`${origin}/api/brent`, {
+      fetch(`${base}/api/brent`, {
         headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(20_000),
         cache: 'no-store',
       }),
     ]);
@@ -45,9 +50,13 @@ async function deriveCurrentStatus(origin: string): Promise<StatusData | null> {
     const timeline = timelineRes.ok ? ((await timelineRes.json()).events ?? []) : [];
     const brent    = brentRes.ok    ? await brentRes.json()                     : null;
 
-    return deriveStatus(timeline, brent?.changePercent ?? null, 'en');
-  } catch {
-    return null;
+    if (!timelineRes.ok && !brentRes.ok) {
+      return { status: null, error: `timeline=${timelineRes.status} brent=${brentRes.status}` };
+    }
+
+    return { status: deriveStatus(timeline, brent?.changePercent ?? null, 'en') };
+  } catch (err) {
+    return { status: null, error: String(err) };
   }
 }
 
@@ -59,16 +68,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const origin = new URL(req.url).origin;
   const db = getD1();
   if (!db) {
     return NextResponse.json({ ok: false, reason: 'D1 not available (local dev)' });
   }
 
   // ── Derive current status ────────────────────────────────
-  const status = await deriveCurrentStatus(origin);
+  const { status, error: deriveError } = await deriveCurrentStatus();
   if (!status) {
-    return NextResponse.json({ ok: false, reason: 'Could not derive current status' }, { status: 502 });
+    return NextResponse.json(
+      { ok: false, reason: 'Could not derive current status', detail: deriveError },
+      { status: 502 },
+    );
   }
 
   const currentStatus = status.state;
