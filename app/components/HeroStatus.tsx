@@ -98,11 +98,11 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
   const shareStatus = () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({
-        title: 'IsStraitHormuzOpen?',
+        title: `${t.header.title}${t.header.titleAccent}`,
         text: fmt(t.hero.shareText, {
           state: stateLabel,
           tension: tIdx,
-          brent: brentPrice != null ? brentPrice.toFixed(2) : '—',
+          brent: brentPrice ? brentPrice.toFixed(2) : '—',
         }),
         url: window.location.href,
       }).catch(() => {});

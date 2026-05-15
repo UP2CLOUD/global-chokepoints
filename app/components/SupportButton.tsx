@@ -39,7 +39,7 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
           text-text2 hover:text-accent border border-divider hover:border-accent/40
           bg-bg2/40 backdrop-blur-sm transition-all duration-200 uppercase tracking-[0.12em]
           ${className}`}
-        aria-label="Support this project"
+        aria-label={t.footer.supportAria}
       >
         <Heart size={11} className="text-danger/70" />
         <span className="hidden sm:inline">{t.footer.supportBtn}</span>
@@ -52,7 +52,7 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
       <a
         {...commonProps}
         className={`hover:text-accent transition-colors duration-180 ${className}`}
-        aria-label="Support this project"
+        aria-label={t.footer.supportAria}
       >
         {t.footer.supportBtn}
       </a>
@@ -66,7 +66,7 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
       className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-mono
         text-text border border-accent/30 hover:border-accent/60 hover:bg-accent/5
         transition-all duration-200 ${className}`}
-      aria-label="Support this project"
+      aria-label={t.footer.supportAria}
     >
       <Heart size={13} className="text-danger/70" />
       {t.footer.supportInline}
