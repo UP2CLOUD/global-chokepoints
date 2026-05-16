@@ -8,20 +8,20 @@ import { useLang } from './LangContext';
 
 type Phase = 'idle' | 'loading' | 'success' | 'error' | 'already' | 'confirmed';
 
+const DONE_PHASES: Phase[] = ['success', 'already', 'confirmed'];
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 
 export function SubscribeBellButton() {
   const { t } = useLang();
-  const [open, setOpen] = useState(false);
-  const [initialPhase, setInitialPhase] = useState<Phase>('idle');
+  // null = closed; Phase value = open in that state
+  const [activePhase, setActivePhase] = useState<Phase | null>(null);
 
   // Open in confirmed state when redirected back from /api/confirm
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const p = new URLSearchParams(window.location.search);
     if (p.get('subscribed') === '1') {
-      setInitialPhase('confirmed');
-      setOpen(true);
+      setActivePhase('confirmed');
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -29,7 +29,7 @@ export function SubscribeBellButton() {
   return (
     <>
       <button
-        onClick={() => { setInitialPhase('idle'); setOpen(true); }}
+        onClick={() => setActivePhase('idle')}
         className="flex items-center gap-1.5 text-[11px] font-mono text-text3 hover:text-accent transition-colors duration-180 group"
         aria-label={t.subscribe.bellLabel}
       >
@@ -37,7 +37,9 @@ export function SubscribeBellButton() {
         <span>{t.subscribe.bellLabel}</span>
       </button>
 
-      {open && <SubscribeModal initialPhase={initialPhase} onClose={() => setOpen(false)} />}
+      {activePhase !== null && (
+        <SubscribeModal initialPhase={activePhase} onClose={() => setActivePhase(null)} />
+      )}
     </>
   );
 }
@@ -51,8 +53,13 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
   const [turnstileToken, setTurnstileToken] = useState(TURNSTILE_SITE_KEY ? '' : 'dev-bypass');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Focus the input only when in idle phase
   useEffect(() => {
     if (phase === 'idle') inputRef.current?.focus();
+  }, [phase]);
+
+  // Close on Escape
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -109,7 +116,7 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
         </div>
 
         <div className="px-6 py-6">
-          {(phase === 'success' || phase === 'already' || phase === 'confirmed') ? (
+          {DONE_PHASES.includes(phase) ? (
             <div className="text-center py-4">
               <CheckCircle size={40} className="text-ok mx-auto mb-4" />
               <h3 className="text-[14px] font-mono font-semibold text-text mb-2">
@@ -196,7 +203,7 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
 
 export function SubscribeInlineCTA() {
   const { t } = useLang();
-  const [open, setOpen] = useState(false);
+  const [activePhase, setActivePhase] = useState<Phase | null>(null);
 
   return (
     <>
@@ -212,7 +219,7 @@ export function SubscribeInlineCTA() {
             </p>
           </div>
           <button
-            onClick={() => setOpen(true)}
+            onClick={() => setActivePhase('idle')}
             className="shrink-0 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
               text-bg bg-accent hover:bg-accent-hi font-semibold
               transition-all duration-200"
@@ -222,7 +229,9 @@ export function SubscribeInlineCTA() {
         </div>
       </div>
 
-      {open && <SubscribeModal onClose={() => setOpen(false)} />}
+      {activePhase !== null && (
+        <SubscribeModal onClose={() => setActivePhase(null)} />
+      )}
     </>
   );
 }
