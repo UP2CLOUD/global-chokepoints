@@ -95,6 +95,16 @@ export const translations = {
     transit: {
       dailyTransits: 'Daily Transits',
     },
+    exposure: {
+      title: 'Global Oil Exposure',
+      subtitle: '% of oil imports transiting Hormuz',
+      globalFlow: '~20% of world oil supply · 17 Mb/d',
+      statusOpen: 'flowing normally through the strait',
+      statusDisrupted: 'at risk of disruption',
+      statusClosed: 'blocked — global supply shock',
+      dependency: 'dependency',
+      source: 'Source: IEA / EIA estimates',
+    },
     nav: {
       vesselTransits: 'Vessel Transits · Hormuz',
       publicApi: 'Public API',
@@ -261,6 +271,16 @@ export const translations = {
     },
     transit: {
       dailyTransits: 'Trânsitos Diários',
+    },
+    exposure: {
+      title: 'Exposição Global ao Petróleo',
+      subtitle: '% das importações de petróleo transitando por Ormuz',
+      globalFlow: '~20% do fornecimento mundial · 17 Mb/d',
+      statusOpen: 'fluindo normalmente pelo estreito',
+      statusDisrupted: 'em risco de interrupção',
+      statusClosed: 'bloqueado — choque no fornecimento global',
+      dependency: 'dependência',
+      source: 'Fonte: estimativas AIE / EIA',
     },
     nav: {
       vesselTransits: 'Trânsitos de Navios · Ormuz',
@@ -429,6 +449,16 @@ export const translations = {
     transit: {
       dailyTransits: 'Tránsitos Diarios',
     },
+    exposure: {
+      title: 'Exposición Global al Petróleo',
+      subtitle: '% de importaciones de petróleo que transitan por Ormuz',
+      globalFlow: '~20% del suministro mundial · 17 Mb/d',
+      statusOpen: 'fluyendo normalmente por el estrecho',
+      statusDisrupted: 'en riesgo de interrupción',
+      statusClosed: 'bloqueado — shock de suministro global',
+      dependency: 'dependencia',
+      source: 'Fuente: estimaciones AIE / EIA',
+    },
     nav: {
       vesselTransits: 'Tránsitos de Buques · Ormuz',
       publicApi: 'API Pública',
@@ -595,6 +625,16 @@ export const translations = {
     },
     transit: {
       dailyTransits: 'Transits Journaliers',
+    },
+    exposure: {
+      title: 'Exposition Pétrolière Mondiale',
+      subtitle: '% des importations de pétrole transitant par Ormuz',
+      globalFlow: '~20% de l\'offre mondiale · 17 Mb/j',
+      statusOpen: 'circulant normalement par le détroit',
+      statusDisrupted: 'à risque de perturbation',
+      statusClosed: 'bloqué — choc d\'approvisionnement mondial',
+      dependency: 'dépendance',
+      source: 'Source : estimations AIE / EIA',
     },
     nav: {
       vesselTransits: 'Transits de Navires · Ormuz',
@@ -763,6 +803,16 @@ export const translations = {
     transit: {
       dailyTransits: 'Transiti Giornalieri',
     },
+    exposure: {
+      title: 'Esposizione Petrolifera Globale',
+      subtitle: '% delle importazioni di petrolio transitanti per Hormuz',
+      globalFlow: '~20% dell\'offerta mondiale · 17 Mb/g',
+      statusOpen: 'che scorre normalmente attraverso lo stretto',
+      statusDisrupted: 'a rischio di interruzione',
+      statusClosed: 'bloccato — shock dell\'offerta globale',
+      dependency: 'dipendenza',
+      source: 'Fonte: stime AIE / EIA',
+    },
     nav: {
       vesselTransits: 'Transiti Navi · Hormuz',
       publicApi: 'API Pubblica',
@@ -929,6 +979,16 @@ export const translations = {
     },
     transit: {
       dailyTransits: 'Ежедневные проходы',
+    },
+    exposure: {
+      title: 'Глобальная нефтяная зависимость',
+      subtitle: '% нефтяного импорта, проходящего через Ормуз',
+      globalFlow: '~20% мирового предложения · 17 млн б/д',
+      statusOpen: 'нормально проходит через пролив',
+      statusDisrupted: 'под угрозой перебоев',
+      statusClosed: 'заблокировано — мировой шок поставок',
+      dependency: 'зависимость',
+      source: 'Источник: оценки МЭА / EIA',
     },
     nav: {
       vesselTransits: 'Проходы судов · Ормуз',

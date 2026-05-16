@@ -18,6 +18,7 @@ import RefreshButton   from '@/app/components/RefreshButton';
 import ScrollIndicator from '@/app/components/ScrollIndicator';
 import AdSlot          from '@/app/components/AdSlot';
 import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
+import GlobalExposurePanel from '@/app/components/GlobalExposurePanel';
 import Reveal from '@/app/components/Reveal';
 import { TrendingUp, BarChart2, Zap } from 'lucide-react';
 
@@ -95,6 +96,10 @@ function DashboardContent() {
         <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
           <MetricsGrid metrics={data.metrics} loading={!dataReady} />
         </div>
+
+        <Reveal dir="up">
+          <GlobalExposurePanel state={data.status.state} />
+        </Reveal>
 
         <Reveal dir="up">
           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 md:gap-6">
