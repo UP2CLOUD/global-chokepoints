@@ -16,6 +16,24 @@ export const BRENT_SPIKE_LOW_PCT = 2;
 /** Brent Δ% at which market signal saturates at 100 */
 export const BRENT_SPIKE_HIGH_PCT = 5;
 
+/** Signal weights for the composite threat score (must sum to 1.0) */
+export const THREAT_WEIGHT_TIMELINE = 0.40;
+export const THREAT_WEIGHT_MARKET   = 0.30;
+export const THREAT_WEIGHT_PRICE    = 0.30;
+
+/**
+ * Absolute Brent price thresholds for the price-level signal.
+ * Listed in descending order so the first match wins (used with Array.find).
+ */
+export const BRENT_PRICE_LEVEL_THRESHOLDS: ReadonlyArray<{ min: number; score: number }> = [
+  { min: 120, score: 100 },
+  { min: 110, score: 80  },
+  { min: 100, score: 65  },
+  { min: 90,  score: 45  },
+  { min: 80,  score: 25  },
+  { min: 70,  score: 10  },
+] as const;
+
 /** Confidence algorithm constants */
 export const CONFIDENCE_BASE       = 0.55;
 export const CONFIDENCE_PER_SOURCE = 0.06;
