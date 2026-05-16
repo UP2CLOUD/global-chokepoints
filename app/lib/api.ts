@@ -87,7 +87,8 @@ const PARTIAL_PATTERNS = [
 export function deriveStatus(
   timeline: TimelineEvent[],
   brentChangePercent: number | null,
-  lang: import('@/app/lib/types').Lang = 'en'
+  lang: import('@/app/lib/types').Lang = 'en',
+  brentPrice?: number | null,
 ): StatusData {
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
@@ -137,8 +138,25 @@ export function deriveStatus(
     }
   }
 
-  // Final Threat Score formulation
-  const threatScore = Math.round((normalizedTimelineScore * 0.5) + (marketVolatilityScore * 0.5));
+  // Calculate Absolute Price Level Score — anchored to historical norms.
+  // $109 is historically very elevated and should register baseline tension
+  // even without a large daily move.
+  let priceLevelScore = 0;
+  if (brentPrice != null && brentPrice > 0) {
+    if      (brentPrice >= 120) priceLevelScore = 100;
+    else if (brentPrice >= 110) priceLevelScore = 80;
+    else if (brentPrice >= 100) priceLevelScore = 65;
+    else if (brentPrice >= 90)  priceLevelScore = 45;
+    else if (brentPrice >= 80)  priceLevelScore = 25;
+    else if (brentPrice >= 70)  priceLevelScore = 10;
+  }
+
+  // Final Threat Score: timeline 40%, daily-move 30%, price level 30%
+  const threatScore = Math.round(
+    (normalizedTimelineScore * 0.40) +
+    (marketVolatilityScore   * 0.30) +
+    (priceLevelScore         * 0.30)
+  );
 
   let tensionLevel: TensionLevel = 'NORMAL';
   if (threatScore >= 80 || state === 'CLOSED') tensionLevel = 'CRITICAL';

@@ -52,7 +52,7 @@ async function deriveCurrentStatus(): Promise<{ status: StatusData | null; error
       return { status: null, error: `timeline=${timelineRes.status} brent=${brentRes.status}` };
     }
 
-    return { status: deriveStatus(timeline, brent?.changePercent ?? null, 'en') };
+    return { status: deriveStatus(timeline, brent?.changePercent ?? null, 'en', brent?.price ?? null) };
   } catch (err) {
     return { status: null, error: String(err) };
   }
