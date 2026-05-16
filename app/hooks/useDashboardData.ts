@@ -55,7 +55,7 @@ export function useDashboardData(): DashboardDataState {
         const merged = { ...prev, ...realData } as DashboardData;
         return {
           ...merged,
-          status: deriveStatus(merged.timeline ?? [], merged.metrics?.brentChangePercent ?? null, lang),
+          status: deriveStatus(merged.timeline ?? [], merged.metrics?.brentChangePercent ?? null, lang, merged.metrics?.brentPrice ?? null),
         };
       });
     } catch (err) {
@@ -81,7 +81,7 @@ export function useDashboardData(): DashboardDataState {
       setData((prev) => ({
         ...prev,
         timeline: events,
-        status: deriveStatus(events, prev.metrics?.brentChangePercent ?? null, lang),
+        status: deriveStatus(events, prev.metrics?.brentChangePercent ?? null, lang, prev.metrics?.brentPrice ?? null),
       }));
     }
   }, [lang]);
@@ -104,7 +104,7 @@ export function useDashboardData(): DashboardDataState {
   useEffect(() => {
     setData((prev) => ({
       ...prev,
-      status: deriveStatus(prev.timeline ?? [], prev.metrics?.brentChangePercent ?? null, lang),
+      status: deriveStatus(prev.timeline ?? [], prev.metrics?.brentChangePercent ?? null, lang, prev.metrics?.brentPrice ?? null),
     }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);

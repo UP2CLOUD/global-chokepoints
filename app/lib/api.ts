@@ -17,6 +17,23 @@ import {
   StraitStatus,
   TensionLevel,
 } from './types';
+import {
+  THREAT_CRITICAL_THRESHOLD,
+  THREAT_ELEVATED_THRESHOLD,
+  THREAT_STATE_OVERRIDE,
+  TIMELINE_SCORE_CEILING,
+  SEVERITY_WEIGHTS,
+  BRENT_SPIKE_LOW_PCT,
+  BRENT_SPIKE_HIGH_PCT,
+  THREAT_WEIGHT_TIMELINE,
+  THREAT_WEIGHT_MARKET,
+  THREAT_WEIGHT_PRICE,
+  BRENT_PRICE_LEVEL_THRESHOLDS,
+  CONFIDENCE_BASE,
+  CONFIDENCE_PER_SOURCE,
+  CONFIDENCE_PER_EVENT,
+  CONFIDENCE_MAX_EVENTS,
+} from './constants';
 
 export interface BrentPayload {
   price: number;
@@ -87,7 +104,8 @@ const PARTIAL_PATTERNS = [
 export function deriveStatus(
   timeline: TimelineEvent[],
   brentChangePercent: number | null,
-  lang: import('@/app/lib/types').Lang = 'en'
+  lang: import('@/app/lib/types').Lang = 'en',
+  brentPrice?: number | null,
 ): StatusData {
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
@@ -115,46 +133,48 @@ export function deriveStatus(
   if (closureHit) state = 'CLOSED';
   else if (partialHit) state = 'PARTIALLY_CLOSED';
 
-  // 2) Smarter Multi-Signal Threat Score (0-100)
-  // We combine:
-  // - Timeline Severity Score
-  // - Market Volatility (Brent crude spikes)
-  // - Sentiment Analysis (future-ready for Cloudflare Workers AI)
-  //
-  // threatScore = (Timeline_Severity * 0.5) + (Market_Volatility * 0.5)
+  // 2) Multi-Signal Threat Score (0–100)
+  //    timeline 40% + daily-move 30% + absolute-price-level 30%
   const last24 = recent.filter((e) => now - +new Date(e.date) < day);
-  const weight = { low: 1, medium: 2, high: 4, critical: 7 } as const;
-  
-  // Calculate Timeline Severity Score (maxes out around 35 points, scaled to 100)
-  const rawTimelineScore = last24.reduce((s, e) => s + weight[e.severity], 0);
-  const normalizedTimelineScore = Math.min(100, rawTimelineScore * (100 / 35));
 
-  // Calculate Market Volatility Score (spike over 2% starts triggering, 5% is 100)
+  const rawTimelineScore = last24.reduce((s, e) => s + SEVERITY_WEIGHTS[e.severity], 0);
+  const normalizedTimelineScore = Math.min(100, rawTimelineScore * (100 / TIMELINE_SCORE_CEILING));
+
+  const marketScale = 100 / (BRENT_SPIKE_HIGH_PCT - BRENT_SPIKE_LOW_PCT);
   let marketVolatilityScore = 0;
-  if (brentChangePercent != null) {
-    if (brentChangePercent > 2) {
-      marketVolatilityScore = Math.min(100, (brentChangePercent - 2) * 33.3);
-    }
+  if (brentChangePercent != null && brentChangePercent > BRENT_SPIKE_LOW_PCT) {
+    marketVolatilityScore = Math.min(100, (brentChangePercent - BRENT_SPIKE_LOW_PCT) * marketScale);
   }
 
-  // Final Threat Score formulation
-  const threatScore = Math.round((normalizedTimelineScore * 0.5) + (marketVolatilityScore * 0.5));
+  // Absolute price-level signal: $109 Brent is historically elevated and
+  // should register baseline tension even without a large daily move.
+  const priceLevelScore =
+    brentPrice != null && brentPrice > 0
+      ? (BRENT_PRICE_LEVEL_THRESHOLDS.find(({ min }) => brentPrice >= min)?.score ?? 0)
+      : 0;
+
+  const threatScore = Math.round(
+    (normalizedTimelineScore * THREAT_WEIGHT_TIMELINE) +
+    (marketVolatilityScore   * THREAT_WEIGHT_MARKET)   +
+    (priceLevelScore         * THREAT_WEIGHT_PRICE)
+  );
 
   let tensionLevel: TensionLevel = 'NORMAL';
-  if (threatScore >= 80 || state === 'CLOSED') tensionLevel = 'CRITICAL';
-  else if (threatScore >= 40 || state === 'PARTIALLY_CLOSED') tensionLevel = 'ELEVATED';
+  if (threatScore >= THREAT_CRITICAL_THRESHOLD || state === 'CLOSED') tensionLevel = 'CRITICAL';
+  else if (threatScore >= THREAT_ELEVATED_THRESHOLD || state === 'PARTIALLY_CLOSED') tensionLevel = 'ELEVATED';
 
-  // Override rule-based state only when timeline events corroborate high market volatility.
   // Pure Brent spike without timeline events never escalates state — prevents false positives.
-  if (state === 'OPEN' && last24.length > 0) {
-    if (threatScore > 85) state = 'PARTIALLY_CLOSED';
+  if (state === 'OPEN' && last24.length > 0 && threatScore > THREAT_STATE_OVERRIDE) {
+    state = 'PARTIALLY_CLOSED';
   }
 
   // 3) Confidence — diversity of sources backing recent events
   const sources = new Set(last24.map((e) => e.source));
   const confidence = Math.min(
     0.99,
-    0.55 + sources.size * 0.06 + Math.min(last24.length, 6) * 0.02
+    CONFIDENCE_BASE +
+    sources.size * CONFIDENCE_PER_SOURCE +
+    Math.min(last24.length, CONFIDENCE_MAX_EVENTS) * CONFIDENCE_PER_EVENT
   );
 
   // 4) Reason — pick the highest-severity recent event title, or a calm default
