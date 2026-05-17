@@ -89,6 +89,35 @@ export function alertEmailHtml(opts: {
     ? 'Strait of Hormuz — Disruption Detected'
     : 'Strait of Hormuz Closure Alert';
 
+  const officialSourcesBlock = isOpen ? `
+    <div style="margin:20px 0;padding:16px;background:#0B1A14;border:1px solid #10B98140;border-radius:6px;">
+      <p style="margin:0 0 10px;font-size:11px;letter-spacing:1.5px;color:#10B981;text-transform:uppercase;font-weight:700;">⚠ Verify with Official Sources</p>
+      <p style="margin:0 0 12px;font-size:12px;color:#94A3B8;line-height:1.6;">
+        This signal is based on automated analysis of news feeds and market data.
+        Before acting on this information, confirm the reopening through official maritime authorities:
+      </p>
+      <table cellpadding="0" cellspacing="0" style="width:100%;">
+        <tr>
+          <td style="padding:4px 0;font-size:12px;color:#06B6D4;">
+            <a href="https://www.ukmto.org" style="color:#06B6D4;text-decoration:none;">UKMTO</a>
+            <span style="color:#4A5568;"> · United Kingdom Maritime Trade Operations</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:4px 0;font-size:12px;color:#06B6D4;">
+            <a href="https://www.navcen.uscg.gov" style="color:#06B6D4;text-decoration:none;">US NAVCENT</a>
+            <span style="color:#4A5568;"> · US Naval Forces Central Command</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:4px 0;font-size:12px;color:#06B6D4;">
+            <a href="https://www.imo.org" style="color:#06B6D4;text-decoration:none;">IMO</a>
+            <span style="color:#4A5568;"> · International Maritime Organization</span>
+          </td>
+        </tr>
+      </table>
+    </div>` : '';
+
   const body = `
     <div style="padding:20px;background:#0B0F18;border:1px solid ${statusColor}40;border-radius:8px;margin-bottom:20px;">
       <p style="margin:0 0 8px;font-size:11px;letter-spacing:2px;color:#6B7787;text-transform:uppercase;">Current Status</p>
@@ -97,6 +126,7 @@ export function alertEmailHtml(opts: {
     </div>
     ${opts.reason ? `<p style="margin:0 0 16px;font-size:13px;color:#94A3B8;line-height:1.7;">${opts.reason}</p>` : ''}
     ${opts.reasonUrl ? `<a href="${opts.reasonUrl}" style="display:inline-block;margin-bottom:20px;font-size:12px;color:#06B6D4;">Read source article →</a>` : ''}
+    ${officialSourcesBlock}
     <a href="${siteUrl()}"
        style="display:inline-block;padding:12px 28px;background:${statusColor};color:#07090F;font-weight:700;
               font-size:13px;border-radius:6px;text-decoration:none;letter-spacing:0.5px;">

@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getD1 } from '@/app/lib/db';
 import { sendEmail, alertEmailHtml } from '@/app/lib/email';
 import { deriveStatus } from '@/app/lib/api';
+import { REOPEN_CONFIDENCE_THRESHOLD } from '@/app/lib/constants';
 import type { StatusData } from '@/app/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -95,6 +96,21 @@ export async function POST(req: NextRequest) {
 
   if (currentStatus === lastStatus) {
     return NextResponse.json({ ok: true, noChange: true, status: currentStatus });
+  }
+
+  // ── Reopen gate: require high confidence before alerting OPEN ─
+  // Algorithmic signals alone are not sufficient to confirm a reopening —
+  // we need official corroboration (UKMTO, NAVCENT, etc.) reflected in
+  // multiple independent sources, which drives confidence above the threshold.
+  const isReopening = currentStatus === 'OPEN' && lastStatus !== 'OPEN';
+  if (isReopening && status.confidence < REOPEN_CONFIDENCE_THRESHOLD) {
+    return NextResponse.json({
+      ok: true,
+      held: true,
+      reason: `Reopen signal confidence ${(status.confidence * 100).toFixed(0)}% < required ${(REOPEN_CONFIDENCE_THRESHOLD * 100).toFixed(0)}% — awaiting official confirmation`,
+      currentStatus,
+      lastStatus,
+    });
   }
 
   // ── Fetch confirmed subscribers ──────────────────────────
