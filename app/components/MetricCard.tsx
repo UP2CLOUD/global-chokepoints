@@ -11,21 +11,13 @@ interface Props {
   change?: string;
   changeType?: 'up' | 'down' | 'neutral';
   delay?: number;
-  /** Provenance badge text (e.g. "Yahoo Finance") */
   source?: string;
-  /** Optional 7-point series for a small sparkline */
   spark?: SparkPoint[];
-  /** ISO timestamp of the data — used to render a freshness bar */
   asOf?: string;
-  /** Expected refresh cadence in seconds; freshness scales against this */
   refreshSec?: number;
-  /** Mark the value as stale (last refresh failed) */
   stale?: boolean;
-  /** Mark the feed as down (no value to show) */
   down?: boolean;
-  /** Optional tone for the value (e.g. severity color) */
   tone?: 'ok' | 'caution' | 'warn' | 'danger' | 'default';
-  /** Show shimmer skeleton — data not yet loaded */
   loading?: boolean;
 }
 
@@ -34,7 +26,7 @@ function MiniSpark({ data, up }: { data: SparkPoint[]; up: boolean }) {
   const prices = data.map(d => d.price);
   const min = Math.min(...prices), max = Math.max(...prices);
   const range = max - min || 1;
-  const w = 96, h = 28, pad = 2;
+  const w = 80, h = 24, pad = 2;
   const stepX = (w - pad * 2) / (data.length - 1);
   const pts = prices.map((p, i) => {
     const x = pad + i * stepX;
@@ -42,35 +34,11 @@ function MiniSpark({ data, up }: { data: SparkPoint[]; up: boolean }) {
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   });
   const path = `M ${pts.join(' L ')}`;
-  const fillPath = `${path} L ${pad + (data.length - 1) * stepX},${h - pad} L ${pad},${h - pad} Z`;
   const stroke = up ? 'var(--ok)' : 'var(--danger)';
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden role="presentation">
-      <defs>
-        <linearGradient id={`g-${up ? 'up' : 'down'}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stroke} stopOpacity={0.28} />
-          <stop offset="100%" stopColor={stroke} stopOpacity={0} />
-        </linearGradient>
-      </defs>
-      <path d={fillPath} fill={`url(#g-${up ? 'up' : 'down'})`} />
       <path d={path} fill="none" stroke={stroke} strokeWidth={1.2} strokeLinejoin="round" strokeLinecap="round" />
     </svg>
-  );
-}
-
-function FreshnessBar({ asOf, refreshSec }: { asOf?: string; refreshSec?: number }) {
-  if (!asOf || !refreshSec) return null;
-  const ageSec = (Date.now() - +new Date(asOf)) / 1000;
-  const ratio = Math.max(0, Math.min(4, ageSec / refreshSec));
-  // 0..1 = green, 1..2 = amber, 2..4 = red
-  const color =
-    ratio < 1 ? 'var(--ok)' :
-    ratio < 2 ? 'var(--caution)' : 'var(--danger)';
-  const pct = Math.min(100, (ratio / 4) * 100);
-  return (
-    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-bg2 rounded-b-xl overflow-hidden" aria-hidden>
-      <div className="h-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
-    </div>
   );
 }
 
@@ -84,72 +52,64 @@ const TONE_CLASS: Record<NonNullable<Props['tone']>, string> = {
 
 export default function MetricCard({
   title, value, icon, change, changeType = 'neutral',
-  delay = 0, source, spark, asOf, refreshSec, stale, down, tone = 'default',
+  delay = 0, source, spark, stale, down, tone = 'default',
   loading = false,
 }: Props) {
   const changeColor =
-    changeType === 'up' ? 'text-ok'
+    changeType === 'up'   ? 'text-ok'
     : changeType === 'down' ? 'text-danger'
-    : 'text-text2';
+    : 'text-text3';
   const valueColor = TONE_CLASS[tone];
 
-  // ── Skeleton shimmer while data loads ──────────────────────
   if (loading) {
     return (
-      <div
-        className="relative rounded-xl border border-divider bg-card/70 p-4 overflow-hidden animate-fadeInUp"
-        style={{ animationDelay: `${delay}s` }}
-        aria-busy="true"
-      >
-        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
-        <div className="flex items-start justify-between mb-3">
-          <div className="h-2.5 w-20 bg-bg1 rounded animate-pulse" />
-          <div className="w-7 h-7 rounded-md bg-bg1 animate-pulse" />
-        </div>
-        <div className="h-7 w-24 bg-bg1 rounded animate-pulse mb-3" />
-        <div className="h-2 w-16 bg-bg1 rounded animate-pulse" />
+      <div className="animate-fadeInUp" style={{ animationDelay: `${delay}s` }} aria-busy="true">
+        <div className="h-[9px] w-24 bg-bg2 rounded-sm mb-3 animate-pulse" />
+        <div className="h-9 w-32 bg-bg2 rounded-sm mb-2 animate-pulse" />
+        <div className="h-[9px] w-20 bg-bg2 rounded-sm animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div
-      className="relative rounded-xl border border-divider bg-card/70 p-4 transition-colors duration-180 hover:border-divider/80 animate-fadeInUp"
-      style={{ animationDelay: `${delay}s` }}
-    >
-      <div className="flex items-start justify-between mb-2">
-        <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-text2">{title}</span>
-        <div className="w-7 h-7 rounded-md bg-bg2 flex items-center justify-center text-accent" aria-hidden>
-          {icon}
-        </div>
+    <div className="animate-fadeInUp" style={{ animationDelay: `${delay}s` }}>
+      {/* Label row */}
+      <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-[0.22em] text-text3 mb-2">
+        <span className="text-text4" aria-hidden>{icon}</span>
+        {title}
       </div>
 
-      <div className="flex items-end justify-between gap-2">
-        <div className={`text-[26px] md:text-[28px] font-bold font-mono leading-none ${down ? 'text-text3' : valueColor}`}>
+      {/* Value + sparkline */}
+      <div className="flex items-end gap-3">
+        <div
+          className={`text-[32px] md:text-[36px] font-mono font-bold leading-none tabular-nums ${
+            down ? 'text-text4' : valueColor
+          }`}
+        >
           {down ? '—' : value}
         </div>
         {spark && spark.length >= 2 && !down && (
-          <MiniSpark data={spark} up={changeType !== 'down'} />
+          <div className="pb-1">
+            <MiniSpark data={spark} up={changeType !== 'down'} />
+          </div>
         )}
       </div>
 
+      {/* Change */}
       {change && !down && (
-        <div className={`mt-2 flex items-center gap-1.5 text-[12px] font-mono ${changeColor}`}>
-          {change}
-        </div>
+        <div className={`mt-1.5 text-[11px] font-mono ${changeColor}`}>{change}</div>
       )}
 
-      <div className="mt-2 flex items-center gap-1.5 text-[10px] font-mono text-text3">
-        {source && <span className="truncate">via {source}</span>}
+      {/* Source / badges */}
+      <div className="mt-1 flex items-center gap-2 text-[9px] font-mono text-text4">
+        {source && <span>via {source}</span>}
         {stale && !down && (
-          <span className="ml-auto px-1.5 py-0.5 rounded stale text-[9px] uppercase tracking-wider">stale</span>
+          <span className="stale px-1.5 py-0.5 text-[8px] uppercase tracking-wider">stale</span>
         )}
         {down && (
-          <span className="ml-auto px-1.5 py-0.5 rounded down text-[9px] uppercase tracking-wider">feed down</span>
+          <span className="down px-1.5 py-0.5 text-[8px] uppercase tracking-wider">feed down</span>
         )}
       </div>
-
-      <FreshnessBar asOf={asOf} refreshSec={refreshSec} />
     </div>
   );
 }

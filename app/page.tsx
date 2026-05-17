@@ -27,61 +27,64 @@ import ChokepointsPanel       from '@/app/components/ChokepointsPanel';
 import Reveal from '@/app/components/Reveal';
 import { TrendingUp, BarChart2, Zap } from 'lucide-react';
 
-// Leaflet must not run in SSR / Edge context
 const HormuzMap = dynamic(() => import('@/app/components/HormuzMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-[#07090F] flex items-center justify-center">
-      <span className="text-[11px] font-mono text-text3 tracking-[0.2em]">LOADING MAP…</span>
+    <div className="w-full h-full bg-bg flex items-center justify-center">
+      <span className="text-[10px] font-mono text-text4 tracking-[0.22em] uppercase">
+        Loading map…
+      </span>
     </div>
   ),
 });
 
 function DashboardContent() {
-  const { t }                               = useLang();
-  const vessels                             = useAisVessels();
+  const { t }    = useLang();
+  const vessels  = useAisVessels();
   const { data, dataReady, newsLoading, loadData } = useDashboardData();
 
   return (
     <div className="min-h-screen bg-bg text-text">
       <Header />
 
-      {/* ── HERO ───────────────────────────────────────────────── */}
+      {/* ── MAP HERO ─────────────────────────────────────────── */}
       <section
         id="hero"
         className="relative w-full overflow-hidden"
-        style={{ height: 'min(62vh, 520px)', minHeight: '340px' }}
+        style={{ height: 'min(65vh, 580px)', minHeight: '340px' }}
         aria-label="Strait of Hormuz live map"
       >
         <HormuzMap status={data.status} vessels={vessels} />
 
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-          <div className="h-32 bg-gradient-to-t from-bg to-transparent" />
+          <div className="h-28 bg-gradient-to-t from-bg to-transparent" />
         </div>
 
-        {/* Status badge */}
-        <div className="absolute top-16 right-4 md:right-6 pointer-events-none z-[600]">
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-md text-[11px] font-mono transition-colors duration-500 ${
-            !dataReady
-              ? 'bg-caution/10 border-caution/30 text-caution'
-              : data.status.state === 'OPEN'
-              ? 'bg-ok/10 border-ok/30 text-ok'
-              : data.status.state === 'CLOSED'
-              ? 'bg-danger/10 border-danger/35 text-danger'
-              : 'bg-caution/10 border-caution/30 text-caution'
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-              !dataReady ? 'bg-caution'
-              : data.status.state === 'OPEN' ? 'bg-ok'
-              : data.status.state === 'CLOSED' ? 'bg-danger'
-              : 'bg-caution'
-            }`} />
+        {/* Status badge — rectangular, no pill shape */}
+        <div className="absolute top-14 right-4 md:right-6 pointer-events-none z-[600]">
+          <div
+            className={`inline-flex items-center gap-2 px-3 py-1.5 border text-[10px] font-mono uppercase tracking-[0.16em] transition-colors duration-500 ${
+              !dataReady
+                ? 'bg-bg1/90 border-divider text-text3'
+                : data.status.state === 'OPEN'
+                ? 'bg-bg1/90 border-ok/40 text-ok'
+                : data.status.state === 'CLOSED'
+                ? 'bg-bg1/90 border-danger/40 text-danger'
+                : 'bg-bg1/90 border-caution/40 text-caution'
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full animate-[pulse-dot_2.4s_ease-in-out_infinite] ${
+                !dataReady     ? 'bg-text4'
+                : data.status.state === 'OPEN'   ? 'bg-ok'
+                : data.status.state === 'CLOSED' ? 'bg-danger'
+                : 'bg-caution'
+              }`}
+            />
             {!dataReady
               ? t.map.statusSyncing
-              : data.status.state === 'OPEN'
-              ? t.map.statusOpen
-              : data.status.state === 'CLOSED'
-              ? t.map.statusClosed
+              : data.status.state === 'OPEN'   ? t.map.statusOpen
+              : data.status.state === 'CLOSED' ? t.map.statusClosed
               : t.map.statusDisrupted}
           </div>
         </div>
@@ -91,106 +94,181 @@ function DashboardContent() {
         </div>
       </section>
 
-      {/* ── CONTENT ────────────────────────────────────────────── */}
-      <main className="max-w-[1280px] mx-auto px-4 pt-8 pb-0 md:px-6 md:pt-10 flex flex-col gap-6 md:gap-8">
+      {/* ── BRIEFING DOCUMENT ────────────────────────────────── */}
+      <main className="max-w-[1440px] mx-auto px-4 md:px-8 pb-0">
 
-        <div className="animate-fadeInUp" style={{ animationDelay: '0.05s' }}>
-          <HeroStatus status={data.status} loading={!dataReady} brentPrice={data.metrics?.brentPrice} />
-        </div>
+        {/* Status Dispatch */}
+        <section className="py-8 md:py-10 animate-fadeInUp" style={{ animationDelay: '0.05s' }}>
+          <HeroStatus
+            status={data.status}
+            loading={!dataReady}
+            brentPrice={data.metrics?.brentPrice}
+          />
+        </section>
 
+        <hr className="section-rule" />
+
+        {/* Data Strip */}
         <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
           <MetricsGrid metrics={data.metrics} loading={!dataReady} />
         </div>
 
-        <Reveal dir="up">
-          <GlobalExposurePanel state={data.status.state} />
+        <hr className="section-rule" />
+
+        {/* Global Exposure */}
+        <Reveal>
+          <section className="py-8 md:py-10">
+            <GlobalExposurePanel state={data.status.state} />
+          </section>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 md:items-stretch">
-          <Reveal dir="left" className="h-full"><StraitContextPanel /></Reveal>
-          <Reveal dir="right" className="h-full">
-            <ShippingRiskPanel
-              state={data.status.state}
-              tensionIndex={data.status.tensionIndex ?? 0}
-            />
-          </Reveal>
-        </div>
+        <hr className="section-rule" />
 
-        <Reveal dir="up">
-          <EconomicImpactPanel state={data.status.state} />
+        {/* Charts — no card wrapper, editorial labels */}
+        <Reveal>
+          <section className="py-8 md:py-10">
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
+                <TrendingUp size={11} className="text-accent" />
+                {t.chart.title}
+              </span>
+              <span className="text-[9px] font-mono text-text4">
+                Yahoo Finance · {t.chart.period}
+              </span>
+            </div>
+            <BrentChart />
+          </section>
         </Reveal>
 
-        <Reveal dir="up">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 md:gap-6">
-            <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-                  <TrendingUp size={13} className="text-accent" />
-                  {t.chart.title}
-                </div>
-                <span className="text-[10px] text-text3 font-mono">Yahoo Finance · {t.chart.period}</span>
-              </div>
-              <BrentChart />
-            </section>
+        <hr className="section-rule" />
 
-            <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-                  <BarChart2 size={13} className="text-accent" />
-                  {t.nav.vesselTransits}
-                </div>
-                <span className="text-[10px] text-text3 font-mono">IMF PortWatch</span>
+        <Reveal>
+          <section className="py-8 md:py-10">
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
+                <BarChart2 size={11} className="text-accent" />
+                {t.nav.vesselTransits}
+              </span>
+              <span className="text-[9px] font-mono text-text4">IMF PortWatch</span>
+            </div>
+            <TransitChart />
+          </section>
+        </Reveal>
+
+        <hr className="section-rule" />
+
+        {/* Intelligence Feed + Event Log — asymmetric 3/2 */}
+        <Reveal>
+          <section className="py-8 md:py-10">
+            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr]">
+              <div className="lg:pr-10 pb-10 lg:pb-0 lg:border-r border-divider">
+                <NewsFeed news={data.news} loading={newsLoading} />
               </div>
-              <TransitChart />
-            </section>
+              <div className="lg:pl-10">
+                <Timeline events={data.timeline} />
+              </div>
+            </div>
+          </section>
+        </Reveal>
+
+        <hr className="section-rule" />
+
+        {/* Markets + Weather */}
+        <section className="py-8 md:py-10">
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            <Reveal dir="left">
+              <div className="md:pr-8 pb-8 md:pb-0 md:border-r border-divider">
+                <MarketsRail />
+              </div>
+            </Reveal>
+            <Reveal dir="right">
+              <div className="md:pl-8">
+                <WeatherPanel />
+              </div>
+            </Reveal>
           </div>
-        </Reveal>
+        </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-          <Reveal dir="left"><MarketsRail /></Reveal>
-          <Reveal dir="right"><WeatherPanel /></Reveal>
-        </div>
+        <hr className="section-rule" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-          <Reveal dir="left"><NewsFeed news={data.news} loading={newsLoading} /></Reveal>
-          <Reveal dir="right"><Timeline events={data.timeline} /></Reveal>
-        </div>
+        {/* Strait Context + Shipping Risk */}
+        <section className="py-8 md:py-10">
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            <Reveal dir="left">
+              <div className="md:pr-8 pb-8 md:pb-0 md:border-r border-divider">
+                <StraitContextPanel />
+              </div>
+            </Reveal>
+            <Reveal dir="right">
+              <div className="md:pl-8">
+                <ShippingRiskPanel
+                  state={data.status.state}
+                  tensionIndex={data.status.tensionIndex ?? 0}
+                />
+              </div>
+            </Reveal>
+          </div>
+        </section>
 
-        <Reveal dir="up">
-          <HistoricalIncidentsPanel />
-        </Reveal>
+        <hr className="section-rule" />
 
-        <Reveal dir="up">
-          <ChokepointsPanel />
-        </Reveal>
-
+        {/* Economic Impact */}
         <Reveal>
-          <SubscribeInlineCTA />
+          <section className="py-8 md:py-10">
+            <EconomicImpactPanel state={data.status.state} />
+          </section>
         </Reveal>
 
-        {/* API Access CTA */}
+        <hr className="section-rule" />
+
+        {/* Historical Incidents */}
         <Reveal>
-          <div className="rounded-2xl border border-divider bg-card/40 backdrop-blur-sm p-5 md:p-6">
+          <section className="py-8 md:py-10">
+            <HistoricalIncidentsPanel />
+          </section>
+        </Reveal>
+
+        <hr className="section-rule" />
+
+        {/* Chokepoints */}
+        <Reveal>
+          <section className="py-8 md:py-10">
+            <ChokepointsPanel />
+          </section>
+        </Reveal>
+
+        <hr className="section-rule" />
+
+        {/* Subscribe */}
+        <Reveal>
+          <section className="py-8 md:py-10">
+            <SubscribeInlineCTA />
+          </section>
+        </Reveal>
+
+        <hr className="section-rule" />
+
+        {/* API Access — minimal text, no card */}
+        <Reveal>
+          <section className="py-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-2">
-                  <Zap size={13} className="text-accent" />
+                <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 mb-2 flex items-center gap-2">
+                  <Zap size={11} className="text-accent" />
                   {t.nav.publicApi}
                 </div>
-                <p className="text-[12px] text-text3 leading-relaxed max-w-lg">
+                <p className="text-[12px] font-mono text-text3 leading-relaxed max-w-lg">
                   {t.nav.apiDescription}
                 </p>
               </div>
               <a
                 href="/docs"
-                className="shrink-0 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
-                  text-accent border border-accent/30 hover:border-accent/60 hover:bg-accent/5
-                  transition-all duration-200"
+                className="shrink-0 text-[10px] font-mono uppercase tracking-[0.14em] text-accent hover:text-accent-hi border-b border-accent/40 hover:border-accent/80 transition-colors pb-0.5"
               >
-                {t.nav.apiDocsLink}
+                {t.nav.apiDocsLink} →
               </a>
             </div>
-          </div>
+          </section>
         </Reveal>
 
         <AdSlot position="below-intel" />
