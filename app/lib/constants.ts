@@ -52,6 +52,13 @@ export const CONFIDENCE_PER_SOURCE = 0.06;
 export const CONFIDENCE_PER_EVENT  = 0.02;
 export const CONFIDENCE_MAX_EVENTS = 6;
 
+/**
+ * Minimum confidence required to send a CLOSED/DISRUPTED → OPEN alert.
+ * Reopening must be supported by multiple corroborating sources before
+ * subscribers are notified. Closure alerts use the standard threshold.
+ */
+export const REOPEN_CONFIDENCE_THRESHOLD = 0.85;
+
 /** Sliding windows for state detection and scoring (hours) */
 export const STATE_WINDOW_H = 72;
 export const SCORE_WINDOW_H = 24;

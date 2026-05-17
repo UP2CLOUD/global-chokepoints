@@ -18,7 +18,7 @@ export default function StraitContextPanel() {
   const { t } = useLang();
 
   return (
-    <section className="rounded-xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6">
+    <section className="h-full flex flex-col rounded-xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
@@ -45,7 +45,7 @@ export default function StraitContextPanel() {
       </div>
 
       {/* If closed — rerouting cost */}
-      <div className="rounded-lg border border-danger/20 bg-danger/[0.04] p-4">
+      <div className="mt-auto rounded-lg border border-danger/20 bg-danger/[0.04] p-4">
         <div className="flex items-center gap-2 text-[11px] font-mono font-semibold text-danger uppercase tracking-wide mb-2">
           <ArrowRight size={11} />
           {t.facts.rerouteTitle}

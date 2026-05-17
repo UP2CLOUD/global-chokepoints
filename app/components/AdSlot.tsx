@@ -35,7 +35,7 @@ export default function AdSlot({ position, className = '' }: Props) {
 
   return (
     <div
-      className={`w-full overflow-hidden min-h-[100px] ${className}`}
+      className={`w-full overflow-hidden ${className}`}
       role="complementary"
       aria-label="Advertisement"
     >
