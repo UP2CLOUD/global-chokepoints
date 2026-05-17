@@ -18,9 +18,12 @@ import RefreshButton   from '@/app/components/RefreshButton';
 import ScrollIndicator from '@/app/components/ScrollIndicator';
 import AdSlot          from '@/app/components/AdSlot';
 import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
-import GlobalExposurePanel  from '@/app/components/GlobalExposurePanel';
-import StraitContextPanel   from '@/app/components/StraitContextPanel';
-import ShippingRiskPanel    from '@/app/components/ShippingRiskPanel';
+import GlobalExposurePanel    from '@/app/components/GlobalExposurePanel';
+import StraitContextPanel     from '@/app/components/StraitContextPanel';
+import ShippingRiskPanel      from '@/app/components/ShippingRiskPanel';
+import EconomicImpactPanel    from '@/app/components/EconomicImpactPanel';
+import HistoricalIncidentsPanel from '@/app/components/HistoricalIncidentsPanel';
+import ChokepointsPanel       from '@/app/components/ChokepointsPanel';
 import Reveal from '@/app/components/Reveal';
 import { TrendingUp, BarChart2, Zap } from 'lucide-react';
 
@@ -114,6 +117,10 @@ function DashboardContent() {
         </div>
 
         <Reveal dir="up">
+          <EconomicImpactPanel state={data.status.state} />
+        </Reveal>
+
+        <Reveal dir="up">
           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 md:gap-6">
             <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
               <div className="flex items-center justify-between mb-4">
@@ -148,6 +155,14 @@ function DashboardContent() {
           <Reveal dir="left"><NewsFeed news={data.news} loading={newsLoading} /></Reveal>
           <Reveal dir="right"><Timeline events={data.timeline} /></Reveal>
         </div>
+
+        <Reveal dir="up">
+          <HistoricalIncidentsPanel />
+        </Reveal>
+
+        <Reveal dir="up">
+          <ChokepointsPanel />
+        </Reveal>
 
         <Reveal>
           <SubscribeInlineCTA />
