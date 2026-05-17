@@ -3,30 +3,27 @@
 import { NewsItem } from '@/app/lib/types';
 import { useLang } from './LangContext';
 import { fmtDateShort } from '@/app/lib/utils';
-import { Newspaper, ExternalLink, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 interface Props {
   news: NewsItem[];
   loading?: boolean;
 }
 
-const SENTIMENT = {
-  positive: { Icon: TrendingUp,   color: 'text-ok',     label: 'POSITIVE' },
-  negative: { Icon: TrendingDown, color: 'text-danger', label: 'NEGATIVE' },
-  neutral:  { Icon: Minus,        color: 'text-text3',  label: 'NEUTRAL' },
-} as const;
+const SENTIMENT_GLYPH: Record<'positive' | 'negative' | 'neutral', { mark: string; color: string }> = {
+  positive: { mark: '▲', color: 'text-ok' },
+  negative: { mark: '▼', color: 'text-danger' },
+  neutral:  { mark: '─', color: 'text-text4' },
+};
 
 function NewsSkeleton() {
   return (
-    <div className="flex flex-col gap-2">
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="p-3 rounded-lg bg-bg1/60 border border-divider animate-pulse">
-          <div className="h-3 bg-divider rounded w-3/4 mb-2" />
-          <div className="h-3 bg-divider rounded w-1/2" />
-          <div className="mt-2 flex gap-2">
-            <div className="h-2 bg-divider rounded w-16" />
-            <div className="h-2 bg-divider rounded w-12" />
-          </div>
+    <div>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="py-4 border-b border-divider animate-pulse">
+          <div className="h-[9px] w-48 bg-bg2 rounded-sm mb-3" />
+          <div className="h-[14px] w-full bg-bg2 rounded-sm mb-1.5" />
+          <div className="h-[14px] w-3/4 bg-bg2 rounded-sm" />
         </div>
       ))}
     </div>
@@ -36,8 +33,6 @@ function NewsSkeleton() {
 export default function NewsFeed({ news, loading = false }: Props) {
   const { t, locale } = useLang();
 
-  // Defensive uniqueness — even if upstream slips a duplicate id through
-  // (it has historically), React still gets stable, unique keys.
   const seenIds = new Set<string>();
   const items = news.map((item, i) => {
     let key = item.id || item.url || `news-${i}`;
@@ -47,26 +42,29 @@ export default function NewsFeed({ news, loading = false }: Props) {
   });
 
   return (
-    <section className="rounded-xl border border-divider bg-card/70 p-4 md:p-5 overflow-hidden">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-          <Newspaper size={13} className="text-accent" />
+    <div>
+      {/* Section header */}
+      <div className="flex items-center justify-between pb-3 border-b border-divider">
+        <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3">
           {t.news.title}
-        </div>
-        <span className="text-[10px] text-text3 font-mono">
-          {loading ? '—' : `${news.length} ${t.news.sources}`}
+        </span>
+        <span className="text-[9px] font-mono text-text4">
+          {loading ? '—' : `${news.length} ${t.news.sources}`} · GDELT + RSS
         </span>
       </div>
 
-      <div className="flex flex-col gap-2 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
+      {/* Feed */}
+      <div className="max-h-[520px] overflow-y-auto scrollbar-thin -mr-1 pr-1">
         {loading && <NewsSkeleton />}
+
         {!loading && items.length === 0 && (
-          <div className="text-[12px] font-mono text-text3 py-8 text-center">
+          <div className="py-12 text-center text-[12px] font-mono text-text3">
             {t.news.noArticles}
           </div>
         )}
+
         {!loading && items.map((item, i) => {
-          const s = SENTIMENT[item.sentiment];
+          const s = SENTIMENT_GLYPH[item.sentiment];
           const hasLink = item.url && item.url !== '#';
           return (
             <a
@@ -75,34 +73,45 @@ export default function NewsFeed({ news, loading = false }: Props) {
               target={hasLink ? '_blank' : undefined}
               rel={hasLink ? 'noopener noreferrer' : undefined}
               aria-disabled={!hasLink}
-              className={`block p-3 rounded-lg bg-bg1/60 border border-divider transition-colors duration-180 ${hasLink ? 'hover:border-accent/40 hover:bg-bg1/90 cursor-pointer' : 'opacity-80 cursor-default'}`}
-              style={{ animation: `fadeInUp 180ms cubic-bezier(0.2,0.8,0.2,1) ${Math.min(i, 8) * 40}ms both` }}
+              className={`block py-4 border-b border-divider group ${
+                hasLink ? 'cursor-pointer' : 'cursor-default'
+              }`}
+              style={{
+                animation: `fadeInUp 200ms ease ${Math.min(i, 8) * 35}ms both`,
+              }}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-[13px] font-medium text-text leading-snug line-clamp-2">
-                    {item.title}
-                    {hasLink && <ExternalLink size={10} className="inline-block ml-1 -mt-0.5 text-text3" />}
-                  </h4>
-                  <div className="mt-1.5 flex items-center gap-2 text-[10px] text-text3 font-mono">
-                    <span className="truncate max-w-[140px]">{item.source}</span>
-                    <span className="text-text4">·</span>
-                    <span>{fmtDateShort(item.publishedAt, locale)}</span>
-                    <span className="text-text4">·</span>
-                    <span className={`inline-flex items-center gap-1 ${s.color}`}>
-                      <s.Icon size={10} aria-hidden />
-                      <span className="uppercase tracking-wider">{s.label}</span>
-                    </span>
-                  </div>
-                </div>
-                <div className="text-[9px] text-text3 font-mono">
+              {/* Meta row */}
+              <div className="flex items-center gap-3 mb-1.5">
+                <span className={`text-[9px] font-mono font-semibold ${s.color}`}>
+                  {s.mark}
+                </span>
+                <span className="text-[9px] font-mono text-text3 uppercase tracking-wider truncate max-w-[120px]">
+                  {item.source}
+                </span>
+                <span className="text-[9px] font-mono text-text4">
+                  {fmtDateShort(item.publishedAt, locale)}
+                </span>
+                <span className="ml-auto text-[9px] font-mono text-text4 tabular-nums">
                   {Math.round(item.relevance * 100)}%
-                </div>
+                </span>
               </div>
+
+              {/* Headline */}
+              <h4 className={`text-[13px] font-medium leading-snug line-clamp-2 transition-colors duration-150 ${
+                hasLink ? 'group-hover:text-accent' : ''
+              }`}>
+                {item.title}
+                {hasLink && (
+                  <ExternalLink
+                    size={10}
+                    className="inline-block ml-1 -mt-0.5 text-text4 group-hover:text-accent"
+                  />
+                )}
+              </h4>
             </a>
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }

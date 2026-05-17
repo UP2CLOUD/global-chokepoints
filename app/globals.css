@@ -3,44 +3,46 @@
 @tailwind utilities;
 
 @import 'leaflet/dist/leaflet.css';
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;0,900;1,700;1,900&family=IBM+Plex+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* ============================================================
-   IsHormuzOpen / Straitwatch design tokens — dark, institutional
-   See PROPOSAL.md §4 for the rationale.
+   IsHormuzOpen — editorial intelligence design tokens
+   Oil-black surfaces · newsprint text · instrument amber
    ============================================================ */
 :root {
-  /* Surfaces */
-  --bg:        #07090F;
-  --bg-1:      #0B0F18;
-  --bg-2:      #131826;
-  --surface:   var(--bg-1);
-  --card:      var(--bg-2);
-  --divider:   #1E2533;
-  --border:    var(--divider);
+  /* Deep oil-black surfaces */
+  --bg:       #0D0C09;
+  --bg-1:     #141210;
+  --bg-2:     #1C1916;
+  --surface:  var(--bg-1);
+  --card:     var(--bg-2);
 
-  /* Text */
-  --text:   #E6ECF3;
-  --text2:  #A9B4C2;
-  --text3:  #6B7787;
-  --text4:  #404B5A;
+  /* Warm hairline rules */
+  --divider:  #2E2920;
+  --border:   var(--divider);
 
-  /* Semantic state */
-  --ok:        #10B981;
-  --caution:   #F59E0B;
-  --warn:      #F97316;
-  --danger:    #EF4444;
-  --info:      #38BDF8;
+  /* Newsprint text */
+  --text:     #F0E9D6;
+  --text2:    #C8BC9A;
+  --text3:    #8C7D68;
+  --text4:    #5A4F42;
 
-  /* Brand accent (sparing) */
-  --cyan:      #06B6D4;
-  --accent:    #06B6D4;
-  --accent-hi: #67E8F9;
+  /* Instrument state — earthy, not neon */
+  --ok:       #5C8C4A;
+  --caution:  #C17F24;
+  --warn:     #C8601A;
+  --danger:   #B83420;
+  --info:     #8C7D68;
 
-  /* Legacy aliases — keep old class names working */
-  --emerald: var(--ok);
-  --amber:   var(--caution);
-  --red:     var(--danger);
+  /* Brand accent — aircraft amber (replaces cyan) */
+  --cyan:     #C17F24;
+  --accent:   #C17F24;
+  --accent-hi:#D4941A;
+
+  /* Legacy aliases */
+  --emerald:  var(--ok);
+  --amber:    var(--caution);
+  --red:      var(--danger);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,124 +57,124 @@ html, body {
   font-feature-settings: 'cv11', 'ss01';
 }
 
-body {
-  background-image:
-    radial-gradient(ellipse 1200px 800px at 50% -10%, rgba(6,182,212,0.04), transparent 60%),
-    radial-gradient(ellipse 800px 600px at 110% 110%, rgba(56,189,248,0.03), transparent 60%);
-  background-attachment: fixed;
-}
+/* No decorative body gradient — solid oil black */
 
-.font-mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
-.tabular   { font-variant-numeric: tabular-nums; }
+.font-mono    { font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+.font-headline{ font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; }
+.tabular      { font-variant-numeric: tabular-nums; }
 
 a { color: inherit; text-decoration: none; }
 a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 1px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 /* ============================================================
-   Motion — ambient, entrance, and scroll-reveal
+   Motion — editorial / mechanical
    ============================================================ */
 
-/* ── Existing micro-interactions ───────────────────────────── */
-@keyframes pulse-dot   { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: 0.55; } }
-@keyframes live-pulse  { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
-@keyframes status-dot  { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } }
-@keyframes shimmer     { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-@keyframes fadeInUp    { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes closed-pulse{ 0%,100% { box-shadow: 0 0 40px rgba(239,68,68,0.16); } 50% { box-shadow: 0 0 80px rgba(239,68,68,0.35); } }
-@keyframes tick-flash  { 0% { background-color: rgba(56,189,248,0.18); } 100% { background-color: transparent; } }
-@keyframes spin        { to { transform: rotate(360deg); } }
-@keyframes bounce-slow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
-@keyframes scroll-dot  { 0%,100% { transform: translateY(0); opacity: 1; } 60% { transform: translateY(4px); opacity: 0.3; } }
-@keyframes glow-pulse  { 0%,100% { box-shadow: 0 0 20px rgba(6,182,212,0.15); } 50% { box-shadow: 0 0 40px rgba(6,182,212,0.35); } }
+/* Entrance */
+@keyframes fadeInUp  { from { opacity: 0; transform: translateY(6px); }  to { opacity: 1; transform: translateY(0); } }
+@keyframes stamp-in  { from { opacity: 0; transform: scale(0.97) translateY(4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes answer-pop{ from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-/* ── Tone-matched ambient glows (status card) ───────────────── */
-@keyframes ok-glow {
-  0%,100% { box-shadow: 0 0 24px rgba(16,185,129,0.18), 0 0 56px rgba(16,185,129,0.06); }
-  50%      { box-shadow: 0 0 56px rgba(16,185,129,0.40), 0 0 96px rgba(16,185,129,0.12); }
-}
-@keyframes caution-glow {
-  0%,100% { box-shadow: 0 0 24px rgba(245,158,11,0.18), 0 0 56px rgba(245,158,11,0.06); }
-  50%      { box-shadow: 0 0 56px rgba(245,158,11,0.40), 0 0 96px rgba(245,158,11,0.12); }
-}
-@keyframes danger-glow {
-  0%,100% { box-shadow: 0 0 36px rgba(239,68,68,0.22), 0 0 72px rgba(239,68,68,0.08); }
-  50%      { box-shadow: 0 0 72px rgba(239,68,68,0.48), 0 0 120px rgba(239,68,68,0.16); }
-}
-
-/* ── Answer word dramatic entrance ─────────────────────────── */
-@keyframes answer-pop {
-  0%   { opacity: 0; transform: scale(0.82) translateY(10px); filter: blur(6px); }
-  55%  { transform: scale(1.05) translateY(-2px); filter: blur(0); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* ── Horizontal scan-line sweep (decorative) ────────────────── */
+/* Scan / sweep */
 @keyframes scan-h {
-  0%   { transform: translateY(0);    opacity: 0; }
-  4%   { opacity: 0.7; }
-  96%  { opacity: 0.25; }
+  0%   { transform: translateY(0); opacity: 0; }
+  4%   { opacity: 0.35; }
+  96%  { opacity: 0.1; }
   100% { transform: translateY(2000%); opacity: 0; }
 }
 
-/* ── Gentle float for decorative elements ───────────────────── */
-@keyframes float {
-  0%,100% { transform: translateY(0);  }
-  50%      { transform: translateY(-7px); }
-}
+/* Ticker */
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-/* ── Scroll-reveal base (driven by IntersectionObserver) ─────── */
-.reveal       { opacity: 0; transform: translateY(28px);  transition: opacity .55s cubic-bezier(.2,.8,.2,1), transform .55s cubic-bezier(.2,.8,.2,1); transition-delay: var(--reveal-delay,0ms); }
-.reveal-left  { opacity: 0; transform: translateX(-28px); transition: opacity .55s cubic-bezier(.2,.8,.2,1), transform .55s cubic-bezier(.2,.8,.2,1); transition-delay: var(--reveal-delay,0ms); }
-.reveal-right { opacity: 0; transform: translateX(28px);  transition: opacity .55s cubic-bezier(.2,.8,.2,1), transform .55s cubic-bezier(.2,.8,.2,1); transition-delay: var(--reveal-delay,0ms); }
+/* Pulse — instrument style, not neon glow */
+@keyframes pulse-dot    { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes live-pulse   { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes status-dot   { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* Shimmer — loading skeletons only */
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+/* Misc */
+@keyframes bounce-slow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+@keyframes scroll-dot  { 0%,100% { transform: translateY(0); opacity: 1; } 60% { transform: translateY(4px); opacity: 0.3; } }
+@keyframes spin        { to { transform: rotate(360deg); } }
+@keyframes float       { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes tick-flash  { 0% { background-color: rgba(193,127,36,0.12); } 100% { background-color: transparent; } }
+
+/* Glow animations DISABLED — no neon glow in editorial design */
+@keyframes ok-glow      { 0%,100% { opacity: 1; } }
+@keyframes caution-glow { 0%,100% { opacity: 1; } }
+@keyframes danger-glow  { 0%,100% { opacity: 1; } }
+@keyframes closed-pulse { 0%,100% { opacity: 1; } }
+@keyframes glow-pulse   { 0%,100% { opacity: 1; } }
+
+/* ── Scroll-reveal ──────────────────────────────────────────── */
+.reveal       { opacity: 0; transform: translateY(18px); transition: opacity .5s ease, transform .5s ease; transition-delay: var(--reveal-delay,0ms); }
+.reveal-left  { opacity: 0; transform: translateX(-14px); transition: opacity .5s ease, transform .5s ease; transition-delay: var(--reveal-delay,0ms); }
+.reveal-right { opacity: 0; transform: translateX(14px);  transition: opacity .5s ease, transform .5s ease; transition-delay: var(--reveal-delay,0ms); }
 .reveal.is-visible, .reveal-left.is-visible, .reveal-right.is-visible { opacity: 1; transform: none; }
 
-/* ── Utility classes ─────────────────────────────────────────── */
-.animate-fadeInUp    { animation: fadeInUp 180ms cubic-bezier(0.2,0.8,0.2,1) forwards; opacity: 0; }
-.animate-answer-pop  { animation: answer-pop .55s cubic-bezier(0.2,0.8,0.2,1) forwards; }
-.animate-ok-glow     { animation: ok-glow 3.2s ease-in-out infinite; }
-.animate-caution-glow{ animation: caution-glow 3.2s ease-in-out infinite; }
-.animate-danger-glow { animation: danger-glow 2.4s ease-in-out infinite; }
-.animate-float       { animation: float 4s ease-in-out infinite; }
-.tick-flash          { animation: tick-flash 600ms ease-out; }
-.animate-bounce-slow { animation: bounce-slow 2.2s ease-in-out infinite; }
-.animate-scroll-dot  { animation: scroll-dot 1.8s ease-in-out infinite; }
-.animate-glow-pulse  { animation: glow-pulse 3s ease-in-out infinite; }
+/* ── Utility ────────────────────────────────────────────────── */
+.animate-fadeInUp      { animation: fadeInUp 220ms ease forwards; opacity: 0; }
+.animate-answer-pop    { animation: answer-pop .4s ease forwards; }
+.animate-ok-glow       { }
+.animate-caution-glow  { }
+.animate-danger-glow   { }
+.animate-float         { animation: float 4s ease-in-out infinite; }
+.tick-flash            { animation: tick-flash 500ms ease-out; }
+.animate-bounce-slow   { animation: bounce-slow 2.2s ease-in-out infinite; }
+.animate-scroll-dot    { animation: scroll-dot 1.8s ease-in-out infinite; }
+.animate-glow-pulse    { }
 
-/* Respect user motion preferences — kill ambient/decorative motion */
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
   }
   .animate-fadeInUp { opacity: 1 !important; }
   .reveal, .reveal-left, .reveal-right { opacity: 1 !important; transform: none !important; transition: none !important; }
 }
 
 /* Scrollbars */
-.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 3px; }
+.scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--divider); }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--text4); }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
-/* Severity glyphs paired with color for a11y */
-.sev-glyph::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; vertical-align: middle; background: currentColor; }
-
-/* Stale data badge */
+/* Status badges */
 .stale {
-  background: rgba(245, 158, 11, 0.1);
+  background: rgba(193,127,36,0.10);
   color: var(--caution);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  border: 1px solid rgba(193,127,36,0.25);
 }
 .down {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(184,52,32,0.10);
   color: var(--danger);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(184,52,32,0.25);
+}
+
+/* Section dividers */
+.section-rule {
+  border: none;
+  border-top: 1px solid var(--divider);
+}
+
+/* Severity glyphs */
+.sev-glyph::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: currentColor;
 }
 
 .lang-transition { transition: opacity 200ms ease; }
