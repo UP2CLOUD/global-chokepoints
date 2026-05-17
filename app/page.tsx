@@ -106,9 +106,9 @@ function DashboardContent() {
           <GlobalExposurePanel state={data.status.state} />
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-          <Reveal dir="left"><StraitContextPanel /></Reveal>
-          <Reveal dir="right">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 md:items-stretch">
+          <Reveal dir="left" className="h-full"><StraitContextPanel /></Reveal>
+          <Reveal dir="right" className="h-full">
             <ShippingRiskPanel
               state={data.status.state}
               tensionIndex={data.status.tensionIndex ?? 0}

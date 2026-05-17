@@ -48,7 +48,7 @@ export default function ShippingRiskPanel({ state, tensionIndex }: Props) {
   const { t } = useLang();
 
   return (
-    <section className="rounded-xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6">
+    <section className="h-full flex flex-col rounded-xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
@@ -59,7 +59,7 @@ export default function ShippingRiskPanel({ state, tensionIndex }: Props) {
       </div>
 
       {/* Cargo rows */}
-      <div className="space-y-4">
+      <div className="flex-1 space-y-4">
         {CARGO_CLASSES.map(({ key, icon, offset }) => {
           const risk = riskLevel(state, tensionIndex, offset);
           return (
