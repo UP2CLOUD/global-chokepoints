@@ -18,7 +18,9 @@ import RefreshButton   from '@/app/components/RefreshButton';
 import ScrollIndicator from '@/app/components/ScrollIndicator';
 import AdSlot          from '@/app/components/AdSlot';
 import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
-import GlobalExposurePanel from '@/app/components/GlobalExposurePanel';
+import GlobalExposurePanel  from '@/app/components/GlobalExposurePanel';
+import StraitContextPanel   from '@/app/components/StraitContextPanel';
+import ShippingRiskPanel    from '@/app/components/ShippingRiskPanel';
 import Reveal from '@/app/components/Reveal';
 import { TrendingUp, BarChart2, Zap } from 'lucide-react';
 
@@ -101,6 +103,16 @@ function DashboardContent() {
           <GlobalExposurePanel state={data.status.state} />
         </Reveal>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+          <Reveal dir="left"><StraitContextPanel /></Reveal>
+          <Reveal dir="right">
+            <ShippingRiskPanel
+              state={data.status.state}
+              tensionIndex={data.status.tensionIndex ?? 0}
+            />
+          </Reveal>
+        </div>
+
         <Reveal dir="up">
           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 md:gap-6">
             <section className="rounded-2xl border border-divider bg-card/60 backdrop-blur-sm p-5 md:p-6 overflow-hidden">
@@ -166,7 +178,7 @@ function DashboardContent() {
           </div>
         </Reveal>
 
-        <Reveal><AdSlot position="below-intel" /></Reveal>
+        <AdSlot position="below-intel" />
 
         <Footer />
       </main>
