@@ -15,13 +15,17 @@ interface Props {
 
 // Parses once at module level — BLOCKAGE_START_ISO is a constant string so
 // this produces the same value on server and client (no hydration mismatch).
-const BLOCKAGE_START = BLOCKAGE_START_ISO ? new Date(BLOCKAGE_START_ISO) : null;
+const BLOCKAGE_START = (() => {
+  if (!BLOCKAGE_START_ISO) return null;
+  const d = new Date(BLOCKAGE_START_ISO);
+  return Number.isNaN(d.getTime()) ? null : d;
+})();
 
 function useElapsedMs(active: boolean): number | null {
   const [ms, setMs] = useState<number | null>(null);
   useEffect(() => {
     if (!active || !BLOCKAGE_START) return;
-    const tick = () => setMs(Date.now() - BLOCKAGE_START!.getTime());
+    const tick = () => setMs(Math.max(0, Date.now() - BLOCKAGE_START!.getTime()));
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);

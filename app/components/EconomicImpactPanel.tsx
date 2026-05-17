@@ -42,15 +42,15 @@ export default function EconomicImpactPanel({ state }: Props) {
       {/* Big stat tiles */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         <div className="rounded-lg border border-divider bg-bg1/60 p-3 text-center">
-          <div className="text-[19px] font-mono font-bold text-text">$3.4B</div>
+          <div className="text-[19px] font-mono font-bold text-text">{t.economic.dailyValue}</div>
           <div className="text-[9px] font-mono text-text3 uppercase tracking-wide mt-0.5">{t.economic.daily}</div>
         </div>
         <div className="rounded-lg border border-divider bg-bg1/60 p-3 text-center">
-          <div className="text-[19px] font-mono font-bold text-text">$1.2T</div>
+          <div className="text-[19px] font-mono font-bold text-text">{t.economic.annualValue}</div>
           <div className="text-[9px] font-mono text-text3 uppercase tracking-wide mt-0.5">{t.economic.annual}</div>
         </div>
         <div className="rounded-lg border border-divider bg-bg1/60 p-3 text-center">
-          <div className="text-[19px] font-mono font-bold text-accent">21 Mb/d</div>
+          <div className="text-[19px] font-mono font-bold text-accent">{t.economic.oilDailyValue}</div>
           <div className="text-[9px] font-mono text-text3 uppercase tracking-wide mt-0.5">{t.economic.oilDaily}</div>
         </div>
       </div>
