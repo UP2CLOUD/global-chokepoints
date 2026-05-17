@@ -3,11 +3,15 @@
 import { Info, ArrowRight } from 'lucide-react';
 import { useLang } from './LangContext';
 
-const STATS = [
-  { value: '21 Mb/d', labelKey: 'throughputLabel' as const, icon: '🛢️' },
-  { value: '~20%',    labelKey: 'shareLabel'       as const, icon: '🌍' },
-  { value: '5,000+',  labelKey: 'vesselsLabel'     as const, icon: '⛴️' },
-  { value: '2 km',    labelKey: 'widthLabel'       as const, icon: '📍' },
+const STATS: Array<{
+  valueKey: 'throughputValue' | 'shareValue' | 'vesselsValue' | 'widthValue';
+  labelKey: 'throughputLabel' | 'shareLabel' | 'vesselsLabel' | 'widthLabel';
+  icon: string;
+}> = [
+  { valueKey: 'throughputValue', labelKey: 'throughputLabel', icon: '🛢️' },
+  { valueKey: 'shareValue',      labelKey: 'shareLabel',      icon: '🌍' },
+  { valueKey: 'vesselsValue',    labelKey: 'vesselsLabel',    icon: '⛴️' },
+  { valueKey: 'widthValue',      labelKey: 'widthLabel',      icon: '📍' },
 ];
 
 export default function StraitContextPanel() {
@@ -26,13 +30,13 @@ export default function StraitContextPanel() {
 
       {/* Stat tiles */}
       <div className="grid grid-cols-2 gap-3 mb-5">
-        {STATS.map(({ value, labelKey, icon }) => (
+        {STATS.map(({ valueKey, labelKey, icon }) => (
           <div
             key={labelKey}
             className="rounded-lg border border-divider bg-bg1/60 p-3 text-center"
           >
             <div className="text-xl mb-1">{icon}</div>
-            <div className="text-[20px] font-mono font-bold text-accent mb-0.5">{value}</div>
+            <div className="text-[20px] font-mono font-bold text-accent mb-0.5">{t.facts[valueKey]}</div>
             <div className="text-[10px] font-mono text-text3 uppercase tracking-wide">
               {t.facts[labelKey]}
             </div>
