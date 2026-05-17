@@ -1,3 +1,15 @@
+// ── Active event tracking ─────────────────────────────────────────────────────
+/**
+ * ISO timestamp of the current closure/disruption event start.
+ * Update this when a new blocking event begins.
+ * Displayed as a live elapsed counter in the HeroStatus widget when the
+ * strait is not OPEN. Set to '' to hide the counter entirely.
+ *
+ * Last verified: IRGC strait restrictions confirmed active from ~06:00 UTC on
+ * 04 March 2026 (UKMTO advisory MTN-2026-003).
+ */
+export const BLOCKAGE_START_ISO = '2026-03-04T06:00:00.000Z';
+
 // ── Status algorithm thresholds ───────────────────────────────────────────────
 /** Threat score at or above which tensionLevel becomes CRITICAL */
 export const THREAT_CRITICAL_THRESHOLD = 80;

@@ -4,12 +4,38 @@ import { useState, useEffect } from 'react';
 import { StatusData } from '@/app/lib/types';
 import { useLang } from './LangContext';
 import { fmtTime, fmt } from '@/app/lib/utils';
-import { Shield, Clock, ExternalLink, Info, Share2 } from 'lucide-react';
+import { Shield, Clock, ExternalLink, Info, Share2, Timer } from 'lucide-react';
+import { BLOCKAGE_START_ISO } from '@/app/lib/constants';
 
 interface Props {
   status: StatusData;
   loading?: boolean;
   brentPrice?: number;
+}
+
+// Parses once at module level — BLOCKAGE_START_ISO is a constant string so
+// this produces the same value on server and client (no hydration mismatch).
+const BLOCKAGE_START = BLOCKAGE_START_ISO ? new Date(BLOCKAGE_START_ISO) : null;
+
+function useElapsedMs(active: boolean): number | null {
+  const [ms, setMs] = useState<number | null>(null);
+  useEffect(() => {
+    if (!active || !BLOCKAGE_START) return;
+    const tick = () => setMs(Date.now() - BLOCKAGE_START!.getTime());
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [active]);
+  return ms;
+}
+
+function splitElapsed(ms: number) {
+  const total = Math.floor(ms / 1000);
+  const days    = Math.floor(total / 86400);
+  const hours   = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  return { days, hours, minutes, seconds };
 }
 
 function displayAnswer(state: StatusData['state']): {
@@ -90,6 +116,8 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
     : t.hero.answerDisrupted;
 
   const [showWhy, setShowWhy] = useState(false);
+  const isDisrupted = !loading && status.state !== 'OPEN';
+  const elapsedMs   = useElapsedMs(isDisrupted);
 
   const stateLabel = status.state === 'OPEN' ? t.hero.straitOpen
     : status.state === 'CLOSED' ? t.hero.straitClosed
@@ -261,6 +289,46 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
             </p>
           </div>
         )}
+
+        {/* ── Elapsed closure / disruption counter ── */}
+        {isDisrupted && BLOCKAGE_START && elapsedMs !== null && (() => {
+          const { days, hours, minutes, seconds } = splitElapsed(elapsedMs);
+          const pad = (n: number) => String(n).padStart(2, '0');
+          const label = status.state === 'CLOSED'
+            ? t.hero.closureTimer
+            : t.hero.disruptionTimer;
+          return (
+            <div className={`mt-7 rounded-xl border ${styles.border} ${styles.bg} p-4`}>
+              <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-text3 mb-3">
+                <Timer size={11} className={styles.color} />
+                <span className={styles.color}>{label}</span>
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                {[
+                  { val: days,    unit: t.hero.timerDays },
+                  { val: hours,   unit: t.hero.timerHrs  },
+                  { val: minutes, unit: t.hero.timerMin  },
+                  { val: seconds, unit: t.hero.timerSec  },
+                ].map(({ val, unit }) => (
+                  <div
+                    key={unit}
+                    className="rounded-lg border border-divider bg-bg1/70 py-2 px-1"
+                  >
+                    <div
+                      className={`text-2xl md:text-3xl font-mono font-black leading-none tabular-nums ${styles.color}`}
+                      suppressHydrationWarning
+                    >
+                      {unit === t.hero.timerDays ? String(val) : pad(val)}
+                    </div>
+                    <div className="mt-1 text-[9px] font-mono uppercase tracking-widest text-text4">
+                      {unit}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Tension index bar ── */}
         <div className="mt-8">

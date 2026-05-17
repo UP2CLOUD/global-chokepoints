@@ -18,7 +18,12 @@ import RefreshButton   from '@/app/components/RefreshButton';
 import ScrollIndicator from '@/app/components/ScrollIndicator';
 import AdSlot          from '@/app/components/AdSlot';
 import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
-import GlobalExposurePanel from '@/app/components/GlobalExposurePanel';
+import GlobalExposurePanel    from '@/app/components/GlobalExposurePanel';
+import StraitContextPanel     from '@/app/components/StraitContextPanel';
+import ShippingRiskPanel      from '@/app/components/ShippingRiskPanel';
+import EconomicImpactPanel    from '@/app/components/EconomicImpactPanel';
+import HistoricalIncidentsPanel from '@/app/components/HistoricalIncidentsPanel';
+import ChokepointsPanel       from '@/app/components/ChokepointsPanel';
 import Reveal from '@/app/components/Reveal';
 import { TrendingUp, BarChart2, Zap } from 'lucide-react';
 
@@ -87,7 +92,7 @@ function DashboardContent() {
       </section>
 
       {/* ── CONTENT ────────────────────────────────────────────── */}
-      <main className="max-w-[1280px] mx-auto px-4 py-8 md:px-6 md:py-10 flex flex-col gap-6 md:gap-8">
+      <main className="max-w-[1280px] mx-auto px-4 pt-8 pb-0 md:px-6 md:pt-10 flex flex-col gap-6 md:gap-8">
 
         <div className="animate-fadeInUp" style={{ animationDelay: '0.05s' }}>
           <HeroStatus status={data.status} loading={!dataReady} brentPrice={data.metrics?.brentPrice} />
@@ -99,6 +104,20 @@ function DashboardContent() {
 
         <Reveal dir="up">
           <GlobalExposurePanel state={data.status.state} />
+        </Reveal>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+          <Reveal dir="left"><StraitContextPanel /></Reveal>
+          <Reveal dir="right">
+            <ShippingRiskPanel
+              state={data.status.state}
+              tensionIndex={data.status.tensionIndex ?? 0}
+            />
+          </Reveal>
+        </div>
+
+        <Reveal dir="up">
+          <EconomicImpactPanel state={data.status.state} />
         </Reveal>
 
         <Reveal dir="up">
@@ -137,6 +156,14 @@ function DashboardContent() {
           <Reveal dir="right"><Timeline events={data.timeline} /></Reveal>
         </div>
 
+        <Reveal dir="up">
+          <HistoricalIncidentsPanel />
+        </Reveal>
+
+        <Reveal dir="up">
+          <ChokepointsPanel />
+        </Reveal>
+
         <Reveal>
           <SubscribeInlineCTA />
         </Reveal>
@@ -166,7 +193,7 @@ function DashboardContent() {
           </div>
         </Reveal>
 
-        <Reveal><AdSlot position="below-intel" /></Reveal>
+        <AdSlot position="below-intel" />
 
         <Footer />
       </main>
