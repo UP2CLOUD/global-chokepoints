@@ -118,15 +118,29 @@ const CHANGELOG = [
 export default function MethodologyPage() {
   return (
     <main className="min-h-screen bg-[#07090F] text-[#E6ECF3]">
-      <div className="max-w-3xl mx-auto px-5 md:px-8 py-10 md:py-14">
-        <Link
-          href="/"
-          className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#06B6D4] hover:underline"
-        >
-          ← Back to dashboard
-        </Link>
+      {/* Top nav bar — mirrors the main dashboard header */}
+      <header className="sticky top-0 z-50 border-b border-[#1E2533] bg-[#07090F]/80 backdrop-blur-2xl">
+        <div className="max-w-3xl mx-auto px-5 md:px-8 h-14 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative w-5 h-5 rounded-full border border-[#06B6D4]/60">
+              <span className="absolute inset-1 rounded-full bg-[#06B6D4]/30" />
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-[#10B981] rounded-full" />
+            </div>
+            <span className="text-[14px] font-semibold tracking-tight font-mono">
+              IsStraitHormuzOpen<span className="text-[#06B6D4]">?</span>
+            </span>
+          </Link>
+          <Link
+            href="/"
+            className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#06B6D4] hover:underline"
+          >
+            ← Dashboard
+          </Link>
+        </div>
+      </header>
 
-        <h1 className="mt-6 text-3xl md:text-4xl font-semibold tracking-tight">
+      <div className="max-w-3xl mx-auto px-5 md:px-8 py-10 md:py-14">
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
           Methodology
         </h1>
         <p className="mt-3 text-[#A9B4C2] leading-relaxed">
@@ -350,18 +364,6 @@ GET /feed.xml               # RSS 2.0 for journalists and aggregators`}</pre>
             before making decisions. Threat scores are probabilistic outputs
             of an automated algorithm and do not represent a forecast of
             imminent events.
-          </p>
-        </Section>
-
-        <Section title="10. Contact">
-          <p className="text-[#A9B4C2]">
-            Corrections, source suggestions, takedowns, press enquiries:{' '}
-            <a
-              className="text-[#06B6D4] hover:underline"
-              href="mailto:cesarnogueira1210@gmail.com"
-            >
-              cesarnogueira1210@gmail.com
-            </a>
           </p>
         </Section>
 

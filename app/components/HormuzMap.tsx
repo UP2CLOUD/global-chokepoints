@@ -12,6 +12,21 @@ const LANE_OUT: [number, number][] = LANE_IN.map(
   ([lat, lon]): [number, number] => [lat + 0.28, lon],
 ).reverse();
 
+// Global shipping routes radiating outward from the Strait — shown as ghost lines
+// to illustrate why Hormuz is a global chokepoint.
+const ROUTE_EAST: [number, number][] = [
+  [24.2, 59.0], [20.0, 63.0], [12.0, 68.0], [7.0, 76.0],
+  [2.0, 82.0], [1.3, 103.8], // → Singapore / Asia
+];
+const ROUTE_SUEZ: [number, number][] = [
+  [24.2, 58.8], [18.0, 56.0], [13.5, 51.0],
+  [12.5, 44.0], [13.5, 43.0], [20.0, 38.5], [29.9, 32.5], // → Suez Canal
+];
+const ROUTE_CAPE: [number, number][] = [
+  [24.0, 59.0], [15.0, 60.0], [5.0, 58.0],
+  [-10.0, 52.0], [-25.0, 38.0], [-34.5, 18.5], // → Cape of Good Hope
+];
+
 const STATUS_COLOR: Record<string, string> = {
   OPEN: '#10B981',
   PARTIALLY_CLOSED: '#F59E0B',
@@ -151,8 +166,8 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       if (cancelled) return;
 
       map = L.map(containerRef.current!, {
-        center: [26.0, 56.3],
-        zoom: 7,
+        center: [22.0, 60.0],
+        zoom: 5,
         zoomControl: true,
         attributionControl: true,
         scrollWheelZoom: true,
@@ -173,8 +188,15 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
         },
       ).addTo(map);
 
-      L.polyline(LANE_IN,  { color: '#06B6D4', weight: 2.5, opacity: 0.75, dashArray: '10 6' }).addTo(map);
-      L.polyline(LANE_OUT, { color: '#F59E0B', weight: 2.5, opacity: 0.75, dashArray: '10 6' }).addTo(map);
+      // Global ghost routes — thin, low-opacity, no dash
+      const ghostStyle = { weight: 1.2, opacity: 0.28, dashArray: '6 8' };
+      L.polyline(ROUTE_EAST, { ...ghostStyle, color: '#06B6D4' }).addTo(map);
+      L.polyline(ROUTE_SUEZ, { ...ghostStyle, color: '#A78BFA' }).addTo(map);
+      L.polyline(ROUTE_CAPE, { ...ghostStyle, color: '#94A3B8' }).addTo(map);
+
+      // Local strait lanes — brighter, bold
+      L.polyline(LANE_IN,  { color: '#06B6D4', weight: 2.5, opacity: 0.80, dashArray: '10 6' }).addTo(map);
+      L.polyline(LANE_OUT, { color: '#F59E0B', weight: 2.5, opacity: 0.80, dashArray: '10 6' }).addTo(map);
 
       [[LANE_IN, '#06B6D4'], [LANE_OUT, '#F59E0B']].forEach(([lane, color]) => {
         const pts = lane as [number, number][];
