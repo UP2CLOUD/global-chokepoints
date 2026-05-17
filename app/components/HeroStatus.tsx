@@ -145,7 +145,7 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
           </span>
         </div>
         <div className="flex items-center gap-5 text-[9px] font-mono text-text4">
-          <span suppressHydrationWarning>{fmtTime(status.lastUpdated, locale)} UTC</span>
+          <span suppressHydrationWarning>{fmtTime(status.lastUpdated, locale)}</span>
           <button
             onClick={shareStatus}
             className="flex items-center gap-1.5 hover:text-text2 transition-colors uppercase tracking-[0.14em]"
@@ -267,7 +267,6 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
               {loading ? '—' : `${(status.confidence * 100).toFixed(0)}%`}
             </div>
             <div className="mt-1 text-[9px] font-mono text-text4">
-              {t.hero.howComputed} ·{' '}
               <a href="/methodology" className="hover:text-accent transition-colors">
                 {t.hero.howComputed} →
               </a>

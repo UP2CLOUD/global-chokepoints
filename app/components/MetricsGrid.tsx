@@ -33,7 +33,7 @@ export default function MetricsGrid({ metrics, loading = false }: Props) {
           title={t.metrics.brent}
           value={`$${metrics.brentPrice.toFixed(2)}`}
           icon={<DollarSign size={11} />}
-          change={`${metrics.brentChange >= 0 ? '↑' : '↓'} ${Math.abs(metrics.brentChange).toFixed(2)} (${metrics.brentChangePercent >= 0 ? '+' : ''}${metrics.brentChangePercent.toFixed(2)}%)`}
+          change={`${metrics.brentChange > 0 ? '↑' : metrics.brentChange < 0 ? '↓' : ''} ${Math.abs(metrics.brentChange).toFixed(2)} (${metrics.brentChangePercent >= 0 ? '+' : ''}${metrics.brentChangePercent.toFixed(2)}%)`}
           changeType={metrics.brentChange >= 0 ? 'up' : 'down'}
           source="Yahoo Finance"
           spark={metrics.brentHistory}

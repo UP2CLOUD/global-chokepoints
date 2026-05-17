@@ -100,8 +100,6 @@ export default function Timeline({ events }: Props) {
             onClick={() => { setFilter(f.key); setExpanded(null); }}
             aria-pressed={filter === f.key}
             className={`flex-shrink-0 px-3 py-2 text-[9px] font-mono uppercase tracking-[0.14em] border-r border-divider transition-colors cursor-pointer ${
-              idx === 0 ? '' : ''
-            } ${
               filter === f.key
                 ? 'text-accent bg-bg1'
                 : 'text-text4 hover:text-text3'
@@ -135,7 +133,7 @@ export default function Timeline({ events }: Props) {
                 <div className="flex flex-col items-center gap-1 pt-0.5 shrink-0">
                   <span className={`w-1.5 h-1.5 rounded-full ${sev.dot}`} aria-hidden />
                   <span
-                    className={`text-[8px] font-mono font-bold ${sev.text} writing-mode-vertical`}
+                    className={`text-[8px] font-mono font-bold ${sev.text}`}
                     style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', letterSpacing: '0.08em' }}
                   >
                     {sev.code}

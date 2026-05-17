@@ -35,7 +35,7 @@ export default function Header() {
           />
           <div className="leading-none">
             <h1 className="font-headline font-black text-[16px] tracking-tight">
-              IsStraitHormuzOpen<span className="text-accent">?</span>
+              {t.header.title}<span className="text-accent">{t.header.titleAccent}</span>
             </h1>
             <p className="hidden md:block text-[8px] font-mono text-text4 uppercase tracking-[0.22em] mt-0.5">
               {t.header.subtitle}
