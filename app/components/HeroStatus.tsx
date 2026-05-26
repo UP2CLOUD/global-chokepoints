@@ -203,6 +203,24 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
             </div>
           )}
 
+          {/* Operational CTAs */}
+          <div className="mt-5 flex flex-wrap gap-2">
+            {[
+              { label: 'Incident Feed',  href: '#intel'        },
+              { label: 'Maritime Map',   href: '#hero'         },
+              { label: 'Chokepoints',    href: '#chokepoints'  },
+              { label: 'API Access',     href: '/docs'         },
+            ].map(({ label, href }) => (
+              <a
+                key={label}
+                href={href}
+                className="text-[9px] font-mono uppercase tracking-[0.14em] text-text3 border border-divider px-3 py-1.5 hover:border-accent/50 hover:text-accent transition-colors duration-150 cursor-pointer"
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+
           {showWhy && (
             <div className="mt-4 pt-4 border-t border-divider animate-fadeInUp">
               <p className="text-[12px] font-mono text-text3 leading-relaxed">
@@ -270,6 +288,28 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
               <a href="/methodology" className="hover:text-accent transition-colors">
                 {t.hero.howComputed} →
               </a>
+            </div>
+          </div>
+
+          {/* System status row */}
+          <div className="pt-3 border-t border-divider/60 grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-[8px] font-mono uppercase tracking-[0.18em] text-text4 mb-1">
+                DATA FRESHNESS
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className={`w-1 h-1 rounded-full animate-[live-pulse_2s_ease-in-out_infinite] ${loading ? 'bg-text4' : 'bg-ok'}`} aria-hidden />
+                <span className="text-[10px] font-mono text-text">{loading ? 'SYNCING' : 'CURRENT'}</span>
+              </div>
+            </div>
+            <div>
+              <div className="text-[8px] font-mono uppercase tracking-[0.18em] text-text4 mb-1">
+                SYSTEM
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-ok" aria-hidden />
+                <span className="text-[10px] font-mono text-ok">OPERATIONAL</span>
+              </div>
             </div>
           </div>
 
