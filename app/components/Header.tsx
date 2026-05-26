@@ -27,19 +27,19 @@ export default function Header() {
     >
       <div className="max-w-[1440px] mx-auto px-4 md:px-8 flex items-center justify-between h-12">
 
-        {/* Brand mark */}
-        <div className="flex items-center gap-2.5">
-          <span
-            className="w-2 h-2 rounded-full bg-accent"
-            aria-hidden
-          />
-          <div className="leading-none">
-            <h1 className="font-headline font-black text-[16px] tracking-tight">
-              {t.header.title}<span className="text-accent">{t.header.titleAccent}</span>
+        {/* Brand mark — stacked editorial wordmark */}
+        <div className="flex items-center gap-2.5" aria-label="IsStraitHormuzOpen?">
+          <span className="w-2 h-2 rounded-full bg-accent shrink-0" aria-hidden />
+          <div className="flex flex-col gap-[2px]">
+            <span className="text-[7px] font-mono uppercase tracking-[0.28em] text-text3 leading-none">
+              IS STRAIT
+            </span>
+            <h1 className="font-headline font-black italic text-[19px] leading-none tracking-tight text-text">
+              HORMUZ
             </h1>
-            <p className="hidden md:block text-[8px] font-mono text-text4 uppercase tracking-[0.22em] mt-0.5">
-              {t.header.subtitle}
-            </p>
+            <span className="text-[7px] font-mono uppercase tracking-[0.28em] text-accent leading-none">
+              OPEN?
+            </span>
           </div>
         </div>
 
