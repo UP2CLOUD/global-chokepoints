@@ -25,19 +25,19 @@ export default function Header() {
       }`}
       style={scrolled ? { backdropFilter: 'none' } : undefined}
     >
-      <div className="max-w-[1440px] mx-auto px-4 md:px-8 flex items-center justify-between h-12">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-8 flex items-center justify-between h-16">
 
         {/* Brand mark — stacked editorial wordmark */}
-        <div className="flex items-center gap-2.5" aria-label="IsStraitHormuzOpen?">
-          <span className="w-2 h-2 rounded-full bg-accent shrink-0" aria-hidden />
-          <div className="flex flex-col gap-[2px]">
-            <span className="text-[7px] font-mono uppercase tracking-[0.28em] text-text3 leading-none">
+        <div className="flex items-center gap-3" aria-label="IsStraitHormuzOpen?">
+          <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0" aria-hidden />
+          <div className="flex flex-col gap-[3px]">
+            <span className="text-[9px] font-mono uppercase tracking-[0.28em] text-text3 leading-none">
               IS STRAIT
             </span>
-            <h1 className="font-headline font-black italic text-[19px] leading-none tracking-tight text-text">
+            <h1 className="font-headline font-black italic text-[32px] leading-none tracking-tight text-text">
               HORMUZ
             </h1>
-            <span className="text-[7px] font-mono uppercase tracking-[0.28em] text-accent leading-none">
+            <span className="text-[9px] font-mono uppercase tracking-[0.28em] text-accent leading-none">
               OPEN?
             </span>
           </div>
