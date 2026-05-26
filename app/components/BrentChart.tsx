@@ -28,9 +28,9 @@ export default function BrentChart() {
     return () => { active = false; clearInterval(id); };
   }, []);
 
-  const accent = '#4DA3FF';  // operational blue
-  const grid   = '#1E2A3B';  // tactical divider
-  const text3  = '#6B7A90';  // tactical text3
+  const accent = 'var(--accent)';  // operational blue
+  const grid   = 'var(--divider)'; // tactical divider
+  const text3  = 'var(--text3)';   // tactical text3
 
   return (
     <div className="w-full h-[200px] md:h-[240px] relative" role="img" aria-label="Brent crude price, last 7 trading days">
@@ -64,7 +64,7 @@ export default function BrentChart() {
               return null;
             }}
           />
-          <Area type="monotone" dataKey="price" stroke={accent} strokeWidth={1.5} fill="url(#brentGrad)" activeDot={{ r: 3, fill: accent, stroke: '#070B11', strokeWidth: 2 }} />
+          <Area type="monotone" dataKey="price" stroke={accent} strokeWidth={1.5} fill="url(#brentGrad)" activeDot={{ r: 3, fill: accent, stroke: 'var(--bg)', strokeWidth: 2 }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

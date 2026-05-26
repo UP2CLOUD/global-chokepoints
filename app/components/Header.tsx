@@ -25,10 +25,10 @@ export default function Header({ status, metrics, loading }: Props) {
   }, []);
 
   const globalStatus = loading || !status
-    ? 'SYNCING'
-    : status.state === 'OPEN'    ? 'NORMAL OPS'
-    : status.state === 'CLOSED'  ? 'CRITICAL'
-    : 'ELEVATED RISK';
+    ? t.header.statusSyncing
+    : status.state === 'OPEN'    ? t.header.statusNormalOps
+    : status.state === 'CLOSED'  ? t.header.statusCritical
+    : t.header.statusElevatedRisk;
 
   const statusColor = loading || !status
     ? 'text-text4'
@@ -47,26 +47,26 @@ export default function Header({ status, metrics, loading }: Props) {
         <div className="max-w-[1440px] mx-auto px-4 md:px-8 h-[26px] flex items-center gap-0 overflow-x-auto scrollbar-none">
 
           <div className="flex items-center gap-2 pr-4 border-r border-divider/70 shrink-0">
-            <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">GLOBAL STATUS</span>
+            <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">{t.header.globalStatusLabel}</span>
             <span className={`text-[8px] font-mono font-semibold uppercase tracking-[0.12em] ${statusColor}`}>
               {globalStatus}
             </span>
           </div>
 
           <div className="flex items-center gap-2 px-4 border-r border-divider/70 shrink-0">
-            <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">INCIDENTS 24H</span>
+            <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">{t.header.incidentsLabel}</span>
             <span className={`text-[8px] font-mono font-semibold ${activeIncidents > 0 ? 'text-caution' : 'text-text3'}`}>
               {activeIncidents}
             </span>
           </div>
 
           <div className="hidden sm:flex items-center gap-2 px-4 border-r border-divider/70 shrink-0">
-            <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">CHOKEPOINTS</span>
-            <span className="text-[8px] font-mono font-semibold text-text3">5 MONITORED</span>
+            <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">{t.header.chokepointsLabel}</span>
+            <span className="text-[8px] font-mono font-semibold text-text3">{t.header.monitoredCount}</span>
           </div>
 
           <div className="hidden md:flex items-center gap-2 px-4 shrink-0 ml-auto">
-            <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">LAST UPDATE</span>
+            <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">{t.header.lastUpdateLabel}</span>
             <span className="text-[8px] font-mono text-text3 tabular-nums" suppressHydrationWarning>
               {lastUpdate ? fmtTime(lastUpdate, locale) : '—'}
             </span>

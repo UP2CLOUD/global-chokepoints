@@ -129,9 +129,9 @@ export default function MethodologyContent() {
             </div>
             <div>
               <span className="text-[15px] font-bold leading-none tracking-[-0.01em] text-text">
-                Global Chokepoints<span className="text-accent font-semibold"> Alerts</span>
+                {t.header.title}<span className="text-accent font-semibold">{t.header.titleAccent}</span>
               </span>
-              <p className="text-[8px] font-mono text-text4 uppercase tracking-[0.22em] mt-[3px]">Maritime Intelligence Platform</p>
+              <p className="text-[8px] font-mono text-text4 uppercase tracking-[0.22em] mt-[3px]">{t.header.subtitle}</p>
             </div>
           </Link>
 

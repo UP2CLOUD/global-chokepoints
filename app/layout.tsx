@@ -1,7 +1,31 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter, JetBrains_Mono, IBM_Plex_Mono } from 'next/font/google';
 import AdSenseLoader from '@/app/components/AdSenseLoader';
 import { LangProvider } from '@/app/components/LangContext';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-jetbrains',
+  display: 'swap',
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-ibm-plex',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev'),
@@ -64,13 +88,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Inter (UI + headlines) + JetBrains Mono (telemetry) */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
-          rel="stylesheet"
-        />
         <link
           rel="alternate"
           type="application/rss+xml"
@@ -78,7 +95,10 @@ export default function RootLayout({
           href="/feed.xml"
         />
       </head>
-      <body className="antialiased" suppressHydrationWarning>
+      <body
+        className={`antialiased ${inter.variable} ${jetbrainsMono.variable} ${ibmPlexMono.variable}`}
+        suppressHydrationWarning
+      >
         {/* JSON-LD in body avoids Next.js 15 head-script hydration collision with
             afterInteractive Script placeholders (AdSense). Search engines read it here fine. */}
         <script

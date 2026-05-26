@@ -45,19 +45,19 @@ const STATE_TONE = {
   ok: {
     color:     'text-ok',
     bar:       'bg-ok',
-    indicator: '#49D17D',
+    indicator: 'var(--ok)',
     label:     'text-ok',
   },
   caution: {
     color:     'text-caution',
     bar:       'bg-caution',
-    indicator: '#FFB84D',
+    indicator: 'var(--caution)',
     label:     'text-caution',
   },
   danger: {
     color:     'text-danger',
     bar:       'bg-danger',
-    indicator: '#FF5A5A',
+    indicator: 'var(--danger)',
     label:     'text-danger',
   },
 } as const;

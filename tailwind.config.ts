@@ -50,9 +50,9 @@ const config: Config = {
         copper:  '#9A5A40',
       },
       fontFamily: {
-        headline: ['Inter', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
-        mono:     ['"JetBrains Mono"', '"IBM Plex Mono"', 'monospace'],
-        sans:     ['Inter', 'system-ui', 'sans-serif'],
+        headline: ['var(--font-inter)', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        mono:     ['var(--font-jetbrains)', 'var(--font-ibm-plex)', 'monospace'],
+        sans:     ['var(--font-inter)', 'system-ui', 'sans-serif'],
         serif:    ['Georgia', '"Times New Roman"', 'serif'],
       },
       fontSize: {
