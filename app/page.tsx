@@ -25,6 +25,7 @@ import EconomicImpactPanel    from '@/app/components/EconomicImpactPanel';
 import HistoricalIncidentsPanel from '@/app/components/HistoricalIncidentsPanel';
 import ChokepointsPanel       from '@/app/components/ChokepointsPanel';
 import Reveal from '@/app/components/Reveal';
+import TickerBar from '@/app/components/TickerBar';
 import { TrendingUp, BarChart2, Zap } from 'lucide-react';
 
 const HormuzMap = dynamic(() => import('@/app/components/HormuzMap'), {
@@ -49,6 +50,12 @@ function DashboardContent() {
         status={dataReady ? data.status : undefined}
         metrics={dataReady ? data.metrics : undefined}
         loading={!dataReady}
+      />
+
+      {/* ── LIVE TICKER ─────────────────────────────────────── */}
+      <TickerBar
+        status={dataReady ? data.status : undefined}
+        metrics={dataReady ? data.metrics : undefined}
       />
 
       {/* ── MAP HERO ─────────────────────────────────────────── */}
@@ -119,6 +126,15 @@ function DashboardContent() {
 
         <hr className="section-rule" />
 
+        {/* Strategic Chokepoints Grid */}
+        <Reveal>
+          <section id="chokepoints" className="py-8 md:py-10" style={{ scrollMarginTop: '82px' }}>
+            <ChokepointsPanel />
+          </section>
+        </Reveal>
+
+        <hr className="section-rule" />
+
         {/* Global Exposure */}
         <Reveal>
           <section className="py-8 md:py-10">
@@ -163,7 +179,7 @@ function DashboardContent() {
 
         {/* Intelligence Feed + Event Log — asymmetric 3/2 */}
         <Reveal>
-          <section className="py-8 md:py-10">
+          <section id="intel" className="py-8 md:py-10" style={{ scrollMarginTop: '82px' }}>
             <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr]">
               <div className="lg:pr-10 pb-10 lg:pb-0 lg:border-r border-divider">
                 <NewsFeed news={data.news} loading={newsLoading} />
@@ -229,15 +245,6 @@ function DashboardContent() {
         <Reveal>
           <section className="py-8 md:py-10">
             <HistoricalIncidentsPanel />
-          </section>
-        </Reveal>
-
-        <hr className="section-rule" />
-
-        {/* Chokepoints */}
-        <Reveal>
-          <section className="py-8 md:py-10">
-            <ChokepointsPanel />
           </section>
         </Reveal>
 

@@ -22,11 +22,23 @@ async function ensureGsap() {
 interface Props { events: TimelineEvent[] }
 
 const SEVERITY_STYLE = {
-  low:      { dot: 'bg-info',    text: 'text-text3',  code: 'LOW',  bar: 'bg-info' },
-  medium:   { dot: 'bg-caution', text: 'text-caution', code: 'MED',  bar: 'bg-caution' },
-  high:     { dot: 'bg-warn',    text: 'text-warn',    code: 'HIGH', bar: 'bg-warn' },
-  critical: { dot: 'bg-danger',  text: 'text-danger',  code: 'CRIT', bar: 'bg-danger' },
+  low:      { dot: 'bg-info',    text: 'text-text3',   code: 'LOW',  bar: 'bg-info',    conf: 58 },
+  medium:   { dot: 'bg-caution', text: 'text-caution', code: 'MED',  bar: 'bg-caution', conf: 72 },
+  high:     { dot: 'bg-warn',    text: 'text-warn',    code: 'HIGH', bar: 'bg-warn',    conf: 84 },
+  critical: { dot: 'bg-danger',  text: 'text-danger',  code: 'CRIT', bar: 'bg-danger',  conf: 95 },
 } as const;
+
+function inferRegion(title: string): string {
+  const t = title.toUpperCase();
+  if (/HORMUZ|IRAN|GULF OF OMAN|BANDAR|IRGC/.test(t))        return 'HORMUZ';
+  if (/RED SEA|BAB EL.MANDEB|HOUTHI|YEMEN|ADEN/.test(t))     return 'RED SEA';
+  if (/SUEZ|EGYPT/.test(t))                                    return 'SUEZ';
+  if (/PANAMA/.test(t))                                        return 'PANAMA';
+  if (/TAIWAN|SOUTH CHINA|PLA/.test(t))                       return 'PACIFIC';
+  if (/MALACCA/.test(t))                                       return 'MALACCA';
+  if (/OPEC|OIL PRICE|BRENT|WTI/.test(t))                    return 'GLOBAL';
+  return 'GULF';
+}
 
 export default function Timeline({ events }: Props) {
   const { t, locale } = useLang();
@@ -94,7 +106,7 @@ export default function Timeline({ events }: Props) {
 
       {/* Filter strip */}
       <div className="flex gap-0 overflow-x-auto scrollbar-none border-b border-divider">
-        {filters.map((f, idx) => (
+        {filters.map((f) => (
           <button
             key={f.key}
             onClick={() => { setFilter(f.key); setExpanded(null); }}
@@ -120,38 +132,38 @@ export default function Timeline({ events }: Props) {
 
         {filtered.map((event) => {
           const isExpanded = expanded === event.id;
-          const sev = SEVERITY_STYLE[event.severity];
+          const sev    = SEVERITY_STYLE[event.severity];
+          const region = inferRegion(event.title);
 
           return (
             <div
               key={event.id}
-              className="tl-item border-b border-divider cursor-pointer group"
+              className="tl-item border-b border-divider/70 cursor-pointer group hover:bg-bg1/40 transition-colors duration-100"
               onClick={() => setExpanded(isExpanded ? null : event.id)}
             >
-              <div className="py-3.5 flex gap-3">
-                {/* Severity indicator */}
-                <div className="flex flex-col items-center gap-1 pt-0.5 shrink-0">
-                  <span className={`w-1.5 h-1.5 rounded-full ${sev.dot}`} aria-hidden />
-                  <span
-                    className={`text-[8px] font-mono font-bold ${sev.text}`}
-                    style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', letterSpacing: '0.08em' }}
-                  >
-                    {sev.code}
-                  </span>
+              <div className="py-2.5 flex gap-2.5">
+                {/* Severity bar */}
+                <div className="w-[3px] self-stretch shrink-0 rounded-full">
+                  <div className={`w-full h-full rounded-full ${sev.bar} opacity-70`} />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   {/* Meta row */}
-                  <div className="flex items-center gap-3 mb-1.5">
-                    <span className="text-[9px] font-mono text-accent tabular-nums">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-[8px] font-mono font-bold uppercase ${sev.text}`}>
+                      {sev.code}
+                    </span>
+                    <span className="text-text4/40 text-[8px]">·</span>
+                    <span className="text-[8px] font-mono text-accent/80 uppercase tracking-[0.14em]">
+                      {region}
+                    </span>
+                    <span className="text-text4/40 text-[8px]">·</span>
+                    <span className="text-[8px] font-mono text-text4 tabular-nums">
                       {fmtDate(event.date, locale)}
                     </span>
-                    <span className="text-[9px] font-mono text-text4 uppercase tracking-wider">
-                      {event.category}
-                    </span>
-                    <span className="ml-auto text-[9px] font-mono text-text4 truncate max-w-[80px]">
-                      {event.source}
+                    <span className="ml-auto text-[8px] font-mono text-text4">
+                      {sev.conf}%
                     </span>
                   </div>
 
@@ -162,31 +174,29 @@ export default function Timeline({ events }: Props) {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="block text-[12px] font-medium leading-snug hover:text-accent transition-colors duration-150"
+                      className="block text-[11px] font-mono leading-snug text-text2 hover:text-accent transition-colors duration-150"
                     >
                       {event.title}
                       <ExternalLink size={9} className="inline-block ml-1 -mt-0.5 text-text4" />
                     </a>
                   ) : (
-                    <h4 className="text-[12px] font-medium leading-snug">{event.title}</h4>
+                    <h4 className="text-[11px] font-mono leading-snug text-text2">{event.title}</h4>
                   )}
+
+                  {/* Source + category */}
+                  <div className="mt-0.5 flex items-center gap-2 text-[8px] font-mono text-text4">
+                    <span className="uppercase tracking-[0.12em]">{event.category}</span>
+                    <span className="text-text4/40">·</span>
+                    <span className="truncate max-w-[90px]">{event.source}</span>
+                  </div>
 
                   {/* Expanded description */}
                   <div
-                    className={`mt-2 text-[11px] text-text3 leading-relaxed overflow-hidden transition-all duration-200 ${
+                    className={`mt-2 text-[10px] font-mono text-text3 leading-relaxed overflow-hidden transition-all duration-200 ${
                       isExpanded ? 'max-h-[200px] opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     {event.description}
-                  </div>
-
-                  {/* Expand hint */}
-                  <div
-                    className={`mt-1 text-[9px] font-mono text-text4 transition-opacity ${
-                      isExpanded ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
-                    }`}
-                  >
-                    {t.timeline.clickExpand} ↓
                   </div>
                 </div>
               </div>
