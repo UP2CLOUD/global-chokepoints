@@ -1,9 +1,9 @@
 export const translations = {
   en: {
     header: {
-      title: 'IsStraitHormuz',
-      titleAccent: 'Open?',
-      subtitle: 'Real-Time Monitoring',
+      title: 'Global Chokepoints',
+      titleAccent: ' Alerts',
+      subtitle: 'Maritime Intelligence Platform',
       live: 'LIVE',
       version: 'v1.0',
       methodology: 'Methodology',
@@ -195,7 +195,7 @@ export const translations = {
       publicApi: 'Public API',
       apiDescription: 'Embed strait status in your platform. Free JSON API — CORS-open, edge-cached, CC-BY-4.0.',
       apiDocsLink: 'API Docs →',
-      poweredBy: 'Powered by IsStraitHormuzOpen?',
+      poweredBy: 'Powered by Global Chokepoints Alerts',
     },
     subscribe: {
       bellLabel: 'Alerts',
@@ -217,7 +217,7 @@ export const translations = {
       alertsCta: 'Subscribe',
     },
     footer: {
-      copyright: '© 2026 IsStraitHormuzOpen? — For informational purposes only.',
+      copyright: '© 2026 Global Chokepoints Alerts — For informational purposes only.',
       apiStatus: 'API Status',
       operational: 'OPERATIONAL',
       latency: 'Latency',
@@ -233,7 +233,7 @@ export const translations = {
     methodology: {
       backToDashboard: '← Back to dashboard',
       title: 'Methodology',
-      subtitle: 'IsStraitHormuzOpen? is a public intelligence dashboard monitoring the operational state of the Strait of Hormuz in near real-time. Every number on the page is computed from a documented source on a documented cadence. This page explains how.',
+      subtitle: 'Global Chokepoints Alerts is a public maritime intelligence platform monitoring strategic chokepoints, shipping corridor disruptions, and geopolitical incidents in near real-time. Every number on the page is computed from a documented source on a documented cadence. This page explains how.',
       s1title: '1. What we measure',
       s2title: '2. Data sources',
       s3title: '3. Status computation',
@@ -263,9 +263,9 @@ export const translations = {
 
   pt: {
     header: {
-      title: 'IsStraitHormuz',
-      titleAccent: 'Open?',
-      subtitle: 'Monitoramento em Tempo Real',
+      title: 'Global Chokepoints',
+      titleAccent: ' Alerts',
+      subtitle: 'Plataforma de Inteligência Marítima',
       live: 'AO VIVO',
       version: 'v1.0',
       methodology: 'Metodologia',
@@ -457,7 +457,7 @@ export const translations = {
       publicApi: 'API Pública',
       apiDescription: 'Integre o status do Estreito em sua plataforma. API JSON gratuita — CORS aberto, cache na borda, CC-BY-4.0.',
       apiDocsLink: 'Docs da API →',
-      poweredBy: 'Desenvolvido por IsStraitHormuzOpen?',
+      poweredBy: 'Desenvolvido por Global Chokepoints Alerts',
     },
     subscribe: {
       bellLabel: 'Alertas',
@@ -479,7 +479,7 @@ export const translations = {
       alertsCta: 'Inscrever-se',
     },
     footer: {
-      copyright: '© 2026 IsStraitHormuzOpen? — Dados com fins informativos apenas.',
+      copyright: '© 2026 Global Chokepoints Alerts — Dados com fins informativos apenas.',
       apiStatus: 'Status da API',
       operational: 'OPERACIONAL',
       latency: 'Latência',
@@ -495,7 +495,7 @@ export const translations = {
     methodology: {
       backToDashboard: '← Voltar ao painel',
       title: 'Metodologia',
-      subtitle: 'IsStraitHormuzOpen? é um painel de inteligência público que monitora o estado operacional do Estreito de Ormuz em tempo quase real. Cada número na página é calculado a partir de uma fonte documentada em uma cadência documentada. Esta página explica como.',
+      subtitle: 'Global Chokepoints Alerts é uma plataforma pública de inteligência marítima que monitora pontos estratégicos de estrangulamento e perturbações em corredores de navegação em tempo quase real. Cada número é calculado de uma fonte documentada com cadência documentada. Esta página explica como.',
       s1title: '1. O que medimos',
       s2title: '2. Fontes de dados',
       s3title: '3. Cálculo do status',
@@ -525,9 +525,9 @@ export const translations = {
 
   es: {
     header: {
-      title: 'IsStraitHormuz',
-      titleAccent: 'Open?',
-      subtitle: 'Monitoreo en Tiempo Real',
+      title: 'Global Chokepoints',
+      titleAccent: ' Alerts',
+      subtitle: 'Plataforma de Inteligencia Marítima',
       live: 'EN VIVO',
       version: 'v1.0',
       methodology: 'Metodología',
@@ -719,7 +719,7 @@ export const translations = {
       publicApi: 'API Pública',
       apiDescription: 'Integra el estado del Estrecho en tu plataforma. API JSON gratuita — CORS abierto, caché en el borde, CC-BY-4.0.',
       apiDocsLink: 'Docs de API →',
-      poweredBy: 'Desarrollado por IsStraitHormuzOpen?',
+      poweredBy: 'Desarrollado por Global Chokepoints Alerts',
     },
     subscribe: {
       bellLabel: 'Alertas',
@@ -741,7 +741,7 @@ export const translations = {
       alertsCta: 'Suscribirse',
     },
     footer: {
-      copyright: '© 2026 IsStraitHormuzOpen? — Solo con fines informativos.',
+      copyright: '© 2026 Global Chokepoints Alerts — Solo con fines informativos.',
       apiStatus: 'Estado de API',
       operational: 'OPERACIONAL',
       latency: 'Latencia',
@@ -757,7 +757,7 @@ export const translations = {
     methodology: {
       backToDashboard: '← Volver al panel',
       title: 'Metodología',
-      subtitle: 'IsStraitHormuzOpen? es un panel de inteligencia público que monitorea el estado operacional del Estrecho de Ormuz en tiempo casi real. Cada número en la página se calcula a partir de una fuente documentada en una cadencia documentada. Esta página explica cómo.',
+      subtitle: 'Global Chokepoints Alerts es una plataforma pública de inteligencia marítima que monitorea estrechos estratégicos y perturbaciones en corredores de navegación en tiempo casi real. Cada número se calcula de una fuente documentada con cadencia documentada. Esta página explica cómo.',
       s1title: '1. Qué medimos',
       s2title: '2. Fuentes de datos',
       s3title: '3. Cálculo del estado',
@@ -787,9 +787,9 @@ export const translations = {
 
   fr: {
     header: {
-      title: 'IsStraitHormuz',
-      titleAccent: 'Open?',
-      subtitle: 'Surveillance en Temps Réel',
+      title: 'Global Chokepoints',
+      titleAccent: ' Alerts',
+      subtitle: 'Plateforme de Renseignement Maritime',
       live: 'EN DIRECT',
       version: 'v1.0',
       methodology: 'Méthodologie',
@@ -981,7 +981,7 @@ export const translations = {
       publicApi: 'API Publique',
       apiDescription: "Intégrez l'état du Détroit dans votre plateforme. API JSON gratuite — CORS ouvert, cache en périphérie, CC-BY-4.0.",
       apiDocsLink: 'Docs API →',
-      poweredBy: 'Propulsé par IsStraitHormuzOpen?',
+      poweredBy: 'Propulsé par Global Chokepoints Alerts',
     },
     subscribe: {
       bellLabel: 'Alertes',
@@ -1003,7 +1003,7 @@ export const translations = {
       alertsCta: "S'abonner",
     },
     footer: {
-      copyright: '© 2026 IsStraitHormuzOpen? — À titre informatif uniquement.',
+      copyright: '© 2026 Global Chokepoints Alerts — À titre informatif uniquement.',
       apiStatus: "État de l'API",
       operational: 'OPÉRATIONNEL',
       latency: 'Latence',
@@ -1019,7 +1019,7 @@ export const translations = {
     methodology: {
       backToDashboard: '← Retour au tableau de bord',
       title: 'Méthodologie',
-      subtitle: "IsStraitHormuzOpen? est un tableau de bord d'intelligence public surveillant l'état opérationnel du Détroit d'Ormuz en temps quasi réel. Chaque chiffre sur la page est calculé à partir d'une source documentée selon une cadence documentée. Cette page explique comment.",
+      subtitle: "Global Chokepoints Alerts est une plateforme publique de renseignement maritime surveillant les points d'étranglement stratégiques et les perturbations de corridors maritimes en temps quasi réel. Chaque chiffre est calculé à partir d'une source documentée. Cette page explique comment.",
       s1title: '1. Ce que nous mesurons',
       s2title: '2. Sources de données',
       s3title: '3. Calcul du statut',
@@ -1049,9 +1049,9 @@ export const translations = {
 
   it: {
     header: {
-      title: 'IsStraitHormuz',
-      titleAccent: 'Open?',
-      subtitle: 'Monitoraggio in Tempo Reale',
+      title: 'Global Chokepoints',
+      titleAccent: ' Alerts',
+      subtitle: 'Piattaforma di Intelligence Marittima',
       live: 'IN DIRETTA',
       version: 'v1.0',
       methodology: 'Metodologia',
@@ -1243,7 +1243,7 @@ export const translations = {
       publicApi: 'API Pubblica',
       apiDescription: 'Incorpora lo stato dello Stretto nella tua piattaforma. API JSON gratuita — CORS aperto, cache edge, CC-BY-4.0.',
       apiDocsLink: 'Docs API →',
-      poweredBy: 'Sviluppato da IsStraitHormuzOpen?',
+      poweredBy: 'Sviluppato da Global Chokepoints Alerts',
     },
     subscribe: {
       bellLabel: 'Avvisi',
@@ -1265,7 +1265,7 @@ export const translations = {
       alertsCta: 'Iscriviti',
     },
     footer: {
-      copyright: '© 2026 IsStraitHormuzOpen? — Solo a scopo informativo.',
+      copyright: '© 2026 Global Chokepoints Alerts — Solo a scopo informativo.',
       apiStatus: 'Stato API',
       operational: 'OPERATIVO',
       latency: 'Latenza',
@@ -1281,7 +1281,7 @@ export const translations = {
     methodology: {
       backToDashboard: '← Torna alla dashboard',
       title: 'Metodologia',
-      subtitle: 'IsStraitHormuzOpen? è un pannello di intelligence pubblico che monitora lo stato operativo dello Stretto di Hormuz in tempo quasi reale. Ogni numero nella pagina è calcolato da una fonte documentata con una cadenza documentata. Questa pagina spiega come.',
+      subtitle: 'Global Chokepoints Alerts è una piattaforma pubblica di intelligence marittima che monitora punti di strozzatura strategici e interruzioni nei corridoi di navigazione in tempo quasi reale. Ogni numero è calcolato da una fonte documentata. Questa pagina spiega come.',
       s1title: '1. Cosa misuriamo',
       s2title: '2. Fonti dei dati',
       s3title: '3. Calcolo dello stato',
@@ -1311,9 +1311,9 @@ export const translations = {
 
   ru: {
     header: {
-      title: 'IsStraitHormuz',
-      titleAccent: 'Open?',
-      subtitle: 'Мониторинг в реальном времени',
+      title: 'Global Chokepoints',
+      titleAccent: ' Alerts',
+      subtitle: 'Платформа морской разведки',
       live: 'ПРЯМОЙ ЭФИР',
       version: 'v1.0',
       methodology: 'Методология',
@@ -1505,7 +1505,7 @@ export const translations = {
       publicApi: 'Публичный API',
       apiDescription: 'Встройте статус пролива в свою платформу. Бесплатный JSON API — открытый CORS, кэш на граничных серверах, CC-BY-4.0.',
       apiDocsLink: 'Документация API →',
-      poweredBy: 'Работает на IsStraitHormuzOpen?',
+      poweredBy: 'Работает на Global Chokepoints Alerts',
     },
     subscribe: {
       bellLabel: 'Оповещения',
@@ -1527,7 +1527,7 @@ export const translations = {
       alertsCta: 'Подписаться',
     },
     footer: {
-      copyright: '© 2026 IsStraitHormuzOpen? — Только в информационных целях.',
+      copyright: '© 2026 Global Chokepoints Alerts — Только в информационных целях.',
       apiStatus: 'Статус API',
       operational: 'РАБОТАЕТ',
       latency: 'Задержка',
@@ -1543,7 +1543,7 @@ export const translations = {
     methodology: {
       backToDashboard: '← Вернуться на панель',
       title: 'Методология',
-      subtitle: 'IsStraitHormuzOpen? — публичная разведывательная панель, отслеживающая оперативный статус Ормузского пролива в режиме близком к реальному времени. Каждое число на странице рассчитывается из документированного источника с документированной периодичностью. На этой странице описывается как.',
+      subtitle: 'Global Chokepoints Alerts — публичная платформа морской разведки, отслеживающая стратегические морские проливы и нарушения в торговых коридорах в режиме близком к реальному времени. Каждое число рассчитывается из документированного источника. На этой странице описывается как.',
       s1title: '1. Что мы измеряем',
       s2title: '2. Источники данных',
       s3title: '3. Расчёт статуса',

@@ -15,7 +15,7 @@ export default function Footer() {
       {/* Top row — links */}
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-4 text-[10px] font-mono text-text3">
         <span suppressHydrationWarning className="text-text4">
-          © {new Date().getFullYear()} IsStraitHormuzOpen?
+          © {new Date().getFullYear()} Global Chokepoints Alerts
         </span>
         <span className="text-text4" aria-hidden>·</span>
         <Link href="/methodology" className="hover:text-text2 transition-colors">
