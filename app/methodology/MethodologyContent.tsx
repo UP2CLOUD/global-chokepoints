@@ -121,12 +121,17 @@ export default function MethodologyContent() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-divider bg-bg">
         <div className="max-w-3xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group" aria-label="IsStraitHormuzOpen?">
-            <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0" aria-hidden />
-            <div className="flex flex-col gap-[3px]">
-              <span className="text-[9px] font-mono uppercase tracking-[0.28em] text-text3 leading-none">IS STRAIT</span>
-              <span className="font-headline font-black italic text-[32px] leading-none tracking-tight text-text">HORMUZ</span>
-              <span className="text-[9px] font-mono uppercase tracking-[0.28em] text-accent leading-none">OPEN?</span>
+          <Link href="/" className="flex items-center gap-3 group" aria-label="Global Chokepoints Alerts">
+            <div className="relative w-7 h-7 shrink-0 flex items-center justify-center">
+              <span className="absolute inset-0 rounded-full border border-accent/30" />
+              <span className="absolute inset-[5px] rounded-full border border-accent/50" />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+            </div>
+            <div>
+              <span className="text-[15px] font-bold leading-none tracking-[-0.01em] text-text">
+                {t.header.title}<span className="text-accent font-semibold">{t.header.titleAccent}</span>
+              </span>
+              <p className="text-[8px] font-mono text-text4 uppercase tracking-[0.22em] mt-[3px]">{t.header.subtitle}</p>
             </div>
           </Link>
 
@@ -146,9 +151,9 @@ export default function MethodologyContent() {
         {/* Page title */}
         <div className="border-b border-divider pb-6 mb-10">
           <p className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 mb-3">
-            IsStraitHormuzOpen?
+            Global Chokepoints Alerts
           </p>
-          <h1 className="font-headline font-black italic text-[42px] md:text-[56px] leading-none tracking-tight text-text">
+          <h1 className="font-bold text-[36px] md:text-[48px] leading-none tracking-tight text-text">
             {m.title}
           </h1>
           <p className="mt-4 text-[14px] text-text2 leading-relaxed max-w-xl">
@@ -273,7 +278,7 @@ confidence = min(0.99,
                 <strong className="text-text">PortWatch representative vessels</strong> — animated dots
                 distributed along IMO TSS lanes, proportional to the latest daily
                 transit count by type:{' '}
-                <span className="text-[#C17F24] font-mono text-[11px]">tanker (amber)</span>,{' '}
+                <span className="text-caution font-mono text-[11px]">tanker (amber)</span>,{' '}
                 <span className="font-mono text-[11px]">cargo (sky)</span>,{' '}
                 <span className="font-mono text-[11px]">container (purple)</span>,{' '}
                 <span className="font-mono text-[11px]">dry bulk (slate)</span>.
@@ -384,7 +389,7 @@ GET /feed.xml               # RSS 2.0 for journalists and aggregators`}</CodeBlo
           className="mt-12 pt-6 border-t border-divider text-[10px] text-text3 font-mono flex flex-wrap gap-4 items-center justify-between"
           suppressHydrationWarning
         >
-          <span>© {new Date().getFullYear()} IsStraitHormuzOpen?</span>
+          <span>© {new Date().getFullYear()} Global Chokepoints Alerts</span>
           <div className="flex gap-4">
             <Link href="/" className="hover:text-accent transition-colors">{m.dashboard}</Link>
             <a href="/feed.xml" className="hover:text-accent transition-colors">RSS</a>

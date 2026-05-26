@@ -1,35 +1,60 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter, JetBrains_Mono, IBM_Plex_Mono } from 'next/font/google';
 import AdSenseLoader from '@/app/components/AdSenseLoader';
 import { LangProvider } from '@/app/components/LangContext';
 import './globals.css';
 
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-jetbrains',
+  display: 'swap',
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-ibm-plex',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev'),
-  title: 'IsStraitHormuzOpen? — Strait of Hormuz Real-Time Monitoring',
+  title: 'Global Chokepoints Alerts — Real-Time Maritime Intelligence',
   description:
-    'Public intelligence dashboard tracking the operational status of the Strait of Hormuz: maritime activity, oil markets, geopolitical events, and marine weather. Sourced from EIA, Yahoo Finance, GDELT, CNN, BBC, Al Jazeera, Reuters, Open-Meteo, and AISStream.',
+    'Monitor strategic global maritime chokepoints including Hormuz, Red Sea, Suez, and Panama with live shipping intelligence, disruption tracking, AIS interference monitoring, and oil transit analysis.',
   keywords: [
-    'Strait of Hormuz', 'Ormuz', 'maritime intelligence', 'shipping', 'Iran',
-    'geopolitics', 'oil tankers', 'Brent', 'WTI', 'naval', 'OPEC',
+    'maritime intelligence', 'Strait of Hormuz', 'Red Sea', 'Suez Canal', 'Panama Canal',
+    'shipping disruption', 'AIS monitoring', 'oil transit', 'geopolitical risk',
+    'maritime chokepoints', 'tanker tracking', 'naval incidents', 'OSINT',
   ],
-  authors: [{ name: 'IsStraitHormuzOpen?' }],
+  authors: [{ name: 'Global Chokepoints Alerts' }],
   alternates: {
     canonical: '/',
     types: { 'application/rss+xml': '/feed.xml' },
   },
   openGraph: {
-    title: 'IsStraitHormuzOpen? — Strait of Hormuz Real-Time Monitoring',
+    title: 'Global Chokepoints Alerts — Real-Time Maritime Intelligence',
     description:
-      'Is the Strait of Hormuz open? Live monitoring of maritime, market and intelligence signals.',
+      'Live monitoring of strategic maritime chokepoints: shipping disruptions, AIS interference, oil transit flow, and geopolitical incident feeds.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'IsStraitHormuzOpen?',
+    siteName: 'Global Chokepoints Alerts',
     images: [{ url: '/api/og', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'IsStraitHormuzOpen?',
-    description: 'Real-time Strait of Hormuz monitoring',
+    title: 'Global Chokepoints Alerts',
+    description: 'Real-time maritime intelligence for strategic global chokepoints',
     images: ['/api/og'],
   },
   robots: { index: true, follow: true },
@@ -38,21 +63,21 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#07090F',
+  themeColor: '#070B11',
 };
 
 const JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: 'IsStraitHormuzOpen?',
-  alternateName: 'IsHormuzOpen',
+  name: 'Global Chokepoints Alerts',
+  alternateName: 'GlobalChokepointsAlerts',
   applicationCategory: 'NewsApplication',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev',
   description:
-    'Real-time monitoring of the Strait of Hormuz, integrating market data, news intelligence and marine weather.',
+    'Real-time maritime intelligence platform monitoring strategic global chokepoints, shipping disruptions, AIS interference, and oil transit flow.',
   operatingSystem: 'All',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  publisher: { '@type': 'Organization', name: 'IsStraitHormuzOpen?' },
+  publisher: { '@type': 'Organization', name: 'Global Chokepoints Alerts' },
 };
 
 export default function RootLayout({
@@ -63,21 +88,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Barlow Condensed (headlines) + IBM Plex Mono (tactical labels) */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;0,900;1,700;1,900&family=IBM+Plex+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
         <link
           rel="alternate"
           type="application/rss+xml"
-          title="IsStraitHormuzOpen? — event feed"
+          title="Global Chokepoints Alerts — event feed"
           href="/feed.xml"
         />
       </head>
-      <body className="antialiased" suppressHydrationWarning>
+      <body
+        className={`antialiased ${inter.variable} ${jetbrainsMono.variable} ${ibmPlexMono.variable}`}
+        suppressHydrationWarning
+      >
         {/* JSON-LD in body avoids Next.js 15 head-script hydration collision with
             afterInteractive Script placeholders (AdSense). Search engines read it here fine. */}
         <script

@@ -28,9 +28,9 @@ export default function BrentChart() {
     return () => { active = false; clearInterval(id); };
   }, []);
 
-  const accent = '#C17F24';  // aircraft amber
-  const grid   = '#2E2920';  // warm divider
-  const text3  = '#8C7D68';  // warm text3
+  const accent = 'var(--accent)';  // operational blue
+  const grid   = 'var(--divider)'; // tactical divider
+  const text3  = 'var(--text3)';   // tactical text3
 
   return (
     <div className="w-full h-[200px] md:h-[240px] relative" role="img" aria-label="Brent crude price, last 7 trading days">
@@ -48,8 +48,8 @@ export default function BrentChart() {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="2 4" stroke={grid} vertical={false} />
-          <XAxis dataKey="date" tick={{ fill: text3, fontSize: 10, fontFamily: 'IBM Plex Mono' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: text3, fontSize: 10, fontFamily: 'IBM Plex Mono' }} axisLine={false} tickLine={false} domain={['dataMin - 1', 'dataMax + 1']} />
+          <XAxis dataKey="date" tick={{ fill: text3, fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: text3, fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} domain={['dataMin - 1', 'dataMax + 1']} />
           <Tooltip
             cursor={{ stroke: accent, strokeDasharray: '2 4', strokeWidth: 1 }}
             content={({ active, payload }) => {
@@ -64,7 +64,7 @@ export default function BrentChart() {
               return null;
             }}
           />
-          <Area type="monotone" dataKey="price" stroke={accent} strokeWidth={1.5} fill="url(#brentGrad)" activeDot={{ r: 3, fill: accent, stroke: '#07090F', strokeWidth: 2 }} />
+          <Area type="monotone" dataKey="price" stroke={accent} strokeWidth={1.5} fill="url(#brentGrad)" activeDot={{ r: 3, fill: accent, stroke: 'var(--bg)', strokeWidth: 2 }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

@@ -45,14 +45,18 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-bg text-text">
-      <Header />
+      <Header
+        status={dataReady ? data.status : undefined}
+        metrics={dataReady ? data.metrics : undefined}
+        loading={!dataReady}
+      />
 
       {/* ── MAP HERO ─────────────────────────────────────────── */}
       <section
         id="hero"
         className="relative w-full overflow-hidden"
         style={{ height: 'min(65vh, 580px)', minHeight: '340px' }}
-        aria-label="Strait of Hormuz live map"
+        aria-label="Global maritime chokepoints live map"
       >
         <HormuzMap status={data.status} vessels={vessels} />
 
@@ -61,7 +65,7 @@ function DashboardContent() {
         </div>
 
         {/* Status badge — rectangular, no pill shape */}
-        <div className="absolute top-14 right-4 md:right-6 pointer-events-none z-[600]">
+        <div className="absolute top-[90px] right-4 md:right-6 pointer-events-none z-[600]">
           <div
             className={`inline-flex items-center gap-2 px-3 py-1.5 border text-[10px] font-mono uppercase tracking-[0.16em] transition-colors duration-500 ${
               !dataReady

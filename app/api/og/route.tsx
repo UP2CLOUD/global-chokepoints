@@ -158,7 +158,7 @@ export async function GET(req: NextRequest) {
                   fontWeight: 700,
                 }}
               >
-                IsStraitHormuzOpen?
+                Global Chokepoints Alerts
               </span>
               <span style={{ fontSize: 14, color: '#4B5563', letterSpacing: 1 }}>
                 · {t.header.subtitle}

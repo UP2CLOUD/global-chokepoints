@@ -9,49 +9,50 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Deep oil-black surfaces
-        bg:      '#0D0C09',
-        bg1:     '#141210',
-        bg2:     '#1C1916',
-        surface: '#141210',
-        card:    '#1C1916',
+        // Deep tactical dark surfaces
+        bg:      '#070B11',
+        bg1:     '#0F1722',
+        bg2:     '#131D2B',
+        surface: '#0F1722',
+        card:    '#131D2B',
 
-        // Warm hairline rules
-        border:  '#2E2920',
-        divider: '#2E2920',
+        // Subtle hairline borders
+        border:  '#1E2A3B',
+        divider: '#1E2A3B',
 
-        // Newsprint text scale
-        text:  '#F0E9D6',
-        text2: '#C8BC9A',
-        text3: '#8C7D68',
-        text4: '#5A4F42',
+        // Intelligence terminal text scale
+        text:  '#E6EDF5',
+        text2: '#9FB0C7',
+        text3: '#6B7A90',
+        text4: '#4A5568',
 
-        // Instrument state — earthy, not neon
-        ok:      '#5C8C4A',  // military olive
-        caution: '#C17F24',  // aircraft amber
-        warn:    '#C8601A',  // warning orange
-        danger:  '#B83420',  // rust red
-        info:    '#8C7D68',  // downgraded to warm grey
+        // Operational status colors
+        ok:      '#49D17D',  // ops green
+        caution: '#FFB84D',  // warning amber
+        warn:    '#FF9944',  // escalation orange
+        danger:  '#FF5A5A',  // critical red
+        info:    '#4DA3FF',  // operational blue
 
-        // Brand accent — amber (replaces cyan)
-        accent:     '#C17F24',
-        'accent-hi':'#D4941A',
+        // Brand accent — Operational Blue
+        accent:      '#4DA3FF',
+        'accent-hi': '#6AB5FF',
 
-        // Named editorial tones
-        amber:   '#C17F24',
-        copper:  '#9A5A40',
-        sand:    '#C8BC9A',
-        military:'#485A38',
+        // Semantic color aliases
+        purple:  '#B07CFF',  // AIS interference
+        amber:   '#FFB84D',
+        sand:    '#9FB0C7',
+        military:'#49D17D',
 
         // Legacy aliases kept for backward compat
-        cyan:    '#C17F24',
-        emerald: '#5C8C4A',
-        red:     '#B83420',
+        cyan:    '#4DA3FF',
+        emerald: '#49D17D',
+        red:     '#FF5A5A',
+        copper:  '#9A5A40',
       },
       fontFamily: {
-        headline: ['"Barlow Condensed"', '"Arial Narrow"', 'sans-serif'],
-        mono:     ['"IBM Plex Mono"', '"JetBrains Mono"', 'monospace'],
-        sans:     ['Inter', 'system-ui', 'sans-serif'],
+        headline: ['var(--font-inter)', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        mono:     ['var(--font-jetbrains)', 'var(--font-ibm-plex)', 'monospace'],
+        sans:     ['var(--font-inter)', 'system-ui', 'sans-serif'],
         serif:    ['Georgia', '"Times New Roman"', 'serif'],
       },
       fontSize: {
