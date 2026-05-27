@@ -149,12 +149,14 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
   const LRef            = useRef<any>(null);
   const vesselLayer     = useRef<any>(null);
   const pwLayer         = useRef<any>(null);
+  const bebLayer        = useRef<any>(null);
 
   const [orbColor, setOrbColor] = useState('#F59E0B');
   const [orbPos,   setOrbPos]   = useState({ x: 50, y: 42 });
   const [orbReady, setOrbReady] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [pwDay,    setPwDay]    = useState<PortWatchDay | null>(null);
+  const [bebDay,   setBebDay]   = useState<PortWatchDay | null>(null);
 
   // Yellow → status colour
   useEffect(() => {
@@ -163,11 +165,14 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
     return () => clearTimeout(t);
   }, [status.state]);
 
-  // Fetch PortWatch latest day — use .at(-1) since days are ordered oldest→newest
+  // Fetch PortWatch latest day for Hormuz + Red Sea
   useEffect(() => {
     fetch('/api/portwatch', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.days?.length) setPwDay(d.days.at(-1)); })
+      .then(d => {
+        if (d?.days?.length) setPwDay(d.days.at(-1));
+        if (d?.chokepoints?.redsea?.days?.length) setBebDay(d.chokepoints.redsea.days.at(-1));
+      })
       .catch(() => {});
   }, []);
 
@@ -239,7 +244,8 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       mkChokepoint([12.6, 43.4],  '#F97316'); // Bab-el-Mandeb / Red Sea
       mkChokepoint([30.1, 32.5],  '#F59E0B'); // Suez Canal northern entry
 
-      // Layer groups — PortWatch below AIS
+      // Layer groups — PortWatch below AIS, BEB alongside PW
+      bebLayer.current     = L.layerGroup().addTo(map);
       pwLayer.current      = L.layerGroup().addTo(map);
       vesselLayer.current  = L.layerGroup().addTo(map);
       mapRef.current = map;
@@ -361,6 +367,54 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       layer.clearLayers();
     };
   }, [mapReady, pwDay]);
+
+  // BEB animated vessels — Red Sea / Bab-el-Mandeb
+  useEffect(() => {
+    if (!mapReady || !bebDay || !bebLayer.current || !LRef.current) return;
+    const L = LRef.current;
+    const layer = bebLayer.current;
+    layer.clearLayers();
+
+    const bebVessels = buildPortWatchVessels(bebDay);
+    const BEB_COLOR: Record<string, string> = {
+      tanker:    '#F97316', // orange — Red Sea risk
+      cargo:     '#FB923C',
+      container: '#FDBA74',
+      dryBulk:   '#94A3B8',
+    };
+
+    const markers = bebVessels.map(v => {
+      const pts = v.lane === 'in' ? BEB_LANE_IN : BEB_LANE_OUT;
+      const pos = lerpLane(pts, v.progress);
+      const color = BEB_COLOR[v.type] ?? '#F97316';
+      const r = PW_RADIUS[v.type] ?? 4;
+
+      const glow = L.circleMarker(pos, {
+        radius: r + 4, color: 'transparent', fillColor: color, fillOpacity: 0.15, weight: 0, interactive: false,
+      }).addTo(layer);
+
+      const core = L.circleMarker(pos, {
+        radius: r, color: color, fillColor: color, fillOpacity: 0.88, weight: 1.2, interactive: false,
+      }).addTo(layer);
+
+      return { glow, core };
+    });
+
+    const id = setInterval(() => {
+      bebVessels.forEach((v, i) => {
+        v.progress = (v.progress + v.speed) % 1;
+        const pts = v.lane === 'in' ? BEB_LANE_IN : BEB_LANE_OUT;
+        const pos = lerpLane(pts, v.progress);
+        markers[i].glow.setLatLng(pos);
+        markers[i].core.setLatLng(pos);
+      });
+    }, 150);
+
+    return () => {
+      clearInterval(id);
+      layer.clearLayers();
+    };
+  }, [mapReady, bebDay]);
 
   const pwTotal = pwDay ? Math.min(
     pwDay.tanker + pwDay.cargo + pwDay.container + pwDay.dryBulk,

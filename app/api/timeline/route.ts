@@ -40,12 +40,20 @@ const FEEDS: { name: string; url: string }[] = [
   },
   { name: 'Al Jazeera', url: 'https://www.aljazeera.com/xml/rss/all.xml' },
   {
-    name: 'Reuters (via Google News)',
+    name: 'Reuters Hormuz',
     url: 'https://news.google.com/rss/search?q=site:reuters.com+(Hormuz+OR+Iran+OR+%22oil+tanker%22)&hl=en-US&gl=US&ceid=US:en',
   },
   {
-    name: 'Google News',
+    name: 'Reuters Red Sea',
+    url: 'https://news.google.com/rss/search?q=site:reuters.com+(%22Red+Sea%22+OR+Houthi+OR+%22Bab+el-Mandeb%22+OR+%22Suez+Canal%22+OR+%22Panama+Canal%22)&hl=en-US&gl=US&ceid=US:en',
+  },
+  {
+    name: 'Google News Hormuz',
     url: 'https://news.google.com/rss/search?q=%22Strait+of+Hormuz%22+OR+%22Iran+navy%22+OR+%22oil+tanker%22&hl=en-US&gl=US&ceid=US:en',
+  },
+  {
+    name: 'Google News Chokepoints',
+    url: 'https://news.google.com/rss/search?q=(%22Red+Sea%22+OR+Houthi+OR+%22Suez+Canal%22+OR+%22Panama+Canal%22+OR+%22Taiwan+Strait%22)+shipping&hl=en-US&gl=US&ceid=US:en',
   },
 ];
 
@@ -103,11 +111,11 @@ function classify(text: string): { category: Category; severity: Severity } {
 
 function isRelevant(title: string, description: string): boolean {
   const haystack = `${title} ${description}`.toLowerCase();
-  // Require at least one strong keyword AND mention of region/maritime context
-  const hasRegion = /\b(hormuz|persian gulf|gulf of oman|iran|iranian|tehran)\b/.test(
+  // Require region/maritime context across all tracked chokepoints
+  const hasRegion = /\b(hormuz|persian gulf|gulf of oman|iran|iranian|tehran|red sea|houthi|bab.?el.?mandeb|gulf of aden|suez|suez canal|panama canal|taiwan strait|pla navy)\b/.test(
     haystack
   );
-  const hasTopic = /\b(oil|tanker|navy|naval|vessel|ship|maritime|strait|missile|drone|sanction)\b/.test(
+  const hasTopic = /\b(oil|tanker|navy|naval|vessel|ship|maritime|strait|missile|drone|sanction|shipping|attack|seized|closure|transit|chokepoint)\b/.test(
     haystack
   );
   return hasRegion && hasTopic;
@@ -239,9 +247,9 @@ export async function GET() {
     }
   }
 
-  // Sort newest first, cap at 30
+  // Sort newest first, cap at 50 to cover multiple chokepoints
   merged.sort((a, b) => +new Date(b.date) - +new Date(a.date));
-  const events = merged.slice(0, 30);
+  const events = merged.slice(0, 50);
 
   const payload = {
     events,
