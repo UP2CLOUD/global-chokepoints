@@ -3,13 +3,22 @@
 import { useEffect, useRef, useState } from 'react';
 import type { StatusData } from '@/app/lib/types';
 
-// Shipping lane waypoints [lat, lon] — inbound enters Gulf of Oman heading west
+// Hormuz shipping lane waypoints [lat, lon] — inbound enters Gulf of Oman heading west
 const LANE_IN: [number, number][] = [
   [24.2, 59.0], [25.0, 58.0], [25.6, 57.2], [26.1, 56.5],
   [26.3, 56.0], [26.3, 55.2], [26.1, 54.0], [25.8, 52.5],
 ];
 const LANE_OUT: [number, number][] = LANE_IN.map(
   ([lat, lon]): [number, number] => [lat + 0.28, lon],
+).reverse();
+
+// Bab-el-Mandeb (Red Sea entry) lane — inbound from Gulf of Aden northward
+const BEB_LANE_IN: [number, number][] = [
+  [11.6, 44.8], [12.0, 44.2], [12.4, 43.7], [12.7, 43.3],
+  [13.1, 43.0], [13.6, 42.6], [14.2, 42.2],
+];
+const BEB_LANE_OUT: [number, number][] = BEB_LANE_IN.map(
+  ([lat, lon]): [number, number] => [lat - 0.18, lon + 0.05],
 ).reverse();
 
 // Global shipping routes radiating outward from the Strait — shown as ghost lines
@@ -175,7 +184,7 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       if (cancelled) return;
 
       map = L.map(containerRef.current!, {
-        center: [22.0, 60.0],
+        center: [20.0, 53.0],
         zoom: 5,
         zoomControl: true,
         attributionControl: true,
@@ -203,9 +212,13 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       L.polyline(ROUTE_SUEZ, { ...ghostStyle, color: '#A78BFA' }).addTo(map);
       L.polyline(ROUTE_CAPE, { ...ghostStyle, color: '#94A3B8' }).addTo(map);
 
-      // Local strait lanes — brighter, bold
+      // Hormuz local strait lanes — brighter, bold
       L.polyline(LANE_IN,  { color: '#06B6D4', weight: 2.5, opacity: 0.80, dashArray: '10 6' }).addTo(map);
       L.polyline(LANE_OUT, { color: '#F59E0B', weight: 2.5, opacity: 0.80, dashArray: '10 6' }).addTo(map);
+
+      // Bab-el-Mandeb (Red Sea entry) lanes — orange for DEGRADED status
+      L.polyline(BEB_LANE_IN,  { color: '#F97316', weight: 2.0, opacity: 0.70, dashArray: '10 6' }).addTo(map);
+      L.polyline(BEB_LANE_OUT, { color: '#F59E0B', weight: 2.0, opacity: 0.70, dashArray: '10 6' }).addTo(map);
 
       [[LANE_IN, '#06B6D4'], [LANE_OUT, '#F59E0B']].forEach(([lane, color]) => {
         const pts = lane as [number, number][];
@@ -381,11 +394,15 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       <div className="absolute bottom-3 left-3 flex flex-col gap-1 pointer-events-none" style={{ zIndex: 500 }}>
         <div className="flex items-center gap-2">
           <span className="inline-block w-5 h-px opacity-80" style={{ borderTop: '2px dashed #06B6D4' }} />
-          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Inbound</span>
+          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Hormuz In</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-block w-5 h-px opacity-80" style={{ borderTop: '2px dashed #F59E0B' }} />
-          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Outbound</span>
+          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Hormuz Out</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-5 h-px opacity-80" style={{ borderTop: '2px dashed #F97316' }} />
+          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Red Sea / BEB</span>
         </div>
         {pwTotal > 0 && (
           <>
