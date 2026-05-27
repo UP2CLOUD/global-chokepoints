@@ -13,8 +13,8 @@ export async function GET(req: NextRequest) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Interactive API Reference — IsStraitHormuzOpen?</title>
-  <meta name="description" content="Try the IsStraitHormuzOpen? public API live: v1/status, v1/events, v1/metrics." />
+  <title>Interactive API Reference — Global Chokepoints Alerts</title>
+  <meta name="description" content="Try the Global Chokepoints Alerts public API live: v1/status, v1/events, v1/metrics." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }

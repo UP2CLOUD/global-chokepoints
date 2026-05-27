@@ -4,9 +4,9 @@ import CopyButton from './CopyButton';
 import { SITE_URL } from '@/app/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'API Docs — IsStraitHormuzOpen?',
+  title: 'API Docs — Global Chokepoints Alerts',
   description:
-    'Full reference for the IsStraitHormuzOpen? public API: strait status, event timeline, markets, weather, and vessel data. CC-BY-4.0.',
+    'Full reference for the Global Chokepoints Alerts public API: strait status, event timeline, markets, weather, and vessel data. CC-BY-4.0.',
 };
 
 // ── Colour helpers ─────────────────────────────────────────────────────────────
@@ -49,11 +49,11 @@ function Code({ children }: { children: string }) {
 function Pre({ children, lang = 'bash' }: { children: string; lang?: string }) {
   return (
     <div className="relative group">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-bg1/80 border border-divider rounded-t-lg border-b-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-bg1/80 border border-divider border-b-0">
         <span className="text-[10px] font-mono text-text4 uppercase tracking-widest">{lang}</span>
         <CopyButton text={children} />
       </div>
-      <pre className="p-4 bg-[#080B13] border border-divider rounded-b-lg text-[12px] font-mono leading-relaxed overflow-x-auto text-text2 scrollbar-thin">
+      <pre className="p-4 bg-[#080B13] border border-divider text-[12px] font-mono leading-relaxed overflow-x-auto text-text2 scrollbar-thin">
         <code>{children}</code>
       </pre>
     </div>
@@ -95,9 +95,9 @@ function EndpointCard({
   jsExample?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-divider bg-card/60 overflow-hidden">
+    <div className="border border-divider bg-bg2 overflow-hidden">
       {/* Header */}
-      <div className="flex flex-wrap items-center gap-3 px-5 py-4 bg-bg1/60 border-b border-divider">
+      <div className="flex flex-wrap items-center gap-3 px-5 py-4 bg-bg1 border-b border-divider">
         <MethodBadge method={method} />
         <code className="text-[13px] font-mono text-text font-medium">{path}</code>
         {badge}
@@ -111,7 +111,7 @@ function EndpointCard({
         {params && params.length > 0 && (
           <div>
             <h4 className="text-[11px] font-mono uppercase tracking-widest text-text3 mb-2">Parameters</h4>
-            <table className="w-full text-[12px] border border-divider rounded-lg overflow-hidden">
+            <table className="w-full text-[12px] border border-divider overflow-hidden">
               <thead className="bg-bg1/80 text-text3 text-[10px] uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-3 py-2">Name</th>
@@ -143,7 +143,7 @@ function EndpointCard({
         {responseFields && responseFields.length > 0 && (
           <div>
             <h4 className="text-[11px] font-mono uppercase tracking-widest text-text3 mb-2">Response fields</h4>
-            <table className="w-full text-[12px] border border-divider rounded-lg overflow-hidden">
+            <table className="w-full text-[12px] border border-divider overflow-hidden">
               <thead className="bg-bg1/80 text-text3 text-[10px] uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-3 py-2">Field</th>
@@ -261,7 +261,7 @@ export default function DocsPage() {
               Public API Reference
             </div>
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mb-3">
-              IsStraitHormuzOpen? API
+              Global Chokepoints Alerts API
             </h1>
             <p className="text-text2 leading-relaxed max-w-2xl">
               Real-time JSON data on the operational status of the Strait of Hormuz.
@@ -277,7 +277,7 @@ export default function DocsPage() {
             </div>
 
             {/* Interactive playground CTA */}
-            <div className="mt-6 flex items-center gap-4 p-4 rounded-xl border border-ok/20 bg-ok/5">
+            <div className="mt-6 flex items-center gap-4 p-4 border border-ok/20 bg-ok/5">
               <div className="flex-1">
                 <p className="text-[12px] font-mono text-ok uppercase tracking-[0.14em] mb-0.5">Interactive Playground</p>
                 <p className="text-[12px] text-text2">
@@ -286,7 +286,7 @@ export default function DocsPage() {
               </div>
               <a
                 href="/api-reference"
-                className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
+                className="shrink-0 inline-flex items-center gap-2 px-4 py-2 text-[11px] font-mono uppercase tracking-[0.12em]
                   text-bg bg-ok hover:bg-ok/90 transition-all duration-200 font-semibold"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-bg animate-pulse" />
@@ -315,12 +315,12 @@ export default function DocsPage() {
             <h3 className="text-text font-semibold text-sm mt-4 mb-1">Attribution</h3>
             <p>
               When displaying data from <Code>/v1/*</Code> endpoints, include the attribution string
-              from the <Code>license</Code> field: <em>&ldquo;IsStraitHormuzOpen?&rdquo;</em> with a
+              from the <Code>license</Code> field: <em>&ldquo;Global Chokepoints Alerts&rdquo;</em> with a
               link to <Code>{SITE}</Code>.
             </p>
 
             <h3 className="text-text font-semibold text-sm mt-4 mb-1">Route families</h3>
-            <table className="w-full text-[12px] border border-divider rounded-lg overflow-hidden">
+            <table className="w-full text-[12px] border border-divider overflow-hidden">
               <thead className="bg-bg1 text-text3 text-[10px] uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-3 py-2">Prefix</th>
@@ -489,7 +489,7 @@ if (weather) {
               data exists.
             </p>
 
-            <table className="w-full text-[12px] border border-divider rounded-lg overflow-hidden mt-2">
+            <table className="w-full text-[12px] border border-divider overflow-hidden mt-2">
               <thead className="bg-bg1 text-text3 text-[10px] uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-3 py-2">Route</th>
@@ -605,13 +605,13 @@ curl ${SITE}/api/openapi -o openapi.json
 
 # Import into Postman (CLI)
 postman import openapi.json`}</Pre>
-            <div className="flex items-center gap-3 mt-3 p-3 rounded-lg border border-divider bg-bg1/40">
+            <div className="flex items-center gap-3 mt-3 p-3 border border-divider bg-bg1/40">
               <div className="flex-1 text-[12px] text-text3">
                 Prefer a visual explorer? The Scalar playground lets you send live requests directly from the browser.
               </div>
               <a
                 href="/api-reference"
-                className="shrink-0 px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-[0.12em]
+                className="shrink-0 px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.12em]
                   text-ok border border-ok/30 hover:border-ok/60 hover:bg-ok/5 transition-all"
               >
                 Open Playground →
@@ -625,7 +625,7 @@ postman import openapi.json`}</Pre>
           {/* Footer */}
           <footer className="pt-8 border-t border-divider text-[11px] font-mono text-text4">
             <div className="flex flex-wrap gap-4 items-center">
-              <span suppressHydrationWarning>© {new Date().getFullYear()} IsStraitHormuzOpen?</span>
+              <span suppressHydrationWarning>© {new Date().getFullYear()} Global Chokepoints Alerts</span>
               <Link href="/" className="hover:text-accent transition-colors">Dashboard</Link>
               <Link href="/methodology" className="hover:text-accent transition-colors">Methodology</Link>
               <a href="/feed.xml" className="hover:text-accent transition-colors">RSS</a>

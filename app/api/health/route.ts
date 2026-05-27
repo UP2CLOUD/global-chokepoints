@@ -61,7 +61,7 @@ async function probe(p: Probe): Promise<{ key: string; label: string; status: St
     let status: Status = ok ? 'ok' : 'down';
     if (ok && latencyMs > degradedAt) status = 'degraded';
     return { key: p.key, label: p.label, status, latencyMs, httpStatus: res.status };
-  } catch (err) {
+  } catch {
     return { key: p.key, label: p.label, status: 'down', latencyMs: Date.now() - start, httpStatus: null };
   }
 }

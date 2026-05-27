@@ -75,6 +75,14 @@ const SOURCES = [
 
 const CHANGELOG = [
   {
+    v: '0.6.0',
+    date: '2026-05-27',
+    notes:
+      'Full rebrand to Global Chokepoints Alerts — multi-chokepoint intelligence platform (Hormuz, Red Sea, Suez, Panama, Taiwan Strait). ' +
+      'Added TickerBar, ChokepointsPanel card grid, HeroStatus CTAs, region inference in Timeline. ' +
+      'System-wide flat UI (no rounded corners). Feed health row, relative timestamps in NewsFeed, vessel count in header.',
+  },
+  {
     v: '0.5.0',
     date: '2026-05-14',
     notes:
@@ -329,7 +337,7 @@ GET /v1/events?since=ISO    # incremental fetch since ISO timestamp
 GET /v1/metrics             # markets (Brent/WTI/NG), weather, event counts
 GET /feed.xml               # RSS 2.0 for journalists and aggregators`}</CodeBlock>
           <p className="text-[11px] text-text3 mt-3">
-            License: CC-BY-4.0. Attribution: &ldquo;IsStraitHormuzOpen?&rdquo; with a link to{' '}
+            License: CC-BY-4.0. Attribution: &ldquo;Global Chokepoints Alerts&rdquo; with a link to{' '}
             <a
               href="https://strait-of-hormuz-monitor.pages.dev"
               className="text-accent hover:underline"

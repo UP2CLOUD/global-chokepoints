@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useLang } from './LangContext';
 
 export default function LoadingScreen() {

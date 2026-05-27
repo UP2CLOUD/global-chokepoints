@@ -48,7 +48,7 @@ const Ticker = {
 const spec = {
   openapi: '3.0.3',
   info: {
-    title: 'IsStraitHormuzOpen? API',
+    title: 'Global Chokepoints Alerts API',
     version: '1.0.0',
     description:
       'Real-time public intelligence API for the operational status of the Strait of Hormuz. ' +
