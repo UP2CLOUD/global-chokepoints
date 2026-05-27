@@ -120,6 +120,15 @@ function buildPortWatchVessels(day: PortWatchDay): PwVessel[] {
 // Anchor point for the status orb — middle of the strait
 const ORB_LATLNG: [number, number] = [26.5, 56.3];
 
+// Global chokepoints mini-panel data
+const GLOBAL_CP = [
+  { key: 'hormuz', name: 'Hormuz',  risk: 88, color: '#EF4444' },
+  { key: 'redsea', name: 'Red Sea', risk: 74, color: '#F97316' },
+  { key: 'suez',   name: 'Suez',    risk: 57, color: '#F59E0B' },
+  { key: 'panama', name: 'Panama',  risk: 41, color: '#F59E0B' },
+  { key: 'taiwan', name: 'Taiwan',  risk: 46, color: '#F59E0B' },
+] as const;
+
 interface Props {
   status: StatusData;
   vessels?: AisVessel[];
@@ -403,6 +412,27 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
             <span className="text-[9px] font-mono text-text3">{vessels.length} AIS live</span>
           </div>
         )}
+      </div>
+
+      {/* Global chokepoints status panel — bottom-right */}
+      <div
+        className="absolute bottom-3 right-3 pointer-events-none hidden sm:block"
+        style={{ zIndex: 500 }}
+      >
+        <div style={{ background: 'rgba(7,9,15,0.82)', border: '1px solid rgba(255,255,255,0.07)', padding: '8px 10px' }}>
+          <div style={{ fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4B5563', marginBottom: 6, paddingBottom: 4, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            Global Chokepoints
+          </div>
+          {GLOBAL_CP.map((cp) => (
+            <div key={cp.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: cp.color, flexShrink: 0 }} />
+              <span style={{ fontSize: 9, fontFamily: 'monospace', color: '#94A3B8', minWidth: 56 }}>{cp.name}</span>
+              <span style={{ fontSize: 9, fontFamily: 'monospace', color: cp.color, fontWeight: 700, marginLeft: 'auto' }}>
+                {cp.risk}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
