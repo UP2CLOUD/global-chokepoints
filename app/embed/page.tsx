@@ -49,7 +49,7 @@ function EmbedContent() {
       </a>
       <div className="text-center">
         <a href="/" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-text3 hover:text-accent transition-colors">
-          Powered by IsStraitHormuzOpen?
+          Powered by Global Chokepoints Alerts
         </a>
       </div>
     </div>

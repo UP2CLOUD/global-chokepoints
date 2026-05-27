@@ -123,6 +123,20 @@ function DashboardContent() {
         {/* Data Strip */}
         <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
           <MetricsGrid metrics={data.metrics} loading={!dataReady} />
+          {/* Feed health row */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pt-3 pb-1 text-[8px] font-mono text-text4 uppercase tracking-[0.14em]">
+            {[
+              { label: 'Brent feed',    ok: !data.metrics?.brentDown   },
+              { label: 'Events feed',   ok: !data.metrics?.eventsDown  },
+              { label: 'AIS feed',      ok: vessels.length > 0         },
+              { label: 'Market data',   ok: true                       },
+            ].map(({ label, ok }) => (
+              <span key={label} className="flex items-center gap-1">
+                <span className={`w-1 h-1 rounded-full ${ok ? 'bg-ok' : 'bg-danger'}`} />
+                <span className={ok ? 'text-text4' : 'text-danger/70'}>{label}</span>
+              </span>
+            ))}
+          </div>
         </div>
 
         <hr className="section-rule" />
