@@ -142,6 +142,60 @@ const spec = {
       },
     },
 
+    '/v1/chokepoints': {
+      get: {
+        operationId: 'getChokepoints',
+        tags: ['Public v1'],
+        summary: 'All five strategic chokepoints — status, risk, and vessel counts',
+        description:
+          'Returns risk index, operational status, daily vessel counts (live from IMF PortWatch where available), ' +
+          'and trade flow data for Hormuz, Red Sea/BEB, Suez, Panama Canal, and Taiwan Strait. Cache TTL: 60 s.',
+        security: [{}],
+        responses: {
+          '200': {
+            description: 'Chokepoint snapshot',
+            headers: {
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60' } },
+              'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
+            },
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok:          { type: 'boolean' },
+                    generatedAt: { type: 'string', format: 'date-time' },
+                    count:       { type: 'integer', example: 5 },
+                    chokepoints: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          key:          { type: 'string', enum: ['hormuz', 'redsea', 'suez', 'panama', 'taiwan'] },
+                          name:         { type: 'string', example: 'Strait of Hormuz' },
+                          region:       { type: 'string', example: 'Persian Gulf' },
+                          codes:        { type: 'string', example: 'IR/OM' },
+                          status:       { type: 'string', enum: ['critical', 'degraded', 'elevated', 'normal'] },
+                          riskIndex:    { type: 'integer', minimum: 0, maximum: 100 },
+                          oilMbd:       { type: 'number', nullable: true, description: 'Oil throughput in million barrels/day' },
+                          tradePerDayB: { type: 'number', description: 'Trade flow in billions USD/day' },
+                          vessels24h:   { type: 'integer', description: 'Vessel transits in the latest 24 h (IMF PortWatch or static estimate)' },
+                          vsBaseline:   { type: 'number', description: '% deviation from pre-2026 daily baseline' },
+                          trend:        { type: 'string', enum: ['up', 'stable', 'down'] },
+                        },
+                      },
+                    },
+                    license: { type: 'string' },
+                    docs:    { type: 'string', format: 'uri' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+
     '/v1/metrics': {
       get: {
         operationId: 'getMetrics',
@@ -306,8 +360,12 @@ const spec = {
       get: {
         operationId: 'getPortwatch',
         tags: ['Data feeds'],
-        summary: 'IMF PortWatch daily transit counts',
-        description: 'Daily vessel transits at chokepoint6 (Strait of Hormuz) from IMF PortWatch. Data has a 2–3 day lag; updates weekly. Cache TTL: 6 h.',
+        summary: 'IMF PortWatch daily transit counts — all chokepoints',
+        description:
+          'Daily vessel transit counts for Hormuz, Red Sea (Bab-el-Mandeb), Suez Canal, and Panama Canal ' +
+          'from IMF PortWatch. Data has a 2–3 day lag; updates weekly on Tuesdays. Cache TTL: 6 h. ' +
+          'Root-level `days`/`todayTotal`/etc. are Hormuz (backward-compatible); ' +
+          'per-chokepoint data is in the `chokepoints` map.',
         responses: {
           '200': {
             description: 'Transit counts',
@@ -316,27 +374,29 @@ const spec = {
                 schema: {
                   type: 'object',
                   properties: {
-                    ok:             { type: 'boolean' },
-                    days: {
-                      type: 'array',
-                      items: {
+                    ok:            { type: 'boolean' },
+                    days:          { type: 'array', items: { $ref: '#/components/schemas/PortWatchDay' } },
+                    todayTotal:    { type: 'integer', description: 'Hormuz (backward-compat)' },
+                    sevenDayAvg:   { type: 'number' },
+                    baselineDaily: { type: 'integer', example: 34 },
+                    vsBaseline:    { type: 'number', description: '% deviation from historical baseline' },
+                    source:        { type: 'string' },
+                    cached:        { type: 'boolean' },
+                    chokepoints: {
+                      type: 'object',
+                      description: 'Per-chokepoint stats keyed by "hormuz" | "redsea" | "suez" | "panama"',
+                      additionalProperties: {
                         type: 'object',
                         properties: {
-                          date:      { type: 'string', format: 'date' },
-                          total:     { type: 'integer' },
-                          tanker:    { type: 'integer' },
-                          cargo:     { type: 'integer' },
-                          container: { type: 'integer' },
-                          dryBulk:   { type: 'integer' },
+                          days:          { type: 'array', items: { $ref: '#/components/schemas/PortWatchDay' } },
+                          todayTotal:    { type: 'integer' },
+                          sevenDayAvg:   { type: 'number' },
+                          baselineDaily: { type: 'integer' },
+                          vsBaseline:    { type: 'number' },
+                          latestDate:    { type: 'string', format: 'date' },
                         },
                       },
                     },
-                    todayTotal:      { type: 'integer' },
-                    sevenDayAvg:     { type: 'number' },
-                    baselineDaily:   { type: 'integer', example: 34 },
-                    vsBaseline:      { type: 'number', description: '% deviation from historical baseline' },
-                    source:          { type: 'string' },
-                    cached:          { type: 'boolean' },
                   },
                 },
               },
@@ -428,6 +488,17 @@ const spec = {
 
   components: {
     schemas: {
+      PortWatchDay: {
+        type: 'object',
+        properties: {
+          date:      { type: 'string', format: 'date' },
+          total:     { type: 'integer' },
+          tanker:    { type: 'integer' },
+          cargo:     { type: 'integer' },
+          container: { type: 'integer' },
+          dryBulk:   { type: 'integer' },
+        },
+      },
       StatusResponse: {
         type: 'object',
         properties: {
