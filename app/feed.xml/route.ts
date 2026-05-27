@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
       <guid isPermaLink="${e.url ? 'true' : 'false'}">${esc(guid)}</guid>
       <pubDate>${new Date(e.date).toUTCString()}</pubDate>
       <category>${esc(e.category || 'incident')}</category>
-      <source url="${esc(origin)}">${esc(e.source || 'IsStraitHormuzOpen?')}</source>
+      <source url="${esc(origin)}">${esc(e.source || 'Global Chokepoints Alerts')}</source>
       <description>${esc(e.description || '')}</description>
     </item>`;
     })
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>IsStraitHormuzOpen? — Strait of Hormuz event feed</title>
+    <title>Global Chokepoints Alerts — Strait of Hormuz event feed</title>
     <link>${origin}</link>
     <atom:link href="${origin}/feed.xml" rel="self" type="application/rss+xml" />
     <description>Aggregated geopolitical and maritime events affecting the Strait of Hormuz. Sourced from CNN, BBC, Al Jazeera, Reuters and others.</description>

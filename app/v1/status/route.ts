@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     asOf: status.lastUpdated,
     sources: ['Yahoo Finance', 'GDELT', 'CNN', 'BBC', 'Al Jazeera', 'Reuters'],
     docs: `${origin}/methodology`,
-    license: 'CC-BY-4.0 (attribution required: "IsStraitHormuzOpen?")',
+    license: 'CC-BY-4.0 (attribution required: "Global Chokepoints Alerts")',
   };
 
   return NextResponse.json(payload, {

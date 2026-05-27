@@ -31,7 +31,7 @@ function baseTemplate(title: string, body: string) {
 <tr><td align="center" style="padding:40px 16px;">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#0D1117;border:1px solid #1E2533;border-radius:8px;max-width:600px;">
   <tr><td style="padding:32px 32px 0;">
-    <p style="margin:0 0 4px;font-size:10px;letter-spacing:2px;color:#6B7787;text-transform:uppercase;">IsStraitHormuzOpen?</p>
+    <p style="margin:0 0 4px;font-size:10px;letter-spacing:2px;color:#6B7787;text-transform:uppercase;">Global Chokepoints Alerts</p>
     <h1 style="margin:0 0 24px;font-size:22px;font-weight:700;color:#F1F5F9;">${title}</h1>
   </td></tr>
   <tr><td style="padding:0 32px 32px;">

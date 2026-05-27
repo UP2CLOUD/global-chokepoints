@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { PortWatchDay } from '@/app/api/portwatch/route';
 import { useLang } from './LangContext';
-import { Ship, TrendingDown } from 'lucide-react';
+import { TrendingDown } from 'lucide-react';
 
 type TransitData = {
   ok: boolean;
@@ -207,7 +207,6 @@ export default function TransitChart() {
 
 // ── Compact metric tile (for MetricsGrid) ─────────────────────
 export function TransitMetricTile() {
-  const { lang } = useLang();
   const [data, setData] = useState<TransitData | null>(null);
 
   useEffect(() => {
