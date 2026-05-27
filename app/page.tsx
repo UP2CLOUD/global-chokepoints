@@ -26,7 +26,7 @@ import HistoricalIncidentsPanel from '@/app/components/HistoricalIncidentsPanel'
 import ChokepointsPanel       from '@/app/components/ChokepointsPanel';
 import Reveal from '@/app/components/Reveal';
 import TickerBar from '@/app/components/TickerBar';
-import { TrendingUp, BarChart2, Zap } from 'lucide-react';
+import { TrendingUp, BarChart2, Zap, Radio, BarChart3, Info } from 'lucide-react';
 
 const HormuzMap = dynamic(() => import('@/app/components/HormuzMap'), {
   ssr: false,
@@ -50,6 +50,7 @@ function DashboardContent() {
         status={dataReady ? data.status : undefined}
         metrics={dataReady ? data.metrics : undefined}
         loading={!dataReady}
+        vesselCount={vessels.length > 0 ? vessels.length : undefined}
       />
 
       {/* ── LIVE TICKER ─────────────────────────────────────── */}
@@ -180,6 +181,13 @@ function DashboardContent() {
         {/* Intelligence Feed + Event Log — asymmetric 3/2 */}
         <Reveal>
           <section id="intel" className="py-8 md:py-10" style={{ scrollMarginTop: '82px' }}>
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
+                <Radio size={11} className="text-accent" />
+                Intelligence Feed
+              </span>
+              <span className="text-[9px] font-mono text-text4">GDELT + RSS · 60s refresh</span>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr]">
               <div className="lg:pr-10 pb-10 lg:pb-0 lg:border-r border-divider">
                 <NewsFeed news={data.news} loading={newsLoading} />
@@ -195,6 +203,13 @@ function DashboardContent() {
 
         {/* Markets + Weather */}
         <section className="py-8 md:py-10">
+          <div className="flex items-center justify-between mb-5">
+            <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
+              <BarChart3 size={11} className="text-accent" />
+              Commodity Markets
+            </span>
+            <span className="text-[9px] font-mono text-text4">Yahoo Finance · 5 min</span>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2">
             <Reveal dir="left">
               <div className="md:pr-8 pb-8 md:pb-0 md:border-r border-divider">
@@ -213,6 +228,13 @@ function DashboardContent() {
 
         {/* Strait Context + Shipping Risk */}
         <section className="py-8 md:py-10">
+          <div className="flex items-center justify-between mb-5">
+            <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
+              <Info size={11} className="text-accent" />
+              Strait Context &amp; Shipping Risk
+            </span>
+            <span className="text-[9px] font-mono text-text4">EIA · UKMTO</span>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2">
             <Reveal dir="left">
               <div className="md:pr-8 pb-8 md:pb-0 md:border-r border-divider">

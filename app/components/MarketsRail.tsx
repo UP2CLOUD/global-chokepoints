@@ -70,9 +70,9 @@ export default function MarketsRail() {
     .filter(x => !!x.t);
 
   return (
-    <section className="rounded-xl border border-divider bg-card/70 p-4 md:p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
+    <section className="border border-divider bg-bg1 p-5 md:p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3">
           {t.markets.title}
         </div>
         <div className="text-[10px] font-mono text-text3">
@@ -87,7 +87,7 @@ export default function MarketsRail() {
           const TrendIcon = Up ? TrendingUp : Down ? TrendingDown : Minus;
           const trendCol = Up ? 'text-ok' : Down ? 'text-danger' : 'text-text2';
           return (
-            <div key={key} className="rounded-lg border border-divider bg-bg1/60 p-3">
+            <div key={key} className="border border-divider bg-bg2 p-3">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-text2">{t.label}</span>
                 <span className="text-[9px] font-mono text-text4">{t.symbol}</span>
@@ -108,7 +108,7 @@ export default function MarketsRail() {
                     {(t.change ?? 0) >= 0 ? '+' : ''}{(t.change ?? 0).toFixed(2)} ({(t.changePercent ?? 0) >= 0 ? '+' : ''}{(t.changePercent ?? 0).toFixed(2)}%)
                   </div>
                   {t.stale && (
-                    <span className="text-[9px] font-mono stale px-1.5 py-0.5 rounded uppercase tracking-wider">stale</span>
+                    <span className="text-[9px] font-mono stale px-1.5 py-0.5 uppercase tracking-wider">stale</span>
                   )}
                 </div>
               )}

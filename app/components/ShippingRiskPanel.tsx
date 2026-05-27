@@ -1,6 +1,6 @@
 'use client';
 
-import { Ship } from 'lucide-react';
+import { Ship, Droplets, Flame, FlaskConical, Package } from 'lucide-react';
 import { useLang } from './LangContext';
 import type { StraitStatus } from '@/app/lib/types';
 
@@ -13,11 +13,11 @@ type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 
 // Crude tankers and LNG carriers are the highest-value, most targeted cargo
 // classes; their sensitivity offset pushes them to higher risk tiers first.
-const CARGO_CLASSES: { key: 'crude' | 'lng' | 'container' | 'chemical'; icon: string; offset: number }[] = [
-  { key: 'crude',     icon: '🛢️', offset: 15 },
-  { key: 'lng',       icon: '🔵', offset: 10 },
-  { key: 'chemical',  icon: '⚗️', offset: 5  },
-  { key: 'container', icon: '📦', offset: 0  },
+const CARGO_CLASSES: { key: 'crude' | 'lng' | 'container' | 'chemical'; icon: React.ReactNode; offset: number }[] = [
+  { key: 'crude',     icon: <Droplets    size={13} />, offset: 15 },
+  { key: 'lng',       icon: <Flame       size={13} />, offset: 10 },
+  { key: 'chemical',  icon: <FlaskConical size={13} />, offset: 5  },
+  { key: 'container', icon: <Package     size={13} />, offset: 0  },
 ];
 
 function riskLevel(state: StraitStatus, tension: number, offset: number): RiskLevel {
@@ -51,11 +51,11 @@ export default function ShippingRiskPanel({ state, tensionIndex }: Props) {
     <section className="h-full flex flex-col border border-divider bg-bg2 p-5 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-          <Ship size={13} className="text-accent" />
+        <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-[0.22em] text-text3">
+          <Ship size={11} className="text-accent" />
           {t.risk.title}
         </div>
-        <span className="text-[10px] font-mono text-text4">{t.risk.subtitle}</span>
+        <span className="text-[9px] font-mono text-text4">{t.risk.subtitle}</span>
       </div>
 
       {/* Cargo rows */}
@@ -65,17 +65,17 @@ export default function ShippingRiskPanel({ state, tensionIndex }: Props) {
           return (
             <div key={key}>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[12px] font-mono text-text flex items-center gap-2">
-                  <span>{icon}</span>
+                <span className="text-[12px] font-mono text-text flex items-center gap-2 text-text3">
+                  <span aria-hidden>{icon}</span>
                   <span>{t.risk[key]}</span>
                 </span>
-                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${RISK_BADGE[risk]}`}>
+                <span className={`text-[9px] font-mono font-bold px-2 py-0.5 border ${RISK_BADGE[risk]}`}>
                   {t.risk[risk]}
                 </span>
               </div>
-              <div className="h-1.5 bg-bg2 rounded-full overflow-hidden border border-divider">
+              <div className="h-[2px] bg-divider overflow-hidden">
                 <div
-                  className={`h-full rounded-full ${RISK_BAR[risk]} transition-all duration-700`}
+                  className={`h-full ${RISK_BAR[risk]} transition-all duration-700`}
                   style={{ width: `${RISK_PCT[risk]}%` }}
                   role="progressbar"
                   aria-valuenow={RISK_PCT[risk]}

@@ -12,9 +12,10 @@ interface Props {
   status?: StatusData;
   metrics?: MetricsData;
   loading?: boolean;
+  vesselCount?: number;
 }
 
-export default function Header({ status, metrics, loading }: Props) {
+export default function Header({ status, metrics, loading, vesselCount }: Props) {
   const { t, locale } = useLang();
   const [scrolled, setScrolled] = useState(false);
 
@@ -63,6 +64,13 @@ export default function Header({ status, metrics, loading }: Props) {
           <div className="hidden sm:flex items-center gap-2 px-4 border-r border-divider/70 shrink-0">
             <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">{t.header.chokepointsLabel}</span>
             <span className="text-[8px] font-mono font-semibold text-text3">{t.header.monitoredCount}</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 px-4 border-r border-divider/70 shrink-0">
+            <span className="text-[8px] font-mono text-text4 uppercase tracking-[0.16em]">{t.header.vesselsLabel}</span>
+            <span className="text-[8px] font-mono font-semibold text-text3">
+              {vesselCount != null && vesselCount > 0 ? vesselCount.toLocaleString() : '—'}
+            </span>
           </div>
 
           <div className="hidden md:flex items-center gap-2 px-4 shrink-0 ml-auto">

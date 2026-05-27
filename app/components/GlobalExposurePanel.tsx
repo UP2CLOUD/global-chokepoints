@@ -55,7 +55,7 @@ export default function GlobalExposurePanel({ state }: Props) {
       </div>
 
       {/* Global flow callout */}
-      <div className={`mb-5 px-4 py-3 rounded-lg border text-[11px] font-mono ${statusColor} flex flex-wrap items-center gap-2`}>
+      <div className={`mb-5 px-4 py-3 border text-[11px] font-mono ${statusColor} flex flex-wrap items-center gap-2`}>
         <span className="font-bold tracking-wide">{t.exposure.globalFlow}</span>
         <span className="text-text3">—</span>
         <span>{statusLabel}</span>
@@ -77,9 +77,9 @@ export default function GlobalExposurePanel({ state }: Props) {
                 {pct}%
               </span>
             </div>
-            <div className="h-1.5 bg-bg2 rounded-full overflow-hidden border border-divider">
+            <div className="h-[2px] bg-divider overflow-hidden">
               <div
-                className={`h-full rounded-full ${barColor(pct)} transition-all duration-700`}
+                className={`h-full ${barColor(pct)} transition-all duration-700`}
                 style={{ width: `${pct}%` }}
                 role="progressbar"
                 aria-valuenow={pct}

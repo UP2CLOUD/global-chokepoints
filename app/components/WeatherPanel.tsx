@@ -54,9 +54,9 @@ export default function WeatherPanel() {
   }, []);
 
   return (
-    <section className="rounded-xl border border-divider bg-card/70 p-4 md:p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-[11px] font-mono uppercase tracking-[0.18em] text-text2 flex items-center gap-2">
+    <section className="border border-divider bg-bg1 p-5 md:p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
           <Wind size={13} className="text-accent" />
           {t.weather.title}
         </div>
@@ -89,7 +89,7 @@ export default function WeatherPanel() {
                 {data.navRisk}<span className="text-text3">/100</span> · {data.navRiskLabel}
               </span>
             </div>
-            <div className="h-1.5 bg-bg2 rounded-full overflow-hidden border border-divider">
+            <div className="h-[2px] bg-divider overflow-hidden">
               <div className={`h-full ${RISK_BAR[data.navRiskLabel]} transition-all duration-500`} style={{ width: `${data.navRisk}%` }} role="progressbar" aria-valuenow={data.navRisk} aria-valuemin={0} aria-valuemax={100} />
             </div>
           </div>
@@ -101,7 +101,7 @@ export default function WeatherPanel() {
 
 function Stat({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-lg border border-divider bg-bg1/60 p-3">
+    <div className="border border-divider bg-bg2 p-3">
       <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.16em] text-text2">
         <span className="text-accent" aria-hidden>{icon}</span>
         {label}
