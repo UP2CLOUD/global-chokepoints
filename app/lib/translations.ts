@@ -17,6 +17,7 @@ export const translations = {
       chokepointsLabel: 'CHOKEPOINTS',
       monitoredCount: '5 MONITORED',
       lastUpdateLabel: 'LAST UPDATE',
+      vesselsLabel: 'VESSELS AIS',
     },
     hero: {
       statusLabel: 'Strait Status',
@@ -293,6 +294,7 @@ export const translations = {
       chokepointsLabel: 'PONTOS CRÍTICOS',
       monitoredCount: '5 MONITORADOS',
       lastUpdateLabel: 'ÚLTIMA ATUALIZ.',
+      vesselsLabel: 'EMBARCAÇÕES AIS',
     },
     hero: {
       statusLabel: 'Status do Estreito',
@@ -569,6 +571,7 @@ export const translations = {
       chokepointsLabel: 'ESTRECHOS',
       monitoredCount: '5 MONITORIZADOS',
       lastUpdateLabel: 'ÚLTIMA ACTUAL.',
+      vesselsLabel: 'BUQUES AIS',
     },
     hero: {
       statusLabel: 'Estado del Estrecho',
@@ -845,6 +848,7 @@ export const translations = {
       chokepointsLabel: 'DÉTROITS',
       monitoredCount: '5 SURVEILLÉS',
       lastUpdateLabel: 'DERNIÈRE MAJ',
+      vesselsLabel: 'NAVIRES AIS',
     },
     hero: {
       statusLabel: 'État du Détroit',
@@ -1121,6 +1125,7 @@ export const translations = {
       chokepointsLabel: 'STRETTI',
       monitoredCount: '5 MONITORATI',
       lastUpdateLabel: 'ULT. AGGIORN.',
+      vesselsLabel: 'NAVI AIS',
     },
     hero: {
       statusLabel: 'Stato dello Stretto',
@@ -1397,6 +1402,7 @@ export const translations = {
       chokepointsLabel: 'ПРОЛИВЫ',
       monitoredCount: '5 МОНИТОРИНГ',
       lastUpdateLabel: 'ПОСЛ. ОБНОВЛ.',
+      vesselsLabel: 'СУДА AIS',
     },
     hero: {
       statusLabel: 'Состояние пролива',
