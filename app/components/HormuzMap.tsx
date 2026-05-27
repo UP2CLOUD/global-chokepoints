@@ -218,6 +218,14 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
         }
       });
 
+      // Secondary chokepoint markers along ghost routes
+      const mkChokepoint = (pos: [number, number], color: string) => {
+        L.circleMarker(pos, { radius: 9, color: 'transparent', fillColor: color, fillOpacity: 0.12, weight: 0, interactive: false }).addTo(map);
+        L.circleMarker(pos, { radius: 4, color: color, fillColor: color, fillOpacity: 0.9, weight: 1.5, interactive: false }).addTo(map);
+      };
+      mkChokepoint([12.6, 43.4],  '#F97316'); // Bab-el-Mandeb / Red Sea
+      mkChokepoint([30.1, 32.5],  '#F59E0B'); // Suez Canal northern entry
+
       // Layer groups — PortWatch below AIS
       pwLayer.current      = L.layerGroup().addTo(map);
       vesselLayer.current  = L.layerGroup().addTo(map);

@@ -25,7 +25,7 @@ export default function LanguageSwitcher() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-bg2/80 border border-divider text-[10px] font-mono text-text2 hover:border-accent/40 hover:text-accent transition-colors duration-180"
+        className="flex items-center gap-1.5 px-2.5 py-1 bg-bg2/80 border border-divider text-[10px] font-mono text-text2 hover:border-accent/40 hover:text-accent transition-colors duration-180"
         aria-label="Select language"
         aria-expanded={open}
       >
@@ -34,7 +34,7 @@ export default function LanguageSwitcher() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1.5 z-[2000] min-w-[150px] rounded-lg border border-divider bg-bg1/95 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden animate-fadeInUp">
+        <div className="absolute right-0 top-full mt-1.5 z-[2000] min-w-[150px] border border-divider bg-bg1/95 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden animate-fadeInUp">
           {LANGS.map(l => (
             <button
               key={l}

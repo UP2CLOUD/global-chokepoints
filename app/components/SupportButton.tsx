@@ -35,9 +35,9 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
     return (
       <a
         {...commonProps}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono
           text-text2 hover:text-accent border border-divider hover:border-accent/40
-          bg-bg2/40 backdrop-blur-sm transition-all duration-200 uppercase tracking-[0.12em]
+          bg-bg2 transition-all duration-200 uppercase tracking-[0.12em]
           ${className}`}
         aria-label={t.footer.supportAria}
       >
@@ -63,7 +63,7 @@ export default function SupportButton({ variant = 'header', className = '' }: Pr
   return (
     <a
       {...commonProps}
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-mono
+      className={`inline-flex items-center gap-2 px-4 py-2 text-[12px] font-mono
         text-text border border-accent/30 hover:border-accent/60 hover:bg-accent/5
         transition-all duration-200 ${className}`}
       aria-label={t.footer.supportAria}

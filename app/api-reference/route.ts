@@ -54,7 +54,6 @@ export async function GET(req: NextRequest) {
       border: 1px solid #10B98130;
       background: #10B98108;
       padding: 2px 8px;
-      border-radius: 4px;
     }
 
     /* Push content below topbar */
