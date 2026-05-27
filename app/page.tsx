@@ -144,7 +144,7 @@ function DashboardContent() {
         {/* Strategic Chokepoints Grid */}
         <Reveal>
           <section id="chokepoints" className="py-8 md:py-10" style={{ scrollMarginTop: '82px' }}>
-            <ChokepointsPanel />
+            <ChokepointsPanel timeline={data.timeline} />
           </section>
         </Reveal>
 

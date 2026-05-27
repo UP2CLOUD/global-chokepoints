@@ -83,6 +83,25 @@ export const HORMUZ_LON               = 56.4;
 export const PORTWATCH_CHOKEPOINT_ID  = 'chokepoint6';
 export const PORTWATCH_BASELINE_DAILY = 34;
 
+/** All IMF PortWatch chokepoints tracked by this platform */
+export const PORTWATCH_CP_CONFIG = [
+  { key: 'hormuz', portid: 'chokepoint6', baseline: 34 },
+  { key: 'redsea', portid: 'chokepoint1', baseline: 50 },
+  { key: 'suez',   portid: 'chokepoint2', baseline: 50 },
+  { key: 'panama', portid: 'chokepoint3', baseline: 35 },
+] as const;
+
+export type PortwatchKey = typeof PORTWATCH_CP_CONFIG[number]['key'];
+
+/** Per-chokepoint event keyword sets used for live event counting */
+export const CHOKEPOINT_KEYWORDS: Record<string, string[]> = {
+  hormuz: ['hormuz', 'irgc', 'persian gulf', 'gulf of oman', 'iran navy', 'iranian navy'],
+  redsea: ['red sea', 'houthi', 'bab el-mandeb', 'bab-el-mandeb', 'aden', 'yemen', 'gulf of aden'],
+  suez:   ['suez', 'suez canal', 'egypt maritime'],
+  panama: ['panama canal', 'panama locks', 'canal authority'],
+  taiwan: ['taiwan strait', 'taiwan channel', 'pla navy', 'south china sea pla'],
+};
+
 // ── Public deployment identity ────────────────────────────────────────────────
 /** Canonical site URL — overridden by NEXT_PUBLIC_SITE_URL at build time */
 export const SITE_URL =

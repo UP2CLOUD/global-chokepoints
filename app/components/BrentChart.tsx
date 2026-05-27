@@ -55,7 +55,7 @@ export default function BrentChart() {
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 return (
-                  <div className="bg-bg1/95 border border-divider rounded-md px-2.5 py-1.5 text-[11px] font-mono">
+                  <div className="bg-bg1/95 border border-divider px-2.5 py-1.5 text-[11px] font-mono">
                     <div className="text-text3">{payload[0].payload.date}</div>
                     <div className="text-accent font-semibold">${Number(payload[0].value).toFixed(2)}</div>
                   </div>

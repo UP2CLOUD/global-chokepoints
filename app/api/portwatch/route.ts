@@ -1,16 +1,19 @@
 // ============================================================
-// /api/portwatch — IMF PortWatch daily Strait of Hormuz transit counts
+// /api/portwatch — IMF PortWatch daily transit counts for all
+// tracked maritime chokepoints (Hormuz, Red Sea, Suez, Panama).
 //
 // Source: IMF PortWatch ArcGIS REST API (free, no auth required)
-// Chokepoint ID: chokepoint6 = Strait of Hormuz
-// Updates: weekly on Tuesdays at 09:00 ET (data is typically ~2 days lagged)
+// Updates: weekly on Tuesdays at ~09:00 ET (data is ~2 days lagged)
 //
-// Returns last 30 days of daily transit counts by vessel type.
+// Root-level fields (days, todayTotal, …) remain Hormuz data for
+// backward compatibility with TransitChart and HormuzMap.
+// The `chokepoints` field carries per-CP breakdowns.
 // ============================================================
 export const runtime = 'edge';
 
 import { NextResponse } from 'next/server';
 import { getKV } from '@/app/lib/kv';
+import { PORTWATCH_CP_CONFIG } from '@/app/lib/constants';
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
@@ -19,17 +22,13 @@ export const dynamic = 'force-dynamic';
 const PORTWATCH_URL =
   'https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/Daily_Chokepoints_Data/FeatureServer/0/query';
 
-const PORTID        = 'chokepoint6';          // Strait of Hormuz
 const DAYS          = 60;
-const KV_CACHE_KEY  = 'portwatch:cache';
-const CACHE_TTL_SEC = 4 * 3600;              // 4 hours — data updates weekly but we want fresher display
-
-// Historical "normal" daily average (pre-2026 baseline: ~34 vessels/day)
-const BASELINE_DAILY = 34;
+const KV_CACHE_KEY  = 'portwatch:multi';
+const CACHE_TTL_SEC = 4 * 3600;
 
 // ── Types ─────────────────────────────────────────────────────
 export type PortWatchDay = {
-  date: string;          // YYYY-MM-DD
+  date: string;
   total: number;
   tanker: number;
   cargo: number;
@@ -37,22 +36,24 @@ export type PortWatchDay = {
   dryBulk: number;
 };
 
-type PortWatchPayload = {
+export type ChokepointStats = {
   days: PortWatchDay[];
-  fetchedAt: number;
-  latestDate: string;
   todayTotal: number;
   sevenDayAvg: number;
   baselineDaily: number;
-  /** pct deviation from baseline, e.g. -88 = 88% below normal */
   vsBaseline: number;
+  latestDate: string;
+};
+
+type MultiPayload = ChokepointStats & {
+  fetchedAt: number;
+  chokepoints: Record<string, ChokepointStats>;
 };
 
 // ── Module-level fallback ─────────────────────────────────────
-let moduleCache: PortWatchPayload | null = null;
+let moduleCache: MultiPayload | null = null;
 
-// ── Date parsing — ArcGIS returns esriFieldTypeDateOnly as "YYYY-MM-DD" strings
-// but legacy DATE fields come back as epoch ms numbers. Handle both.
+// ── Helpers ───────────────────────────────────────────────────
 function toISODate(raw: unknown): string {
   if (typeof raw === 'number') return new Date(raw).toISOString().slice(0, 10);
   const s = String(raw ?? '');
@@ -61,31 +62,22 @@ function toISODate(raw: unknown): string {
   return s.slice(0, 10);
 }
 
-// ── Fetch from IMF PortWatch ──────────────────────────────────
-async function fetchPortWatch(): Promise<PortWatchDay[]> {
-  // Request last DAYS days explicitly so ordering is reliable
-  const since = new Date(Date.now() - DAYS * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
-
+async function fetchCP(portid: string): Promise<PortWatchDay[]> {
+  const since = new Date(Date.now() - DAYS * 86400_000).toISOString().slice(0, 10);
   const params = new URLSearchParams({
-    where: `portid = '${PORTID}' AND date >= DATE '${since}'`,
+    where: `portid = '${portid}' AND date >= DATE '${since}'`,
     outFields: 'date,n_total,n_tanker,n_cargo,n_container,n_dry_bulk',
     orderByFields: 'date ASC',
     resultRecordCount: String(DAYS),
     f: 'json',
   });
-
   const res = await fetch(`${PORTWATCH_URL}?${params}`, {
     signal: AbortSignal.timeout(10_000),
-    headers: { 'Accept': 'application/json' },
+    headers: { Accept: 'application/json' },
   });
-
-  if (!res.ok) throw new Error(`PortWatch HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`PortWatch HTTP ${res.status} for ${portid}`);
   const json = await res.json() as { features?: { attributes: Record<string, unknown> }[] };
-
-  const features = json.features ?? [];
-  return features.map((f) => {
+  return (json.features ?? []).map(f => {
     const a = f.attributes;
     return {
       date:      toISODate(a.date),
@@ -95,27 +87,22 @@ async function fetchPortWatch(): Promise<PortWatchDay[]> {
       container: Number(a.n_container ?? 0),
       dryBulk:   Number(a.n_dry_bulk  ?? 0),
     };
-  }); // already ASC from orderByFields
+  });
 }
 
-function buildPayload(days: PortWatchDay[]): PortWatchPayload {
+function buildStats(days: PortWatchDay[], baseline: number): ChokepointStats {
   const last = days.at(-1);
   const last7 = days.slice(-7);
   const sevenDayAvg = last7.length
     ? Math.round(last7.reduce((s, d) => s + d.total, 0) / last7.length * 10) / 10
     : 0;
   const todayTotal = last?.total ?? 0;
-  const vsBaseline = Math.round(((todayTotal - BASELINE_DAILY) / BASELINE_DAILY) * 100);
+  const vsBaseline = Math.round(((todayTotal - baseline) / baseline) * 100);
+  return { days, todayTotal, sevenDayAvg, baselineDaily: baseline, vsBaseline, latestDate: last?.date ?? '' };
+}
 
-  return {
-    days,
-    fetchedAt: Date.now(),
-    latestDate:    last?.date ?? '',
-    todayTotal,
-    sevenDayAvg,
-    baselineDaily: BASELINE_DAILY,
-    vsBaseline,
-  };
+function emptyStats(baseline: number): ChokepointStats {
+  return { days: [], todayTotal: 0, sevenDayAvg: 0, baselineDaily: baseline, vsBaseline: 0, latestDate: '' };
 }
 
 // ── Route handler ─────────────────────────────────────────────
@@ -123,17 +110,14 @@ export async function GET() {
   const kv = getKV();
 
   // ── Try cache ─────────────────────────────────────────────
-  let cached: PortWatchPayload | null = null;
+  let cached: MultiPayload | null = null;
   if (kv) {
-    try {
-      cached = (await kv.get(KV_CACHE_KEY, 'json')) as PortWatchPayload | null;
-    } catch { /* KV unavailable */ }
+    try { cached = (await kv.get(KV_CACHE_KEY, 'json')) as MultiPayload | null; } catch { /* KV unavailable */ }
   }
   if (!cached && moduleCache) cached = moduleCache;
 
-  const nowMs   = Date.now();
-  const ageMs   = cached ? nowMs - cached.fetchedAt : Infinity;
-  const isFresh = ageMs < CACHE_TTL_SEC * 1000;
+  const nowMs  = Date.now();
+  const isFresh = cached && (nowMs - cached.fetchedAt) < CACHE_TTL_SEC * 1000;
 
   if (isFresh && cached) {
     return NextResponse.json(
@@ -142,38 +126,30 @@ export async function GET() {
     );
   }
 
-  // ── Fetch fresh data ──────────────────────────────────────
-  try {
-    const days    = await fetchPortWatch();
-    const payload = buildPayload(days);
+  // ── Fetch all chokepoints in parallel ─────────────────────
+  const results = await Promise.allSettled(
+    PORTWATCH_CP_CONFIG.map(cp => fetchCP(cp.portid))
+  );
 
-    if (kv) {
-      try {
-        await kv.put(KV_CACHE_KEY, JSON.stringify(payload), {
-          expirationTtl: CACHE_TTL_SEC * 2,
-        });
-      } catch { /* KV write failed */ }
-    }
-    moduleCache = payload;
+  const chokepoints: Record<string, ChokepointStats> = {};
+  PORTWATCH_CP_CONFIG.forEach((cp, i) => {
+    const r = results[i];
+    chokepoints[cp.key] = r.status === 'fulfilled'
+      ? buildStats(r.value, cp.baseline)
+      : (cached?.chokepoints?.[cp.key] ?? emptyStats(cp.baseline));
+  });
 
-    return NextResponse.json(
-      { ok: true, source: 'IMF PortWatch', cached: false, ...payload },
-      { headers: { 'Cache-Control': 'no-store' } }
-    );
-  } catch (err) {
-    console.error('[portwatch] fetch failed:', err);
+  // Hormuz at root level for backward compat
+  const hormuz = chokepoints.hormuz ?? emptyStats(34);
+  const payload: MultiPayload = { ...hormuz, fetchedAt: nowMs, chokepoints };
 
-    // Return stale cache if available
-    if (cached) {
-      return NextResponse.json(
-        { ok: true, source: 'IMF PortWatch (stale)', cached: true, stale: true, ...cached },
-        { headers: { 'Cache-Control': 'no-store' } }
-      );
-    }
-
-    return NextResponse.json(
-      { ok: false, error: String(err), days: [], todayTotal: 0, sevenDayAvg: 0, baselineDaily: BASELINE_DAILY, vsBaseline: 0 },
-      { status: 502, headers: { 'Cache-Control': 'no-store' } }
-    );
+  if (kv) {
+    try { await kv.put(KV_CACHE_KEY, JSON.stringify(payload), { expirationTtl: CACHE_TTL_SEC * 2 }); } catch { /* KV write failed */ }
   }
+  moduleCache = payload;
+
+  return NextResponse.json(
+    { ok: true, source: 'IMF PortWatch', cached: false, ...payload },
+    { headers: { 'Cache-Control': 'no-store' } }
+  );
 }

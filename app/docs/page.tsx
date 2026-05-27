@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 function MethodBadge({ method }: { method: 'GET' | 'POST' }) {
   return (
     <span
-      className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-widest ${
+      className={`inline-block px-2 py-0.5 text-[10px] font-mono font-bold tracking-widest ${
         method === 'GET'
           ? 'bg-info/15 text-info border border-info/30'
           : 'bg-caution/15 text-caution border border-caution/30'
@@ -32,7 +32,7 @@ function SeverityPill({ level, label }: { level: 'ok' | 'caution' | 'info' | 'ne
     neutral: 'bg-text4/20 text-text2 border-text4/30',
   }[level];
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono border ${cls}`}>
+    <span className={`inline-block px-2 py-0.5 text-[10px] font-mono border ${cls}`}>
       {label}
     </span>
   );
@@ -40,7 +40,7 @@ function SeverityPill({ level, label }: { level: 'ok' | 'caution' | 'info' | 'ne
 
 function Code({ children }: { children: string }) {
   return (
-    <code className="px-1.5 py-0.5 rounded bg-bg1 border border-divider text-[12px] font-mono text-accent-hi">
+    <code className="px-1.5 py-0.5 bg-bg1 border border-divider text-[12px] font-mono text-accent-hi">
       {children}
     </code>
   );
@@ -207,14 +207,14 @@ export default function DocsPage() {
           <div className="ml-auto flex items-center gap-3">
             <a
               href="/api-reference"
-              className="inline-flex items-center gap-1.5 text-[10px] font-mono text-ok border border-ok/30 bg-ok/5 px-2.5 py-1 rounded hover:border-ok/60 hover:bg-ok/10 transition-all"
+              className="inline-flex items-center gap-1.5 text-[10px] font-mono text-ok border border-ok/30 bg-ok/5 px-2.5 py-1 hover:border-ok/60 hover:bg-ok/10 transition-all"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-ok animate-pulse" />
               Try API →
             </a>
             <a
               href="/api/openapi"
-              className="text-[10px] font-mono text-text3 hover:text-accent border border-divider/60 px-2.5 py-1 rounded hover:border-accent/30 transition-all"
+              className="text-[10px] font-mono text-text3 hover:text-accent border border-divider/60 px-2.5 py-1 hover:border-accent/30 transition-all"
             >
               openapi.json ↗
             </a>
@@ -232,13 +232,13 @@ export default function DocsPage() {
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors duration-120 py-0.5 px-2 rounded hover:bg-bg1/60"
+                className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors duration-120 py-0.5 px-2 hover:bg-bg1/60"
               >
                 {item.label}
               </a>
             ))}
             <div className="pt-4 border-t border-divider/40 mt-4">
-              <a href="/api-reference" className="block text-[12px] font-mono text-ok hover:text-ok/80 transition-colors py-0.5 px-2">
+              <a href="/api-reference" className="block text-[12px] font-mono text-ok hover:text-ok/80 transition-colors py-0.5 px-2 hover:bg-bg1/60">
                 ▶ Try API live ↗
               </a>
               <a href="/methodology" className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors py-0.5 px-2">

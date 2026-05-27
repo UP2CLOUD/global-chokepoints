@@ -1,6 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Activity } from 'lucide-react';
+import { CHOKEPOINT_KEYWORDS } from '@/app/lib/constants';
+import type { TimelineEvent } from '@/app/lib/types';
+import type { ChokepointStats } from '@/app/api/portwatch/route';
 
 type OpStatus = 'critical' | 'degraded' | 'elevated' | 'normal';
 type Trend    = 'up' | 'stable' | 'down';
@@ -14,9 +18,6 @@ interface ChokepointDef {
   riskPct:    number;
   oilMbd:     string;
   tradePerDay:string;
-  vessels24h: number;
-  trend:      Trend;
-  alerts:     number;
   isFocus?:   boolean;
 }
 
@@ -24,41 +25,37 @@ const CHOKEPOINTS: ChokepointDef[] = [
   {
     key: 'hormuz', name: 'Strait of Hormuz', region: 'Persian Gulf',
     codes: 'IR / OM', status: 'critical', riskPct: 88,
-    oilMbd: '21 Mb/d', tradePerDay: '$3.4B/d', vessels24h: 52,
-    trend: 'stable', alerts: 3, isFocus: true,
+    oilMbd: '21 Mb/d', tradePerDay: '$3.4B/d', isFocus: true,
   },
   {
     key: 'redsea', name: 'Red Sea', region: 'Bab el-Mandeb',
     codes: 'YE / DJ', status: 'degraded', riskPct: 74,
-    oilMbd: '6.2 Mb/d', tradePerDay: '$1.0B/d', vessels24h: 28,
-    trend: 'down', alerts: 12,
+    oilMbd: '6.2 Mb/d', tradePerDay: '$1.0B/d',
   },
   {
     key: 'suez', name: 'Suez Canal', region: 'Egypt',
     codes: 'EG', status: 'elevated', riskPct: 57,
-    oilMbd: '9 Mb/d', tradePerDay: '$9.7B/d', vessels24h: 45,
-    trend: 'down', alerts: 7,
+    oilMbd: '9 Mb/d', tradePerDay: '$9.7B/d',
   },
   {
     key: 'panama', name: 'Panama Canal', region: 'Central America',
     codes: 'PA', status: 'elevated', riskPct: 41,
-    oilMbd: '—', tradePerDay: '$270M/d', vessels24h: 35,
-    trend: 'stable', alerts: 2,
+    oilMbd: '—', tradePerDay: '$270M/d',
   },
   {
     key: 'taiwan', name: 'Taiwan Strait', region: 'Western Pacific',
     codes: 'TW / CN', status: 'elevated', riskPct: 46,
-    oilMbd: '—', tradePerDay: '$2.4B/d', vessels24h: 128,
-    trend: 'stable', alerts: 1,
+    oilMbd: '—', tradePerDay: '$2.4B/d',
   },
 ];
 
+// Static vessel counts used when PortWatch data is unavailable
+const STATIC_VESSELS: Record<string, number> = {
+  hormuz: 52, redsea: 28, suez: 45, panama: 35, taiwan: 128,
+};
+
 const STATUS: Record<OpStatus, {
-  label: string;
-  barClass: string;
-  textClass: string;
-  ringClass: string;
-  subtleBg: string;
+  label: string; barClass: string; textClass: string; ringClass: string; subtleBg: string;
 }> = {
   critical: { label: 'CRITICAL', barClass: 'bg-danger',  textClass: 'text-danger',  ringClass: 'border-danger/25',  subtleBg: 'bg-danger/[0.04]'  },
   degraded: { label: 'DEGRADED', barClass: 'bg-warn',    textClass: 'text-warn',    ringClass: 'border-warn/25',    subtleBg: 'bg-warn/[0.04]'    },
@@ -67,12 +64,39 @@ const STATUS: Record<OpStatus, {
 };
 
 const TREND_GLYPH: Record<Trend, { glyph: string; cls: string }> = {
-  up:     { glyph: '↑', cls: 'text-ok'     },
+  up:     { glyph: '↑', cls: 'text-danger' },
   stable: { glyph: '→', cls: 'text-text4'  },
-  down:   { glyph: '↓', cls: 'text-danger' },
+  down:   { glyph: '↓', cls: 'text-ok'     },
 };
 
-export default function ChokepointsPanel() {
+// Count events matching a keyword set within a time window
+function countEvents(events: TimelineEvent[], keywords: string[], fromMs: number, toMs: number): number {
+  return events.filter(e => {
+    const t = +new Date(e.date);
+    if (isNaN(t) || t < fromMs || t > toMs) return false;
+    const text = `${e.title} ${e.description}`.toLowerCase();
+    return keywords.some(kw => text.includes(kw));
+  }).length;
+}
+
+interface Props {
+  timeline?: TimelineEvent[];
+}
+
+export default function ChokepointsPanel({ timeline = [] }: Props) {
+  const [pwData, setPwData] = useState<Record<string, ChokepointStats> | null>(null);
+
+  useEffect(() => {
+    fetch('/api/portwatch', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.chokepoints) setPwData(d.chokepoints); })
+      .catch(() => {});
+  }, []);
+
+  const now = Date.now();
+  const last24Ms  = now - 86_400_000;
+  const prev24Ms  = now - 172_800_000;
+
   return (
     <section>
       {/* Section header */}
@@ -87,8 +111,30 @@ export default function ChokepointsPanel() {
       {/* Card grid — 1 col → 2 col → 5 col */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-px bg-divider border border-divider">
         {CHOKEPOINTS.map((cp) => {
-          const s = STATUS[cp.status];
-          const tr = TREND_GLYPH[cp.trend];
+          const s  = STATUS[cp.status];
+          const pw = pwData?.[cp.key];
+
+          // Live vessel count from PortWatch, or static fallback
+          const vessels24h = pw?.todayTotal ?? STATIC_VESSELS[cp.key] ?? 0;
+          const vsBaseline = pw?.vsBaseline ?? 0;
+
+          // Derive trend from PortWatch baseline deviation
+          const pwTrend: Trend = pw
+            ? vsBaseline <= -10 ? 'down' : vsBaseline >= 10 ? 'up' : 'stable'
+            : 'stable';
+
+          const tr = TREND_GLYPH[pwTrend];
+
+          // Per-chokepoint live event count
+          const keywords = CHOKEPOINT_KEYWORDS[cp.key] ?? [];
+          const events24h  = timeline.length > 0 ? countEvents(timeline, keywords, last24Ms, now) : null;
+          const eventsPrev = timeline.length > 0 ? countEvents(timeline, keywords, prev24Ms, last24Ms) : null;
+          const eventTrend: Trend | null = events24h != null && eventsPrev != null
+            ? events24h > eventsPrev + 1 ? 'up' : events24h < eventsPrev - 1 ? 'down' : 'stable'
+            : null;
+
+          const showAlert = events24h != null && events24h > 0;
+
           return (
             <div
               key={cp.key}
@@ -144,21 +190,35 @@ export default function ChokepointsPanel() {
                 </div>
                 <div>
                   <div className="text-[8px] font-mono text-text4 uppercase mb-0.5">VES/D</div>
-                  <div className="text-[10px] font-mono font-bold text-text leading-none">{cp.vessels24h}</div>
+                  <div className={`text-[10px] font-mono font-bold leading-none ${pw ? 'text-accent' : 'text-text'}`}>
+                    {vessels24h}
+                    {pw && vsBaseline !== 0 && (
+                      <span className={`text-[8px] ml-0.5 ${vsBaseline < 0 ? 'text-danger' : 'text-ok'}`}>
+                        {vsBaseline > 0 ? '+' : ''}{vsBaseline}%
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Trend + alerts */}
+              {/* Trend + event alert */}
               <div className="flex items-center justify-between pt-1">
                 <span className={`text-[9px] font-mono flex items-center gap-1 ${tr.cls}`}>
                   {tr.glyph}
-                  <span className="text-text4">{cp.trend.toUpperCase()}</span>
+                  <span className="text-text4">{pwTrend.toUpperCase()}</span>
                 </span>
-                {cp.alerts > 0 && (
-                  <span className={`text-[8px] font-mono px-1.5 py-0.5 border ${s.ringClass} ${s.textClass}`}>
-                    {cp.alerts} ALERT{cp.alerts > 1 ? 'S' : ''}
-                  </span>
-                )}
+                <div className="flex items-center gap-1">
+                  {showAlert && (
+                    <span className={`text-[8px] font-mono px-1.5 py-0.5 border ${s.ringClass} ${s.textClass}`}>
+                      {events24h} EVT{(events24h ?? 0) > 1 ? 'S' : ''}
+                    </span>
+                  )}
+                  {eventTrend && showAlert && (
+                    <span className={`text-[9px] font-mono ${TREND_GLYPH[eventTrend].cls}`}>
+                      {TREND_GLYPH[eventTrend].glyph}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -166,7 +226,7 @@ export default function ChokepointsPanel() {
       </div>
 
       <p className="mt-3 text-[9px] font-mono text-text4">
-        Risk indices reflect current geopolitical assessment. Not navigational advice.
+        Vessel counts: IMF PortWatch (1–2 day lag) · Events: GDELT + RSS · Risk indices are assessments only, not navigational advice.
       </p>
     </section>
   );

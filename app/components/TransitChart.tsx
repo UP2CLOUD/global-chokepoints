@@ -3,18 +3,35 @@
 import { useEffect, useRef, useState } from 'react';
 import { PortWatchDay } from '@/app/api/portwatch/route';
 import { useLang } from './LangContext';
-import { TrendingDown } from 'lucide-react';
+import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 
-type TransitData = {
-  ok: boolean;
+type CPStats = {
   days: PortWatchDay[];
   todayTotal: number;
   sevenDayAvg: number;
   baselineDaily: number;
   vsBaseline: number;
   latestDate: string;
+};
+
+type TransitData = CPStats & {
+  ok: boolean;
   source?: string;
   stale?: boolean;
+  chokepoints?: Record<string, CPStats>;
+};
+
+type CPKey = 'hormuz' | 'redsea' | 'suez' | 'panama';
+
+const TABS: { key: CPKey; label: string; codes: string }[] = [
+  { key: 'hormuz', label: 'HORMUZ',  codes: 'IR/OM' },
+  { key: 'redsea', label: 'RED SEA', codes: 'YE/DJ' },
+  { key: 'suez',   label: 'SUEZ',    codes: 'EG'    },
+  { key: 'panama', label: 'PANAMA',  codes: 'PA'    },
+];
+
+const STATIC_BASELINES: Record<CPKey, number> = {
+  hormuz: 34, redsea: 50, suez: 50, panama: 35,
 };
 
 // ── Bar chart rendered on <canvas> ───────────────────────────
@@ -45,7 +62,7 @@ function TransitCanvas({ days, baseline }: { days: PortWatchDay[]; baseline: num
     const gap    = Math.max(1, barW * 0.18);
 
     // Grid lines + Y labels
-    const gridLines = [0, 10, 20, 30, 40].filter(v => v <= maxVal + 2);
+    const gridLines = [0, 10, 20, 30, 40, 60, 80].filter(v => v <= maxVal + 2);
     ctx.font      = `9px monospace`;
     ctx.textAlign = 'right';
     gridLines.forEach(v => {
@@ -57,7 +74,7 @@ function TransitCanvas({ days, baseline }: { days: PortWatchDay[]; baseline: num
       ctx.fillText(String(v), padL - 3, y + 3);
     });
 
-    // Baseline marker (dashed orange)
+    // Baseline marker (dashed amber)
     const baseY = padT + chartH - (baseline / maxVal) * chartH;
     ctx.setLineDash([4, 3]);
     ctx.strokeStyle = 'rgba(245,158,11,0.4)';
@@ -76,7 +93,6 @@ function TransitCanvas({ days, baseline }: { days: PortWatchDay[]; baseline: num
       const barH = day.total > 0 ? Math.max(2, (day.total / maxVal) * chartH) : 0;
       const y    = padT + chartH - barH;
 
-      // Color: 0 = red, low = orange, approaching baseline = yellow, good = teal
       const ratio = day.total / baseline;
       let color: string;
       if (day.total === 0)    color = 'rgba(239,68,68,0.75)';
@@ -116,6 +132,7 @@ export default function TransitChart() {
   const { lang } = useLang();
   const [data, setData] = useState<TransitData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<CPKey>('hormuz');
 
   useEffect(() => {
     const load = async () => {
@@ -129,21 +146,21 @@ export default function TransitChart() {
       finally { setLoading(false); }
     };
     load();
-    const id = setInterval(load, 30 * 60_000); // refresh every 30 min
+    const id = setInterval(load, 30 * 60_000);
     return () => clearInterval(id);
   }, []);
 
   if (loading) {
     return (
       <div className="flex flex-col gap-3 animate-pulse">
-        <div className="h-4 w-32 bg-bg1 rounded" />
-        <div className="h-36 bg-bg1 rounded" />
-        <div className="h-3 w-24 bg-bg1 rounded" />
+        <div className="h-4 w-48 bg-bg1" />
+        <div className="h-36 bg-bg1" />
+        <div className="h-3 w-24 bg-bg1" />
       </div>
     );
   }
 
-  if (!data || !data.days.length) {
+  if (!data) {
     return (
       <div className="flex items-center justify-center h-36 text-text3 text-[11px] font-mono">
         {lang === 'en' ? 'Transit data unavailable' : 'Dados de trânsito indisponíveis'}
@@ -151,22 +168,48 @@ export default function TransitChart() {
     );
   }
 
-  const { days, todayTotal, sevenDayAvg, baselineDaily, vsBaseline, latestDate } = data;
+  // Resolve active CP stats — fall back to root-level (Hormuz) if tab data missing
+  const cpStats: CPStats | null = activeTab === 'hormuz'
+    ? { days: data.days, todayTotal: data.todayTotal, sevenDayAvg: data.sevenDayAvg, baselineDaily: data.baselineDaily, vsBaseline: data.vsBaseline, latestDate: data.latestDate }
+    : (data.chokepoints?.[activeTab] ?? null);
+
+  if (!cpStats || !cpStats.days.length) {
+    return (
+      <div className="flex flex-col gap-3">
+        {/* Tab bar */}
+        <TabBar activeTab={activeTab} onSelect={setActiveTab} />
+        <div className="flex items-center justify-center h-36 text-text3 text-[11px] font-mono border border-divider">
+          {lang === 'en' ? 'No data for this chokepoint' : 'Sem dados para este ponto'}
+        </div>
+      </div>
+    );
+  }
+
+  const { days, todayTotal, sevenDayAvg, baselineDaily, vsBaseline, latestDate } = cpStats;
+  const baseline = baselineDaily || STATIC_BASELINES[activeTab];
+
   const pctText = vsBaseline < 0
     ? `${Math.abs(vsBaseline)}% ${lang === 'en' ? 'below' : 'abaixo'} avg`
-    : `${vsBaseline}% ${lang === 'en' ? 'above' : 'acima'} avg`;
-  const pctColor = vsBaseline < -50 ? 'text-danger' : vsBaseline < -20 ? 'text-caution' : 'text-ok';
+    : vsBaseline > 0
+    ? `${vsBaseline}% ${lang === 'en' ? 'above' : 'acima'} avg`
+    : lang === 'en' ? 'at baseline' : 'na linha base';
+  const pctColor = vsBaseline < -50 ? 'text-danger' : vsBaseline < -20 ? 'text-caution' : vsBaseline > 10 ? 'text-ok' : 'text-text3';
+
+  const TrendIcon = vsBaseline < -5 ? TrendingDown : vsBaseline > 5 ? TrendingUp : Minus;
 
   return (
     <div className="flex flex-col gap-1">
+      {/* Tab bar */}
+      <TabBar activeTab={activeTab} onSelect={setActiveTab} />
+
       {/* Header row */}
-      <div className="flex items-start justify-between mb-1">
+      <div className="flex items-start justify-between mb-1 mt-3">
         <div>
           <div className="text-[11px] font-mono text-text3 uppercase tracking-wider mb-0.5">
             {lang === 'en' ? 'Today' : 'Hoje'}
           </div>
           <div className="flex items-baseline gap-2">
-            <span className={`text-2xl font-black font-mono ${todayTotal === 0 ? 'text-danger' : todayTotal < 10 ? 'text-caution' : 'text-ok'}`}>
+            <span className={`text-2xl font-black font-mono ${todayTotal === 0 ? 'text-danger' : todayTotal < baseline * 0.3 ? 'text-caution' : 'text-ok'}`}>
               {todayTotal}
             </span>
             <span className="text-[11px] text-text3 font-mono">
@@ -182,25 +225,48 @@ export default function TransitChart() {
             {sevenDayAvg.toFixed(1)}
           </div>
           <div className={`text-[9px] font-mono ${pctColor} flex items-center gap-0.5 justify-end`}>
-            <TrendingDown size={8} />
+            <TrendIcon size={8} />
             {pctText}
           </div>
         </div>
       </div>
 
       {/* Chart */}
-      <TransitCanvas days={days} baseline={baselineDaily} />
+      <TransitCanvas days={days} baseline={baseline} />
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-1">
         <div className="flex items-center gap-2 text-[9px] font-mono text-text4">
-          <span className="inline-block w-3 h-[2px] bg-amber-400/50 rounded" />
-          {lang === 'en' ? 'pre-2026 baseline (~34/day)' : 'linha base pré-2026 (~34/dia)'}
+          <span className="inline-block w-3 h-[2px] bg-amber-400/50" />
+          {lang === 'en'
+            ? `pre-2026 baseline (~${baseline}/day)`
+            : `linha base pré-2026 (~${baseline}/dia)`}
         </div>
         <span className="text-[9px] font-mono text-text4">
           {lang === 'en' ? 'as of' : 'em'} {latestDate} · IMF PortWatch
         </span>
       </div>
+    </div>
+  );
+}
+
+function TabBar({ activeTab, onSelect }: { activeTab: CPKey; onSelect: (k: CPKey) => void }) {
+  return (
+    <div className="flex border-b border-divider">
+      {TABS.map(tab => (
+        <button
+          key={tab.key}
+          onClick={() => onSelect(tab.key)}
+          className={`flex flex-col items-center px-3 py-1.5 text-[8px] font-mono uppercase tracking-[0.16em] border-b-2 transition-colors -mb-px ${
+            activeTab === tab.key
+              ? 'border-accent text-accent'
+              : 'border-transparent text-text4 hover:text-text3'
+          }`}
+        >
+          {tab.label}
+          <span className="text-[7px] tracking-normal normal-case opacity-60">{tab.codes}</span>
+        </button>
+      ))}
     </div>
   );
 }

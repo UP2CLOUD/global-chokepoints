@@ -231,7 +231,7 @@ export default function VesselMap() {
 
   return (
     <div
-      className="relative h-[220px] md:h-[280px] rounded-lg overflow-hidden border border-divider bg-[#0B0F18]"
+      className="relative h-[220px] md:h-[280px] overflow-hidden border border-divider bg-[#0B0F18]"
       role="img"
       aria-label={
         live

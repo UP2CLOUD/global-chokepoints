@@ -3,13 +3,22 @@
 import { useEffect, useRef, useState } from 'react';
 import type { StatusData } from '@/app/lib/types';
 
-// Shipping lane waypoints [lat, lon] — inbound enters Gulf of Oman heading west
+// Hormuz shipping lane waypoints [lat, lon] — inbound enters Gulf of Oman heading west
 const LANE_IN: [number, number][] = [
   [24.2, 59.0], [25.0, 58.0], [25.6, 57.2], [26.1, 56.5],
   [26.3, 56.0], [26.3, 55.2], [26.1, 54.0], [25.8, 52.5],
 ];
 const LANE_OUT: [number, number][] = LANE_IN.map(
   ([lat, lon]): [number, number] => [lat + 0.28, lon],
+).reverse();
+
+// Bab-el-Mandeb (Red Sea entry) lane — inbound from Gulf of Aden northward
+const BEB_LANE_IN: [number, number][] = [
+  [11.6, 44.8], [12.0, 44.2], [12.4, 43.7], [12.7, 43.3],
+  [13.1, 43.0], [13.6, 42.6], [14.2, 42.2],
+];
+const BEB_LANE_OUT: [number, number][] = BEB_LANE_IN.map(
+  ([lat, lon]): [number, number] => [lat - 0.18, lon + 0.05],
 ).reverse();
 
 // Global shipping routes radiating outward from the Strait — shown as ghost lines
@@ -120,6 +129,15 @@ function buildPortWatchVessels(day: PortWatchDay): PwVessel[] {
 // Anchor point for the status orb — middle of the strait
 const ORB_LATLNG: [number, number] = [26.5, 56.3];
 
+// Global chokepoints mini-panel data
+const GLOBAL_CP = [
+  { key: 'hormuz', name: 'Hormuz',  risk: 88, color: '#EF4444' },
+  { key: 'redsea', name: 'Red Sea', risk: 74, color: '#F97316' },
+  { key: 'suez',   name: 'Suez',    risk: 57, color: '#F59E0B' },
+  { key: 'panama', name: 'Panama',  risk: 41, color: '#F59E0B' },
+  { key: 'taiwan', name: 'Taiwan',  risk: 46, color: '#F59E0B' },
+] as const;
+
 interface Props {
   status: StatusData;
   vessels?: AisVessel[];
@@ -131,12 +149,14 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
   const LRef            = useRef<any>(null);
   const vesselLayer     = useRef<any>(null);
   const pwLayer         = useRef<any>(null);
+  const bebLayer        = useRef<any>(null);
 
   const [orbColor, setOrbColor] = useState('#F59E0B');
   const [orbPos,   setOrbPos]   = useState({ x: 50, y: 42 });
   const [orbReady, setOrbReady] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [pwDay,    setPwDay]    = useState<PortWatchDay | null>(null);
+  const [bebDay,   setBebDay]   = useState<PortWatchDay | null>(null);
 
   // Yellow → status colour
   useEffect(() => {
@@ -145,11 +165,14 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
     return () => clearTimeout(t);
   }, [status.state]);
 
-  // Fetch PortWatch latest day — use .at(-1) since days are ordered oldest→newest
+  // Fetch PortWatch latest day for Hormuz + Red Sea
   useEffect(() => {
     fetch('/api/portwatch', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.days?.length) setPwDay(d.days.at(-1)); })
+      .then(d => {
+        if (d?.days?.length) setPwDay(d.days.at(-1));
+        if (d?.chokepoints?.redsea?.days?.length) setBebDay(d.chokepoints.redsea.days.at(-1));
+      })
       .catch(() => {});
   }, []);
 
@@ -166,7 +189,7 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       if (cancelled) return;
 
       map = L.map(containerRef.current!, {
-        center: [22.0, 60.0],
+        center: [20.0, 53.0],
         zoom: 5,
         zoomControl: true,
         attributionControl: true,
@@ -194,9 +217,13 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       L.polyline(ROUTE_SUEZ, { ...ghostStyle, color: '#A78BFA' }).addTo(map);
       L.polyline(ROUTE_CAPE, { ...ghostStyle, color: '#94A3B8' }).addTo(map);
 
-      // Local strait lanes — brighter, bold
+      // Hormuz local strait lanes — brighter, bold
       L.polyline(LANE_IN,  { color: '#06B6D4', weight: 2.5, opacity: 0.80, dashArray: '10 6' }).addTo(map);
       L.polyline(LANE_OUT, { color: '#F59E0B', weight: 2.5, opacity: 0.80, dashArray: '10 6' }).addTo(map);
+
+      // Bab-el-Mandeb (Red Sea entry) lanes — orange for DEGRADED status
+      L.polyline(BEB_LANE_IN,  { color: '#F97316', weight: 2.0, opacity: 0.70, dashArray: '10 6' }).addTo(map);
+      L.polyline(BEB_LANE_OUT, { color: '#F59E0B', weight: 2.0, opacity: 0.70, dashArray: '10 6' }).addTo(map);
 
       [[LANE_IN, '#06B6D4'], [LANE_OUT, '#F59E0B']].forEach(([lane, color]) => {
         const pts = lane as [number, number][];
@@ -209,7 +236,16 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
         }
       });
 
-      // Layer groups — PortWatch below AIS
+      // Secondary chokepoint markers along ghost routes
+      const mkChokepoint = (pos: [number, number], color: string) => {
+        L.circleMarker(pos, { radius: 9, color: 'transparent', fillColor: color, fillOpacity: 0.12, weight: 0, interactive: false }).addTo(map);
+        L.circleMarker(pos, { radius: 4, color: color, fillColor: color, fillOpacity: 0.9, weight: 1.5, interactive: false }).addTo(map);
+      };
+      mkChokepoint([12.6, 43.4],  '#F97316'); // Bab-el-Mandeb / Red Sea
+      mkChokepoint([30.1, 32.5],  '#F59E0B'); // Suez Canal northern entry
+
+      // Layer groups — PortWatch below AIS, BEB alongside PW
+      bebLayer.current     = L.layerGroup().addTo(map);
       pwLayer.current      = L.layerGroup().addTo(map);
       vesselLayer.current  = L.layerGroup().addTo(map);
       mapRef.current = map;
@@ -332,6 +368,54 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
     };
   }, [mapReady, pwDay]);
 
+  // BEB animated vessels — Red Sea / Bab-el-Mandeb
+  useEffect(() => {
+    if (!mapReady || !bebDay || !bebLayer.current || !LRef.current) return;
+    const L = LRef.current;
+    const layer = bebLayer.current;
+    layer.clearLayers();
+
+    const bebVessels = buildPortWatchVessels(bebDay);
+    const BEB_COLOR: Record<string, string> = {
+      tanker:    '#F97316', // orange — Red Sea risk
+      cargo:     '#FB923C',
+      container: '#FDBA74',
+      dryBulk:   '#94A3B8',
+    };
+
+    const markers = bebVessels.map(v => {
+      const pts = v.lane === 'in' ? BEB_LANE_IN : BEB_LANE_OUT;
+      const pos = lerpLane(pts, v.progress);
+      const color = BEB_COLOR[v.type] ?? '#F97316';
+      const r = PW_RADIUS[v.type] ?? 4;
+
+      const glow = L.circleMarker(pos, {
+        radius: r + 4, color: 'transparent', fillColor: color, fillOpacity: 0.15, weight: 0, interactive: false,
+      }).addTo(layer);
+
+      const core = L.circleMarker(pos, {
+        radius: r, color: color, fillColor: color, fillOpacity: 0.88, weight: 1.2, interactive: false,
+      }).addTo(layer);
+
+      return { glow, core };
+    });
+
+    const id = setInterval(() => {
+      bebVessels.forEach((v, i) => {
+        v.progress = (v.progress + v.speed) % 1;
+        const pts = v.lane === 'in' ? BEB_LANE_IN : BEB_LANE_OUT;
+        const pos = lerpLane(pts, v.progress);
+        markers[i].glow.setLatLng(pos);
+        markers[i].core.setLatLng(pos);
+      });
+    }, 150);
+
+    return () => {
+      clearInterval(id);
+      layer.clearLayers();
+    };
+  }, [mapReady, bebDay]);
+
   const pwTotal = pwDay ? Math.min(
     pwDay.tanker + pwDay.cargo + pwDay.container + pwDay.dryBulk,
     20,
@@ -364,11 +448,15 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       <div className="absolute bottom-3 left-3 flex flex-col gap-1 pointer-events-none" style={{ zIndex: 500 }}>
         <div className="flex items-center gap-2">
           <span className="inline-block w-5 h-px opacity-80" style={{ borderTop: '2px dashed #06B6D4' }} />
-          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Inbound</span>
+          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Hormuz In</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-block w-5 h-px opacity-80" style={{ borderTop: '2px dashed #F59E0B' }} />
-          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Outbound</span>
+          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Hormuz Out</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-5 h-px opacity-80" style={{ borderTop: '2px dashed #F97316' }} />
+          <span className="text-[9px] font-mono text-text3 uppercase tracking-wider">Red Sea / BEB</span>
         </div>
         {pwTotal > 0 && (
           <>
@@ -403,6 +491,27 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
             <span className="text-[9px] font-mono text-text3">{vessels.length} AIS live</span>
           </div>
         )}
+      </div>
+
+      {/* Global chokepoints status panel — bottom-right */}
+      <div
+        className="absolute bottom-3 right-3 pointer-events-none hidden sm:block"
+        style={{ zIndex: 500 }}
+      >
+        <div style={{ background: 'rgba(7,9,15,0.82)', border: '1px solid rgba(255,255,255,0.07)', padding: '8px 10px' }}>
+          <div style={{ fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4B5563', marginBottom: 6, paddingBottom: 4, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            Global Chokepoints
+          </div>
+          {GLOBAL_CP.map((cp) => (
+            <div key={cp.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: cp.color, flexShrink: 0 }} />
+              <span style={{ fontSize: 9, fontFamily: 'monospace', color: '#94A3B8', minWidth: 56 }}>{cp.name}</span>
+              <span style={{ fontSize: 9, fontFamily: 'monospace', color: cp.color, fontWeight: 700, marginLeft: 'auto' }}>
+                {cp.risk}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
