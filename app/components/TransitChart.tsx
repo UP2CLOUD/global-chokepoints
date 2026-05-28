@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { PortWatchDay } from '@/app/api/portwatch/route';
 import { useLang } from './LangContext';
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
+
+// Chart layout constants shared between draw effect and mouse handler
+const PAD_L = 28, PAD_R = 8;
 
 type CPStats = {
   days: PortWatchDay[];
@@ -34,9 +37,36 @@ const STATIC_BASELINES: Record<CPKey, number> = {
   hormuz: 34, redsea: 50, suez: 50, panama: 35,
 };
 
+type TooltipState = { day: PortWatchDay; x: number; y: number } | null;
+
 // ── Bar chart rendered on <canvas> ───────────────────────────
-function TransitCanvas({ days, baseline }: { days: PortWatchDay[]; baseline: number }) {
+function TransitCanvas({
+  days,
+  baseline,
+  onHover,
+}: {
+  days: PortWatchDay[];
+  baseline: number;
+  onHover?: (day: PortWatchDay | null, clientX: number, clientY: number) => void;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!onHover || !days.length) return;
+    const canvas = ref.current;
+    if (!canvas) return;
+    const W = canvas.offsetWidth;
+    const barW = (W - PAD_L - PAD_R) / days.length;
+    const relX = e.nativeEvent.offsetX - PAD_L;
+    const idx = Math.floor(relX / barW);
+    if (idx >= 0 && idx < days.length) {
+      onHover(days[idx], e.clientX, e.clientY);
+    } else {
+      onHover(null, 0, 0);
+    }
+  }, [days, onHover]);
+
+  const handleMouseLeave = useCallback(() => onHover?.(null, 0, 0), [onHover]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -53,7 +83,7 @@ function TransitCanvas({ days, baseline }: { days: PortWatchDay[]; baseline: num
 
     ctx.clearRect(0, 0, W, H);
 
-    const padL = 28, padR = 8, padT = 8, padB = 32;
+    const padL = PAD_L, padR = PAD_R, padT = 8, padB = 32;
     const chartW = W - padL - padR;
     const chartH = H - padT - padB;
 
@@ -121,11 +151,21 @@ function TransitCanvas({ days, baseline }: { days: PortWatchDay[]; baseline: num
   return (
     <canvas
       ref={ref}
-      className="w-full"
+      className="w-full cursor-crosshair"
       style={{ height: 140 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     />
   );
 }
+
+// Vessel type colour palette (matches canvas bar colours)
+const TYPE_COLORS: Record<string, string> = {
+  Tanker:    '#F59E0B',
+  Cargo:     '#38BDF8',
+  Container: '#A78BFA',
+  'Dry Bulk':'#94A3B8',
+};
 
 // ── Main component ────────────────────────────────────────────
 export default function TransitChart() {
@@ -133,6 +173,15 @@ export default function TransitChart() {
   const [data, setData] = useState<TransitData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<CPKey>('hormuz');
+  const [tooltip, setTooltip] = useState<TooltipState>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleBarHover = useCallback((day: PortWatchDay | null, clientX: number, clientY: number) => {
+    if (!day) { setTooltip(null); return; }
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setTooltip({ day, x: clientX - rect.left, y: clientY - rect.top });
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -198,7 +247,33 @@ export default function TransitChart() {
   const TrendIcon = vsBaseline < -5 ? TrendingDown : vsBaseline > 5 ? TrendingUp : Minus;
 
   return (
-    <div className="flex flex-col gap-1">
+    <div ref={containerRef} className="flex flex-col gap-1 relative">
+      {/* Bar tooltip */}
+      {tooltip && (
+        <div
+          className="absolute z-20 pointer-events-none border border-divider bg-bg1 px-2.5 py-2 text-[9px] font-mono min-w-[110px]"
+          style={{
+            left: Math.min(tooltip.x + 14, (containerRef.current?.offsetWidth ?? 999) - 130),
+            top:  Math.max(0, tooltip.y - 110),
+          }}
+        >
+          <div className="text-text4 mb-1.5 text-[8px]">{tooltip.day.date}</div>
+          {([['Tanker', tooltip.day.tanker], ['Cargo', tooltip.day.cargo], ['Container', tooltip.day.container], ['Dry Bulk', tooltip.day.dryBulk]] as [string, number][]).map(([label, val]) => (
+            <div key={label} className="flex items-center justify-between gap-3 mb-0.5">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 inline-block" style={{ backgroundColor: TYPE_COLORS[label] }} />
+                <span className="text-text4">{label}</span>
+              </span>
+              <span className="text-text font-semibold tabular-nums">{val}</span>
+            </div>
+          ))}
+          <div className="border-t border-divider/50 mt-1.5 pt-1 flex justify-between">
+            <span className="text-text4">Total</span>
+            <span className="text-text font-bold tabular-nums">{tooltip.day.total}</span>
+          </div>
+        </div>
+      )}
+
       {/* Tab bar */}
       <TabBar activeTab={activeTab} onSelect={setActiveTab} />
 
@@ -232,7 +307,7 @@ export default function TransitChart() {
       </div>
 
       {/* Chart */}
-      <TransitCanvas days={days} baseline={baseline} />
+      <TransitCanvas days={days} baseline={baseline} onHover={handleBarHover} />
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-1">

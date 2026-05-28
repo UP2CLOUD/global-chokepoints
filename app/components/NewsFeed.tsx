@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { NewsItem } from '@/app/lib/types';
 import { useLang } from './LangContext';
 import { ExternalLink } from 'lucide-react';
@@ -14,6 +15,29 @@ const SENTIMENT_GLYPH: Record<'positive' | 'negative' | 'neutral', { mark: strin
   negative: { mark: '▼', color: 'text-danger' },
   neutral:  { mark: '─', color: 'text-text4'  },
 };
+
+type FilterKey = 'all' | 'hormuz' | 'redsea' | 'suez' | 'panama';
+
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: 'all',    label: 'ALL'     },
+  { key: 'hormuz', label: 'HORMUZ'  },
+  { key: 'redsea', label: 'RED SEA' },
+  { key: 'suez',   label: 'SUEZ'    },
+  { key: 'panama', label: 'PANAMA'  },
+];
+
+const FILTER_KW: Record<Exclude<FilterKey, 'all'>, string[]> = {
+  hormuz: ['hormuz', 'irgc', 'persian gulf', 'gulf of oman', 'iranian'],
+  redsea: ['red sea', 'houthi', 'bab el-mandeb', 'bab-el-mandeb', 'yemen', 'gulf of aden'],
+  suez:   ['suez'],
+  panama: ['panama canal', 'panama lock'],
+};
+
+function matchesFilter(item: NewsItem, key: FilterKey): boolean {
+  if (key === 'all') return true;
+  const hay = item.title.toLowerCase();
+  return FILTER_KW[key].some(kw => hay.includes(kw));
+}
 
 function timeAgo(iso: string): string {
   const delta = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -34,9 +58,9 @@ function NewsSkeleton() {
     <div>
       {[1, 2, 3, 4, 5, 6].map((i) => (
         <div key={i} className="py-2.5 border-b border-divider animate-pulse">
-          <div className="h-[8px] w-36 bg-bg2 rounded-sm mb-2" />
-          <div className="h-[12px] w-full bg-bg2 rounded-sm mb-1" />
-          <div className="h-[12px] w-3/4 bg-bg2 rounded-sm" />
+          <div className="h-[8px] w-36 bg-bg2 mb-2" />
+          <div className="h-[12px] w-full bg-bg2 mb-1" />
+          <div className="h-[12px] w-3/4 bg-bg2" />
         </div>
       ))}
     </div>
@@ -45,14 +69,19 @@ function NewsSkeleton() {
 
 export default function NewsFeed({ news, loading = false }: Props) {
   const { t } = useLang();
+  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
 
   const seenIds = new Set<string>();
-  const items = news.map((item, i) => {
+  const allItems = news.map((item, i) => {
     let key = item.id || item.url || `news-${i}`;
     if (seenIds.has(key)) key = `${key}-${i}`;
     seenIds.add(key);
     return { ...item, _key: key };
   });
+
+  const items = activeFilter === 'all'
+    ? allItems
+    : allItems.filter(item => matchesFilter(item, activeFilter));
 
   return (
     <div>
@@ -66,13 +95,42 @@ export default function NewsFeed({ news, loading = false }: Props) {
         </span>
       </div>
 
+      {/* Chokepoint filter tabs */}
+      <div className="flex border-b border-divider">
+        {FILTERS.map(f => {
+          const count = f.key === 'all'
+            ? allItems.length
+            : allItems.filter(item => matchesFilter(item, f.key)).length;
+          return (
+            <button
+              key={f.key}
+              onClick={() => setActiveFilter(f.key)}
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-[8px] font-mono uppercase tracking-[0.14em] border-b-2 transition-colors -mb-px ${
+                activeFilter === f.key
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-text4 hover:text-text3'
+              }`}
+            >
+              {f.label}
+              {count > 0 && (
+                <span className={`text-[7px] tabular-nums ${activeFilter === f.key ? 'text-accent/70' : 'text-text4/60'}`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Feed */}
       <div className="max-h-[540px] overflow-y-auto scrollbar-thin -mr-1 pr-1">
         {loading && <NewsSkeleton />}
 
         {!loading && items.length === 0 && (
           <div className="py-10 text-center text-[11px] font-mono text-text3">
-            {t.news.noArticles}
+            {activeFilter === 'all'
+              ? t.news.noArticles
+              : `No ${FILTERS.find(f => f.key === activeFilter)?.label ?? ''} articles in feed`}
           </div>
         )}
 
