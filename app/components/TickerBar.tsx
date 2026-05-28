@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { StatusData, MetricsData } from '@/app/lib/types';
 
 interface Props {
@@ -13,6 +14,11 @@ interface TickerItem {
   colorClass: string;
 }
 
+type CPStatus = 'critical' | 'degraded' | 'elevated' | 'normal';
+
+const CP_LABEL: Record<CPStatus, string>    = { critical: 'CRITICAL', degraded: 'DEGRADED', elevated: 'ELEVATED', normal: 'NORMAL' };
+const CP_COLOR: Record<CPStatus, string>    = { critical: 'text-danger', degraded: 'text-warn', elevated: 'text-caution', normal: 'text-ok' };
+
 function statusColor(state?: string): string {
   if (!state) return 'text-text4';
   if (state === 'OPEN') return 'text-ok';
@@ -23,23 +29,48 @@ function statusColor(state?: string): string {
 const SEP = '·';
 
 export default function TickerBar({ status, metrics }: Props) {
+  const [cpLive, setCpLive] = useState<Record<string, CPStatus>>({});
+
+  useEffect(() => {
+    fetch('/v1/chokepoints', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (!d?.chokepoints) return;
+        const map: Record<string, CPStatus> = {};
+        for (const cp of d.chokepoints as { key: string; status: string }[]) {
+          map[cp.key] = (cp.status as CPStatus) ?? 'normal';
+        }
+        setCpLive(map);
+      })
+      .catch(() => {});
+  }, []);
+
+  const cpValue = (key: string, fallback: CPStatus): string => {
+    const s = cpLive[key] ?? fallback;
+    return CP_LABEL[s] ?? s.toUpperCase();
+  };
+  const cpColor = (key: string, fallback: CPStatus): string => {
+    const s = cpLive[key] ?? fallback;
+    return CP_COLOR[s] ?? 'text-text4';
+  };
+
   const hormuzValue = status
     ? status.state === 'OPEN' ? 'OPEN' : status.state === 'CLOSED' ? 'CLOSED' : 'DISRUPTED'
     : 'MONITORING';
 
   const items: TickerItem[] = [
-    { label: 'HORMUZ',       value: hormuzValue,                          colorClass: statusColor(status?.state) },
-    { label: 'RED SEA',      value: 'DEGRADED',                           colorClass: 'text-warn'   },
-    { label: 'SUEZ',         value: 'ELEVATED',                           colorClass: 'text-caution' },
-    { label: 'PANAMA',       value: 'ELEVATED',                           colorClass: 'text-caution' },
-    { label: 'TAIWAN STR.',  value: 'ELEVATED',                           colorClass: 'text-caution' },
+    { label: 'HORMUZ',       value: hormuzValue,                                        colorClass: statusColor(status?.state) },
+    { label: 'RED SEA',      value: cpValue('redsea', 'degraded'),                      colorClass: cpColor('redsea', 'degraded') },
+    { label: 'SUEZ',         value: cpValue('suez', 'elevated'),                        colorClass: cpColor('suez', 'elevated') },
+    { label: 'PANAMA',       value: cpValue('panama', 'elevated'),                      colorClass: cpColor('panama', 'elevated') },
+    { label: 'TAIWAN STR.',  value: cpValue('taiwan', 'elevated'),                      colorClass: cpColor('taiwan', 'elevated') },
     { label: 'BRENT',        value: metrics?.brentPrice ? `$${metrics.brentPrice.toFixed(2)}/bbl` : '$—/bbl', colorClass: 'text-text3' },
     { label: 'EVENTS 24H',   value: metrics?.eventsLast24h != null ? String(metrics.eventsLast24h) : '—', colorClass: metrics?.eventsLast24h ? 'text-caution' : 'text-text4' },
-    { label: 'AIS FEEDS',    value: 'ACTIVE',                             colorClass: 'text-ok'     },
-    { label: 'RSS FEEDS',    value: 'LIVE',                               colorClass: 'text-ok'     },
-    { label: 'CHOKEPOINTS',  value: '5 MONITORED',                        colorClass: 'text-accent'  },
-    { label: 'VESSEL TRACK', value: 'ONLINE',                             colorClass: 'text-ok'     },
-    { label: 'DATA FEEDS',   value: 'OPERATIONAL',                        colorClass: 'text-ok'     },
+    { label: 'AIS FEEDS',    value: 'ACTIVE',                                           colorClass: 'text-ok'     },
+    { label: 'RSS FEEDS',    value: 'LIVE',                                             colorClass: 'text-ok'     },
+    { label: 'CHOKEPOINTS',  value: '5 MONITORED',                                     colorClass: 'text-accent'  },
+    { label: 'VESSEL TRACK', value: 'ONLINE',                                           colorClass: 'text-ok'     },
+    { label: 'DATA FEEDS',   value: 'OPERATIONAL',                                     colorClass: 'text-ok'     },
   ];
 
   // Double for seamless loop

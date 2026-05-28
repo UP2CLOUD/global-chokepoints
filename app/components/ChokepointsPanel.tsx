@@ -9,6 +9,39 @@ import type { ChokepointStats } from '@/app/api/portwatch/route';
 type OpStatus = 'critical' | 'degraded' | 'elevated' | 'normal';
 type Trend    = 'up' | 'stable' | 'down';
 
+// 7-day SVG sparkline for vessel transit trend
+const SPARK_COLOR: Record<OpStatus, string> = {
+  critical: '#EF4444', degraded: '#F97316', elevated: '#F59E0B', normal: '#10B981',
+};
+
+function Sparkline({ days, status }: { days: { total: number }[]; status: OpStatus }) {
+  const recent = days.slice(-14);
+  if (recent.length < 2) return null;
+  const vals = recent.map(d => d.total);
+  const max  = Math.max(...vals, 1);
+  const W = 100, H = 18;
+  const pts = vals.map((v, i) => {
+    const x = (i / (vals.length - 1)) * W;
+    const y = H - (v / max) * (H - 2) - 1;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return (
+    <div className="pt-1.5 border-t border-divider/40">
+      <div className="text-[7px] font-mono text-text4 mb-0.5 uppercase tracking-[0.12em]">14-day transit</div>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden>
+        <polyline
+          points={pts}
+          fill="none"
+          stroke={SPARK_COLOR[status]}
+          strokeWidth="1.5"
+          strokeOpacity="0.55"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </div>
+  );
+}
+
 interface ChokepointDef {
   key:        string;
   name:       string;
@@ -200,6 +233,11 @@ export default function ChokepointsPanel({ timeline = [] }: Props) {
                   </div>
                 </div>
               </div>
+
+              {/* 14-day sparkline (when PortWatch data available) */}
+              {pw?.days && pw.days.length > 2 && (
+                <Sparkline days={pw.days} status={cp.status} />
+              )}
 
               {/* Trend + event alert */}
               <div className="flex items-center justify-between pt-1">
