@@ -68,6 +68,10 @@ function DashboardContent() {
       >
         <HormuzMap status={data.status} vessels={vessels} />
 
+        {/* Tactical overlays — scan line + scanlines texture */}
+        <div className="scan-bar" aria-hidden />
+        <div className="scanlines" aria-hidden />
+
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
           <div className="h-28 bg-gradient-to-t from-bg to-transparent" />
         </div>
@@ -110,7 +114,7 @@ function DashboardContent() {
       <main className="max-w-[1440px] mx-auto px-4 md:px-8 pb-0">
 
         {/* Status Dispatch */}
-        <section className="py-8 md:py-10 animate-fadeInUp" style={{ animationDelay: '0.05s' }}>
+        <section className="py-4 md:py-6 animate-fadeInUp" style={{ animationDelay: '0.05s' }}>
           <HeroStatus
             status={data.status}
             loading={!dataReady}
@@ -143,7 +147,7 @@ function DashboardContent() {
 
         {/* Strategic Chokepoints Grid */}
         <Reveal>
-          <section id="chokepoints" className="py-8 md:py-10" style={{ scrollMarginTop: '82px' }}>
+          <section id="chokepoints" className="py-4 md:py-6" style={{ scrollMarginTop: '82px' }}>
             <ChokepointsPanel timeline={data.timeline} />
           </section>
         </Reveal>
@@ -152,7 +156,7 @@ function DashboardContent() {
 
         {/* Global Exposure */}
         <Reveal>
-          <section className="py-8 md:py-10">
+          <section className="py-4 md:py-6">
             <GlobalExposurePanel state={data.status.state} />
           </section>
         </Reveal>
@@ -161,8 +165,8 @@ function DashboardContent() {
 
         {/* Charts — no card wrapper, editorial labels */}
         <Reveal>
-          <section className="py-8 md:py-10">
-            <div className="flex items-center justify-between mb-5">
+          <section className="py-4 md:py-6">
+            <div className="flex items-center justify-between mb-3">
               <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
                 <TrendingUp size={11} className="text-accent" />
                 {t.chart.title}
@@ -178,8 +182,8 @@ function DashboardContent() {
         <hr className="section-rule" />
 
         <Reveal>
-          <section className="py-8 md:py-10">
-            <div className="flex items-center justify-between mb-5">
+          <section className="py-4 md:py-6">
+            <div className="flex items-center justify-between mb-3">
               <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
                 <BarChart2 size={11} className="text-accent" />
                 {t.nav.vesselTransits}
@@ -194,8 +198,8 @@ function DashboardContent() {
 
         {/* Intelligence Feed + Event Log — asymmetric 3/2 */}
         <Reveal>
-          <section id="intel" className="py-8 md:py-10" style={{ scrollMarginTop: '82px' }}>
-            <div className="flex items-center justify-between mb-5">
+          <section id="intel" className="py-4 md:py-6" style={{ scrollMarginTop: '82px' }}>
+            <div className="flex items-center justify-between mb-3">
               <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
                 <Radio size={11} className="text-accent" />
                 Intelligence Feed
@@ -203,7 +207,7 @@ function DashboardContent() {
               <span className="text-[9px] font-mono text-text4">GDELT + RSS · 60s refresh</span>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr]">
-              <div className="lg:pr-10 pb-10 lg:pb-0 lg:border-r border-divider">
+              <div className="lg:pr-10 pb-6 lg:pb-0 lg:border-r border-divider">
                 <NewsFeed news={data.news} loading={newsLoading} />
               </div>
               <div className="lg:pl-10">
@@ -216,8 +220,8 @@ function DashboardContent() {
         <hr className="section-rule" />
 
         {/* Markets + Weather */}
-        <section className="py-8 md:py-10">
-          <div className="flex items-center justify-between mb-5">
+        <section className="py-4 md:py-6">
+          <div className="flex items-center justify-between mb-3">
             <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
               <BarChart3 size={11} className="text-accent" />
               Commodity Markets
@@ -241,8 +245,8 @@ function DashboardContent() {
         <hr className="section-rule" />
 
         {/* Strait Context + Shipping Risk */}
-        <section className="py-8 md:py-10">
-          <div className="flex items-center justify-between mb-5">
+        <section className="py-4 md:py-6">
+          <div className="flex items-center justify-between mb-3">
             <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
               <Info size={11} className="text-accent" />
               Strait Context &amp; Shipping Risk
@@ -270,7 +274,7 @@ function DashboardContent() {
 
         {/* Economic Impact */}
         <Reveal>
-          <section className="py-8 md:py-10">
+          <section className="py-4 md:py-6">
             <EconomicImpactPanel state={data.status.state} />
           </section>
         </Reveal>
@@ -279,7 +283,7 @@ function DashboardContent() {
 
         {/* Historical Incidents */}
         <Reveal>
-          <section className="py-8 md:py-10">
+          <section className="py-4 md:py-6">
             <HistoricalIncidentsPanel />
           </section>
         </Reveal>
@@ -288,7 +292,7 @@ function DashboardContent() {
 
         {/* Subscribe */}
         <Reveal>
-          <section className="py-8 md:py-10">
+          <section className="py-4 md:py-6">
             <SubscribeInlineCTA />
           </section>
         </Reveal>
@@ -297,7 +301,7 @@ function DashboardContent() {
 
         {/* API Access — minimal text, no card */}
         <Reveal>
-          <section className="py-8">
+          <section className="py-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 mb-2 flex items-center gap-2">
