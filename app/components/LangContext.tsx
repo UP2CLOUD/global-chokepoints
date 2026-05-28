@@ -17,6 +17,7 @@ const LangContext = createContext<LangContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'hormuz-lang';
 const VALID_LANGS = Object.keys(translations) as Lang[];
+const RTL_LANGS = new Set<Lang>(['ar']);
 
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('en');
@@ -28,6 +29,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
       if (saved && VALID_LANGS.includes(saved)) {
         setLangState(saved);
         document.documentElement.lang = HTML_LANG[saved];
+        document.documentElement.dir = RTL_LANGS.has(saved) ? 'rtl' : 'ltr';
       }
     } catch {
       // localStorage may be blocked in some environments
@@ -37,6 +39,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
   const setLang = useCallback((newLang: Lang) => {
     setLangState(newLang);
     document.documentElement.lang = HTML_LANG[newLang];
+    document.documentElement.dir = RTL_LANGS.has(newLang) ? 'rtl' : 'ltr';
     try { localStorage.setItem(STORAGE_KEY, newLang); } catch { /* ignore */ }
   }, []);
 
