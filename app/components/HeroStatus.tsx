@@ -127,11 +127,12 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
 
   return (
     <section
-      className="border border-divider"
+      className="relative overflow-hidden border border-divider panel-tactical"
       role="status"
       aria-live="polite"
       aria-label={loading ? 'Loading strait status…' : `${t.hero.question} — ${answerWord}`}
     >
+      <div className="scan-bar" aria-hidden />
       {/* ── Header strip ─────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 md:px-8 py-3 border-b border-divider bg-bg1">
         <div className="flex items-center gap-3">

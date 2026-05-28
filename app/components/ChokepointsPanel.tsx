@@ -171,7 +171,7 @@ export default function ChokepointsPanel({ timeline = [] }: Props) {
           return (
             <div
               key={cp.key}
-              className={`bg-bg1 p-4 flex flex-col gap-3 ${cp.isFocus ? s.subtleBg : ''}`}
+              className={`bg-bg1 p-4 flex flex-col gap-3 card-tactical ${cp.isFocus ? s.subtleBg : ''}`}
             >
               {/* Status + name */}
               <div>
