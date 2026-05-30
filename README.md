@@ -1,6 +1,6 @@
 # IsStraitHormuzOpen?
 
-**Live:** [strait-of-hormuz-monitor.pages.dev](https://strait-of-hormuz-monitor.pages.dev/)
+**Live:** [global-chokepoints.pages.dev](https://global-chokepoints.pages.dev/)
 
 Real-time public intelligence dashboard tracking the operational status of the Strait of Hormuz — maritime traffic, oil markets, geopolitical events, and marine weather.
 
@@ -65,7 +65,7 @@ ALERT_CRON_SECRET=                  # GitHub Actions alert check auth
 | Secret | Purpose |
 |--------|---------|
 | `ALERT_CRON_SECRET` | Must match Cloudflare Pages secret exactly |
-| `SITE_URL` | e.g. `https://strait-of-hormuz-monitor.pages.dev` |
+| `SITE_URL` | e.g. `https://global-chokepoints.pages.dev` |
 
 ## Getting Started
 

@@ -86,7 +86,7 @@ const CHANGELOG = [
     v: '0.5.0',
     date: '2026-05-14',
     notes:
-      'Migrated to Cloudflare Pages (strait-of-hormuz-monitor.pages.dev). ' +
+      'Migrated to Cloudflare Pages (global-chokepoints.pages.dev). ' +
       'Added PortWatch animated vessels on map. KV caching on /api/timeline and /api/weather. ' +
       'Fixed confirmation email token bug. Tightened threat-score false-positive rule.',
   },
@@ -170,24 +170,8 @@ export default function MethodologyContent() {
         </div>
 
         <Section title={m.s1title}>
-          <p>
-            The headline output is the <strong>Strait State</strong>:{' '}
-            <code className="font-mono text-accent text-[12px]">OPEN</code>,{' '}
-            <code className="font-mono text-accent text-[12px]">DISRUPTED</code>, or{' '}
-            <code className="font-mono text-accent text-[12px]">CLOSED</code>.
-            Alongside the state we publish a <strong>Tension Level</strong>{' '}
-            (NORMAL / ELEVATED / CRITICAL) and a <strong>Threat Score</strong>{' '}
-            (0–100) that fuses timeline event severity with market volatility.
-            An analyst <strong>confidence</strong> value in [0, 1] grows with
-            source diversity and event density.
-          </p>
-          <p>
-            The map shows live vessel positions from{' '}
-            <strong>AISStream.io</strong> when available, plus{' '}
-            <strong>representative vessel dots</strong> animated along the IMO
-            shipping lanes — proportional to the day&apos;s IMF PortWatch transit
-            count by vessel type (tanker · cargo · container · dry bulk).
-          </p>
+          <p>{m.s1para1}</p>
+          <p>{m.s1para2}</p>
         </Section>
 
         <Section title={m.s2title}>
@@ -216,14 +200,9 @@ export default function MethodologyContent() {
         </Section>
 
         <Section title={m.s3title}>
-          <p>
-            Status is derived in{' '}
-            <code className="font-mono text-accent text-[12px]">app/lib/api.ts → deriveStatus()</code>.
-            Runs client-side on every data refresh using the latest timeline
-            events and Brent price change.
-          </p>
+          <p>{m.s3body}</p>
 
-          <SubHeading>Step 1 — Keyword state detection</SubHeading>
+          <SubHeading>{m.s3step1}</SubHeading>
           <CodeBlock>{`# Scan events from the past 72 hours
 CLOSURE_PATTERNS = /closed|closure|shut down|blocked|blockade|suspended|halt/
 PARTIAL_PATTERNS = /diverted|rerouted|delayed|evacuated|traffic disrupt/
@@ -232,7 +211,7 @@ if any recent event matches CLOSURE_PATTERNS → state = CLOSED
 elif any recent event matches PARTIAL_PATTERNS → state = DISRUPTED
 else → state = OPEN`}</CodeBlock>
 
-          <SubHeading>Step 2 — Multi-signal Threat Score (0–100)</SubHeading>
+          <SubHeading>{m.s3step2}</SubHeading>
           <CodeBlock>{`# Timeline Severity Score (last 24 h)
 weight = { low: 1, medium: 2, high: 4, critical: 7 }
 raw_timeline = sum(weight[e.severity] for e in last24)
@@ -258,7 +237,7 @@ else                                        → NORMAL
 if state == OPEN and last24 not empty and threat_score > 85:
     state = DISRUPTED`}</CodeBlock>
 
-          <SubHeading>Step 3 — Confidence</SubHeading>
+          <SubHeading>{m.s3step3}</SubHeading>
           <CodeBlock>{`sources    = unique source names contributing to last24 events
 confidence = min(0.99,
   0.55
@@ -339,12 +318,12 @@ GET /feed.xml               # RSS 2.0 for journalists and aggregators`}</CodeBlo
           <p className="text-[11px] text-text3 mt-3">
             License: CC-BY-4.0. Attribution: &ldquo;Global Chokepoints Alerts&rdquo; with a link to{' '}
             <a
-              href="https://strait-of-hormuz-monitor.pages.dev"
+              href="https://global-chokepoints.pages.dev"
               className="text-accent hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              strait-of-hormuz-monitor.pages.dev
+              global-chokepoints.pages.dev
             </a>.
             {' '}Full interactive reference at{' '}
             <Link href="/docs" className="text-accent hover:underline">/docs</Link>.

@@ -9,11 +9,11 @@
 const RESEND_API = 'https://api.resend.com/emails';
 
 function fromAddress() {
-  return process.env.RESEND_FROM_EMAIL ?? 'alerts@strait-of-hormuz-monitor.dev';
+  return process.env.RESEND_FROM_EMAIL ?? 'alerts@global-chokepoints.dev';
 }
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.workers.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.workers.dev').replace(/\/$/, '');
 }
 
 // ── HTML email templates ──────────────────────────────────────

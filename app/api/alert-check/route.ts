@@ -25,13 +25,13 @@ import type { StatusData } from '@/app/lib/types';
 export const dynamic = 'force-dynamic';
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
 }
 
 async function deriveCurrentStatus(): Promise<{ status: StatusData | null; error?: string }> {
   // Always use the canonical public URL — the internal CF origin from req.url
   // is an internal address that cannot reach sibling edge functions.
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev')
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev')
     .replace(/\/$/, '');
 
   try {

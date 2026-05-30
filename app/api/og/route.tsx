@@ -308,7 +308,7 @@ export async function GET(req: NextRequest) {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#4B5563', fontSize: 14 }}>
               <div style={{ width: 8, height: 8, borderRadius: 9999, background: '#06B6D4' }} />
-              strait-of-hormuz-monitor.pages.dev
+              global-chokepoints.pages.dev
             </div>
           </div>
         </div>

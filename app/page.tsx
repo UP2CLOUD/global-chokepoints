@@ -33,7 +33,7 @@ const HormuzMap = dynamic(() => import('@/app/components/HormuzMap'), {
   loading: () => (
     <div className="w-full h-full bg-bg flex items-center justify-center">
       <span className="text-[10px] font-mono text-text4 tracking-[0.22em] uppercase">
-        Loading map…
+        …
       </span>
     </div>
   ),
@@ -130,10 +130,10 @@ function DashboardContent() {
           {/* Feed health row */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pt-3 pb-1 text-[8px] font-mono text-text4 uppercase tracking-[0.14em]">
             {[
-              { label: 'Brent feed',    ok: !data.metrics?.brentDown   },
-              { label: 'Events feed',   ok: !data.metrics?.eventsDown  },
-              { label: 'AIS feed',      ok: vessels.length > 0         },
-              { label: 'Market data',   ok: true                       },
+              { label: t.dashboard.feedBrent,  ok: !data.metrics?.brentDown   },
+              { label: t.dashboard.feedEvents, ok: !data.metrics?.eventsDown  },
+              { label: t.dashboard.feedAis,    ok: vessels.length > 0         },
+              { label: t.dashboard.feedMarket, ok: true                       },
             ].map(({ label, ok }) => (
               <span key={label} className="flex items-center gap-1">
                 <span className={`w-1 h-1 rounded-full ${ok ? 'bg-ok' : 'bg-danger'}`} />
@@ -202,9 +202,9 @@ function DashboardContent() {
             <div className="flex items-center justify-between mb-3">
               <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
                 <Radio size={11} className="text-accent" />
-                Intelligence Feed
+                {t.dashboard.intelligenceFeed}
               </span>
-              <span className="text-[9px] font-mono text-text4">GDELT + RSS · 60s refresh</span>
+              <span className="text-[9px] font-mono text-text4">{t.dashboard.intelligenceFeedSrc}</span>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr]">
               <div className="lg:pr-10 pb-6 lg:pb-0 lg:border-r border-divider">
@@ -224,9 +224,9 @@ function DashboardContent() {
           <div className="flex items-center justify-between mb-3">
             <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
               <BarChart3 size={11} className="text-accent" />
-              Commodity Markets
+              {t.dashboard.commodityMarkets}
             </span>
-            <span className="text-[9px] font-mono text-text4">Yahoo Finance · 5 min</span>
+            <span className="text-[9px] font-mono text-text4">{t.dashboard.commodityMarketsSrc}</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2">
             <Reveal dir="left">
@@ -249,9 +249,9 @@ function DashboardContent() {
           <div className="flex items-center justify-between mb-3">
             <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 flex items-center gap-2">
               <Info size={11} className="text-accent" />
-              Strait Context &amp; Shipping Risk
+              {t.dashboard.straitContext}
             </span>
-            <span className="text-[9px] font-mono text-text4">EIA · UKMTO</span>
+            <span className="text-[9px] font-mono text-text4">{t.dashboard.straitContextSrc}</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2">
             <Reveal dir="left">

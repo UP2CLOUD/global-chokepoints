@@ -19,7 +19,7 @@ export async function OPTIONS() {
 
 export async function GET(req: NextRequest) {
   const origin = new URL(req.url).origin;
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
 
   const [markets, weather, timeline] = await Promise.all([
     fetch(`${base}/api/markets`).then(r => r.ok ? r.json() : null).catch(() => null),

@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const origin = new URL(req.url).origin;
   // Subrequests must use the canonical public URL — req.url origin inside CF Pages
   // is an internal address that can't reach sibling functions.
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
   const [timelineRes, brentRes] = await Promise.all([
     fetch(`${base}/api/timeline`),
     fetch(`${base}/api/brent`),

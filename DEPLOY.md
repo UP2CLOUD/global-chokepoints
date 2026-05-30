@@ -16,7 +16,7 @@ git add -A
 git commit -m "feat: initial commit"
 
 # Add remote (create the repo on GitHub first at https://github.com/organizations/UP2CLOUD/repositories/new)
-git remote add origin https://github.com/UP2CLOUD/strait-of-hormuz-monitor.git
+git remote add origin https://github.com/UP2CLOUD/global-chokepoints.git
 git push -u origin main
 ```
 
@@ -63,14 +63,14 @@ In GitHub → Settings → Secrets and variables → Actions → New repository 
 | `CLOUDFLARE_API_TOKEN` | CF token with "Cloudflare Pages: Edit" permission |
 | `CLOUDFLARE_ACCOUNT_ID` | Your CF account ID (dashboard URL or `wrangler whoami`) |
 | `ALERT_CRON_SECRET` | Same value as the CF Pages secret above |
-| `SITE_URL` | `https://strait-of-hormuz-monitor.pages.dev` |
+| `SITE_URL` | `https://global-chokepoints.pages.dev` |
 
 In GitHub → Settings → Variables → Actions → New variable:
 
 | Variable | Value |
 |----------|-------|
-| `CF_PROJECT_NAME` | `strait-of-hormuz-monitor` |
-| `NEXT_PUBLIC_SITE_URL` | `https://strait-of-hormuz-monitor.pages.dev` |
+| `CF_PROJECT_NAME` | `global-chokepoints` |
+| `NEXT_PUBLIC_SITE_URL` | `https://global-chokepoints.pages.dev` |
 
 After this, every `git push origin main` will automatically build and deploy.
 
