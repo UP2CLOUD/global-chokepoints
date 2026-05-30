@@ -35,7 +35,7 @@ export async function OPTIONS() {
 }
 
 export async function GET(req: NextRequest) {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
   const origin = new URL(req.url).origin;
 
   let pwChokepoints: Record<string, PwStats> = {};

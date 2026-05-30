@@ -207,10 +207,10 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
           {/* Operational CTAs */}
           <div className="mt-5 flex flex-wrap gap-2">
             {[
-              { label: 'Incident Feed',  href: '#intel'        },
-              { label: 'Maritime Map',   href: '#hero'         },
-              { label: 'Chokepoints',    href: '#chokepoints'  },
-              { label: 'API Access',     href: '/docs'         },
+              { label: t.hero.ctaIncidentFeed, href: '#intel'        },
+              { label: t.hero.ctaMaritimeMap,  href: '#hero'         },
+              { label: t.hero.ctaChokepoints,  href: '#chokepoints'  },
+              { label: t.hero.ctaApiAccess,    href: '/docs'         },
             ].map(({ label, href }) => (
               <a
                 key={label}
@@ -242,7 +242,7 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
           {brentPrice != null && (
             <div>
               <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 mb-1.5">
-                Brent Crude · $/bbl
+                {t.hero.brentLabel}
               </div>
               <div className="text-[34px] font-mono font-bold text-text leading-none tabular-nums">
                 ${brentPrice.toFixed(2)}
@@ -273,7 +273,7 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
               />
             </div>
             <div className="mt-1.5 flex justify-between text-[8px] font-mono text-text4 uppercase tracking-[0.14em]">
-              <span>Low</span><span>Elevated</span><span>Critical</span>
+              <span>{t.hero.tensionNormal}</span><span>{t.hero.tensionElevated}</span><span>{t.hero.tensionCritical}</span>
             </div>
           </div>
 
@@ -296,20 +296,20 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
           <div className="pt-3 border-t border-divider/60 grid grid-cols-2 gap-3">
             <div>
               <div className="text-[8px] font-mono uppercase tracking-[0.18em] text-text4 mb-1">
-                DATA FRESHNESS
+                {t.hero.dataFreshness}
               </div>
               <div className="flex items-center gap-1.5">
                 <span className={`w-1 h-1 rounded-full animate-[live-pulse_2s_ease-in-out_infinite] ${loading ? 'bg-text4' : 'bg-ok'}`} aria-hidden />
-                <span className="text-[10px] font-mono text-text">{loading ? 'SYNCING' : 'CURRENT'}</span>
+                <span className="text-[10px] font-mono text-text">{loading ? t.header.statusSyncing : t.hero.dataCurrent}</span>
               </div>
             </div>
             <div>
               <div className="text-[8px] font-mono uppercase tracking-[0.18em] text-text4 mb-1">
-                SYSTEM
+                {t.hero.systemLabel}
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-1 h-1 rounded-full bg-ok" aria-hidden />
-                <span className="text-[10px] font-mono text-ok">OPERATIONAL</span>
+                <span className="text-[10px] font-mono text-ok">{t.footer.operational}</span>
               </div>
             </div>
           </div>

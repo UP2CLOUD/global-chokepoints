@@ -86,7 +86,7 @@ const CHANGELOG = [
     v: '0.5.0',
     date: '2026-05-14',
     notes:
-      'Migrated to Cloudflare Pages (strait-of-hormuz-monitor.pages.dev). ' +
+      'Migrated to Cloudflare Pages (global-chokepoints.pages.dev). ' +
       'Added PortWatch animated vessels on map. KV caching on /api/timeline and /api/weather. ' +
       'Fixed confirmation email token bug. Tightened threat-score false-positive rule.',
   },
@@ -318,12 +318,12 @@ GET /feed.xml               # RSS 2.0 for journalists and aggregators`}</CodeBlo
           <p className="text-[11px] text-text3 mt-3">
             License: CC-BY-4.0. Attribution: &ldquo;Global Chokepoints Alerts&rdquo; with a link to{' '}
             <a
-              href="https://strait-of-hormuz-monitor.pages.dev"
+              href="https://global-chokepoints.pages.dev"
               className="text-accent hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              strait-of-hormuz-monitor.pages.dev
+              global-chokepoints.pages.dev
             </a>.
             {' '}Full interactive reference at{' '}
             <Link href="/docs" className="text-accent hover:underline">/docs</Link>.

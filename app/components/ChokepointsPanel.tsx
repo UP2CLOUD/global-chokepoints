@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Activity } from 'lucide-react';
+import { useLang } from './LangContext';
 import { CHOKEPOINT_KEYWORDS } from '@/app/lib/constants';
 import type { TimelineEvent } from '@/app/lib/types';
 import type { ChokepointStats } from '@/app/api/portwatch/route';
@@ -14,7 +15,7 @@ const SPARK_COLOR: Record<OpStatus, string> = {
   critical: '#EF4444', degraded: '#F97316', elevated: '#F59E0B', normal: '#10B981',
 };
 
-function Sparkline({ days, status }: { days: { total: number }[]; status: OpStatus }) {
+function Sparkline({ days, status, label }: { days: { total: number }[]; status: OpStatus; label: string }) {
   const recent = days.slice(-14);
   if (recent.length < 2) return null;
   const vals = recent.map(d => d.total);
@@ -27,7 +28,7 @@ function Sparkline({ days, status }: { days: { total: number }[]; status: OpStat
   }).join(' ');
   return (
     <div className="pt-1.5 border-t border-divider/40">
-      <div className="text-[7px] font-mono text-text4 mb-0.5 uppercase tracking-[0.12em]">14-day transit</div>
+      <div className="text-[7px] font-mono text-text4 mb-0.5 uppercase tracking-[0.12em]">{label}</div>
       <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden>
         <polyline
           points={pts}
@@ -117,6 +118,7 @@ interface Props {
 }
 
 export default function ChokepointsPanel({ timeline = [] }: Props) {
+  const { t } = useLang();
   const [pwData, setPwData] = useState<Record<string, ChokepointStats> | null>(null);
 
   useEffect(() => {
@@ -136,7 +138,7 @@ export default function ChokepointsPanel({ timeline = [] }: Props) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-[0.22em] text-text3">
           <Activity size={11} className="text-accent" />
-          Strategic Chokepoints
+          {t.chokepoints.panelTitle}
         </div>
         <span className="text-[9px] font-mono text-text4">EIA · IEA · IMF PortWatch</span>
       </div>
@@ -206,7 +208,7 @@ export default function ChokepointsPanel({ timeline = [] }: Props) {
                   />
                 </div>
                 <div className="flex justify-between text-[8px] font-mono">
-                  <span className="text-text4">RISK INDEX</span>
+                  <span className="text-text4">{t.chokepoints.riskIndex}</span>
                   <span className={s.textClass}>{cp.riskPct}/100</span>
                 </div>
               </div>
@@ -214,15 +216,15 @@ export default function ChokepointsPanel({ timeline = [] }: Props) {
               {/* Metrics row */}
               <div className="grid grid-cols-3 gap-1 pt-2.5 border-t border-divider/60">
                 <div>
-                  <div className="text-[8px] font-mono text-text4 uppercase mb-0.5">OIL</div>
+                  <div className="text-[8px] font-mono text-text4 uppercase mb-0.5">{t.chokepoints.oil}</div>
                   <div className="text-[10px] font-mono font-bold text-text leading-none">{cp.oilMbd}</div>
                 </div>
                 <div>
-                  <div className="text-[8px] font-mono text-text4 uppercase mb-0.5">TRADE</div>
+                  <div className="text-[8px] font-mono text-text4 uppercase mb-0.5">{t.chokepoints.trade}</div>
                   <div className="text-[10px] font-mono font-bold text-text leading-none">{cp.tradePerDay}</div>
                 </div>
                 <div>
-                  <div className="text-[8px] font-mono text-text4 uppercase mb-0.5">VES/D</div>
+                  <div className="text-[8px] font-mono text-text4 uppercase mb-0.5">{t.chokepoints.vesPerDay}</div>
                   <div className={`text-[10px] font-mono font-bold leading-none ${pw ? 'text-accent' : 'text-text'}`}>
                     {vessels24h}
                     {pw && vsBaseline !== 0 && (
@@ -236,7 +238,7 @@ export default function ChokepointsPanel({ timeline = [] }: Props) {
 
               {/* 14-day sparkline (when PortWatch data available) */}
               {pw?.days && pw.days.length > 2 && (
-                <Sparkline days={pw.days} status={cp.status} />
+                <Sparkline days={pw.days} status={cp.status} label={t.chokepoints.transitSparkline} />
               )}
 
               {/* Trend + event alert */}
@@ -264,7 +266,7 @@ export default function ChokepointsPanel({ timeline = [] }: Props) {
       </div>
 
       <p className="mt-3 text-[9px] font-mono text-text4">
-        Vessel counts: IMF PortWatch (1–2 day lag) · Events: GDELT + RSS · Risk indices are assessments only, not navigational advice.
+        {t.chokepoints.footerNote}
       </p>
     </section>
   );

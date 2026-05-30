@@ -28,7 +28,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev'),
   title: 'Global Chokepoints Alerts — Real-Time Maritime Intelligence',
   description:
     'Monitor strategic global maritime chokepoints including Hormuz, Red Sea, Suez, and Panama with live shipping intelligence, disruption tracking, AIS interference monitoring, and oil transit analysis.',
@@ -72,7 +72,7 @@ const JSON_LD = {
   name: 'Global Chokepoints Alerts',
   alternateName: 'GlobalChokepointsAlerts',
   applicationCategory: 'NewsApplication',
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev',
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev',
   description:
     'Real-time maritime intelligence platform monitoring strategic global chokepoints, shipping disruptions, AIS interference, and oil transit flow.',
   operatingSystem: 'All',

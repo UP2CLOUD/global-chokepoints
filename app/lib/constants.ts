@@ -105,7 +105,7 @@ export const CHOKEPOINT_KEYWORDS: Record<string, string[]> = {
 // ── Public deployment identity ────────────────────────────────────────────────
 /** Canonical site URL — overridden by NEXT_PUBLIC_SITE_URL at build time */
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev';
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev';
 
 /** Contact email surfaced in docs/methodology/OpenAPI spec */
 export const CONTACT_EMAIL =
