@@ -1,6 +1,10 @@
 'use client';
 
+import { useLang } from './LangContext';
+
 export default function ScrollIndicator() {
+  const { t } = useLang();
+
   function handleClick() {
     const main = document.querySelector('main');
     if (main) {
@@ -13,12 +17,12 @@ export default function ScrollIndicator() {
   return (
     <button
       onClick={handleClick}
-      aria-label="Scroll to content"
+      aria-label={t.nav.scrollAriaLabel}
       className="flex flex-col items-center gap-1.5 cursor-pointer touch-manipulation select-none focus:outline-none"
       style={{ pointerEvents: 'auto' }}
     >
       <span className="text-[9px] font-mono tracking-[0.22em] text-text3 uppercase animate-bounce-slow inline-block">
-        Scroll
+        {t.nav.scroll}
       </span>
       <svg
         width="16"

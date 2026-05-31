@@ -253,6 +253,9 @@ export const translations = {
       apiDocsLink: 'API Docs →',
       poweredBy: 'Powered by Global Chokepoints Alerts',
       selectLanguage: 'Select language',
+      scroll: 'Scroll',
+      scrollAriaLabel: 'Scroll to content',
+      supportedBy: 'Supported by',
     },
     dashboard: {
       intelligenceFeed: 'Intelligence Feed',
@@ -624,6 +627,9 @@ export const translations = {
       apiDocsLink: 'Docs da API →',
       poweredBy: 'Desenvolvido por Global Chokepoints Alerts',
       selectLanguage: 'Selecionar idioma',
+      scroll: 'Rolar',
+      scrollAriaLabel: 'Rolar para o conteúdo',
+      supportedBy: 'Apoiado por',
     },
     dashboard: {
       intelligenceFeed: 'Feed de Inteligência',
@@ -995,6 +1001,9 @@ export const translations = {
       apiDocsLink: 'Docs de API →',
       poweredBy: 'Desarrollado por Global Chokepoints Alerts',
       selectLanguage: 'Seleccionar idioma',
+      scroll: 'Desplazar',
+      scrollAriaLabel: 'Desplazarse al contenido',
+      supportedBy: 'Patrocinado por',
     },
     dashboard: {
       intelligenceFeed: 'Feed de Inteligencia',
@@ -1366,6 +1375,9 @@ export const translations = {
       apiDocsLink: 'Docs API →',
       poweredBy: 'Propulsé par Global Chokepoints Alerts',
       selectLanguage: 'Choisir la langue',
+      scroll: 'Défiler',
+      scrollAriaLabel: 'Défiler vers le contenu',
+      supportedBy: 'Soutenu par',
     },
     dashboard: {
       intelligenceFeed: 'Flux de Renseignement',
@@ -1737,6 +1749,9 @@ export const translations = {
       apiDocsLink: 'Docs API →',
       poweredBy: 'Sviluppato da Global Chokepoints Alerts',
       selectLanguage: 'Seleziona lingua',
+      scroll: 'Scorri',
+      scrollAriaLabel: 'Scorri al contenuto',
+      supportedBy: 'Supportato da',
     },
     dashboard: {
       intelligenceFeed: 'Feed Intelligence',
@@ -2108,6 +2123,9 @@ export const translations = {
       apiDocsLink: 'Документация API →',
       poweredBy: 'Работает на Global Chokepoints Alerts',
       selectLanguage: 'Выбрать язык',
+      scroll: 'Прокрутить',
+      scrollAriaLabel: 'Прокрутить к содержанию',
+      supportedBy: 'При поддержке',
     },
     dashboard: {
       intelligenceFeed: 'Лента разведки',
@@ -2479,6 +2497,9 @@ export const translations = {
       apiDocsLink: 'API-Dokumentation →',
       poweredBy: 'Betrieben von Global Chokepoints Alerts',
       selectLanguage: 'Sprache wählen',
+      scroll: 'Scrollen',
+      scrollAriaLabel: 'Zum Inhalt scrollen',
+      supportedBy: 'Unterstützt von',
     },
     subscribe: {
       bellLabel: 'Warnungen',
@@ -2820,6 +2841,9 @@ export const translations = {
       apiDocsLink: 'API文档 →',
       poweredBy: '由Global Chokepoints Alerts提供支持',
       selectLanguage: '选择语言',
+      scroll: '滚动',
+      scrollAriaLabel: '滚动至内容',
+      supportedBy: '由…支持',
     },
     subscribe: {
       bellLabel: '预警',
@@ -3161,6 +3185,9 @@ export const translations = {
       apiDocsLink: 'APIドキュメント →',
       poweredBy: 'Global Chokepoints Alerts提供',
       selectLanguage: '言語を選択',
+      scroll: 'スクロール',
+      scrollAriaLabel: 'コンテンツへスクロール',
+      supportedBy: '提供：',
     },
     subscribe: {
       bellLabel: 'アラート',
@@ -3502,6 +3529,9 @@ export const translations = {
       apiDocsLink: 'وثائق API →',
       poweredBy: 'مدعوم من Global Chokepoints Alerts',
       selectLanguage: 'اختر اللغة',
+      scroll: 'تمرير',
+      scrollAriaLabel: 'التمرير إلى المحتوى',
+      supportedBy: 'بدعم من',
     },
     subscribe: {
       bellLabel: 'تنبيهات',
