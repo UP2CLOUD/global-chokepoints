@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { StatusData } from '@/app/lib/types';
+import { useLang } from './LangContext';
 
 // Hormuz shipping lane waypoints [lat, lon] — inbound enters Gulf of Oman heading west
 const LANE_IN: [number, number][] = [
@@ -144,6 +145,7 @@ interface Props {
 }
 
 export default function HormuzMap({ status, vessels = [] }: Props) {
+  const { t } = useLang();
   const containerRef    = useRef<HTMLDivElement>(null);
   const mapRef          = useRef<any>(null);
   const LRef            = useRef<any>(null);
@@ -488,7 +490,7 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
         {vessels.length > 0 && (
           <div className="flex items-center gap-2 mt-0.5">
             <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
-            <span className="text-[9px] font-mono text-text3">{vessels.length} AIS live</span>
+            <span className="text-[9px] font-mono text-text3">{vessels.length} AIS {t.vessel.ships}</span>
           </div>
         )}
       </div>
@@ -500,7 +502,7 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       >
         <div style={{ background: 'rgba(7,9,15,0.82)', border: '1px solid rgba(255,255,255,0.07)', padding: '8px 10px' }}>
           <div style={{ fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4B5563', marginBottom: 6, paddingBottom: 4, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            Global Chokepoints
+            {t.chokepoints.panelTitle}
           </div>
           {GLOBAL_CP.map((cp) => (
             <div key={cp.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
