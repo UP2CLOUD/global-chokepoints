@@ -94,7 +94,7 @@ function projectVessel(v: AisVessel, W: number, H: number) {
 }
 
 export default function VesselMap() {
-  const { lang, t } = useLang();
+  const { t } = useLang();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const [ais, setAis] = useState<AisResponse | null>(null);
@@ -193,13 +193,9 @@ export default function VesselMap() {
       // Static labels
       ctx!.fillStyle = '#6B7787';
       ctx!.font = '9px monospace';
-      ctx!.fillText(lang === 'en' ? 'IRAN' : 'IRÃ', W * 0.03, H * 0.48);
-      ctx!.fillText('OMAN', W * 0.9, H * 0.48);
-      ctx!.fillText(
-        lang === 'en' ? 'STRAIT OF HORMUZ' : 'ESTREITO DE ORMUZ',
-        W * 0.34,
-        H * 0.52
-      );
+      ctx!.fillText(t.vessel.iran, W * 0.03, H * 0.48);
+      ctx!.fillText(t.vessel.oman, W * 0.9, H * 0.48);
+      ctx!.fillText(t.vessel.straitName, W * 0.34, H * 0.52);
 
       // Only request next frame when animating live vessels
       if (hasLiveVessels && !reducedMotion) {
@@ -213,20 +209,20 @@ export default function VesselMap() {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
     };
-  }, [lang, ais]);
+  }, [t, ais]);
 
   const live = ais && ais.running && ais.vessels?.length > 0;
 
   // Determine the status badge content
   let badge: { text: string; cls: string };
   if (loading) {
-    badge = { text: lang === 'en' ? 'LOADING…' : 'CARREGANDO…', cls: 'bg-bg2/80 text-text3 border border-divider' };
-  } else if (live) {
-    badge = { text: `LIVE · ${ais!.count} ${lang === 'en' ? 'ships' : 'navios'}`, cls: 'bg-ok/15 text-ok border border-ok/30' };
+    badge = { text: t.vessel.loading, cls: 'bg-bg2/80 text-text3 border border-divider' };
   } else if (live && ais?.stale) {
-    badge = { text: `LIVE · ${ais!.count} ${lang === 'en' ? 'ships' : 'navios'} · ${lang === 'en' ? 'refreshing' : 'atualizando'}`, cls: 'bg-ok/10 text-ok border border-ok/20' };
+    badge = { text: `LIVE · ${ais!.count} ${t.vessel.ships} · ${t.vessel.refreshing}`, cls: 'bg-ok/10 text-ok border border-ok/20' };
+  } else if (live) {
+    badge = { text: `LIVE · ${ais!.count} ${t.vessel.ships}`, cls: 'bg-ok/15 text-ok border border-ok/30' };
   } else {
-    badge = { text: lang === 'en' ? 'AIS OFFLINE' : 'AIS OFFLINE', cls: 'bg-bg2/80 text-text3 border border-divider' };
+    badge = { text: t.vessel.aisOffline, cls: 'bg-bg2/80 text-text3 border border-divider' };
   }
 
   return (
@@ -235,8 +231,8 @@ export default function VesselMap() {
       role="img"
       aria-label={
         live
-          ? `Live AIS vessels in the Strait of Hormuz — ${ais!.count} ships`
-          : 'Strait of Hormuz map — no live AIS data available'
+          ? `${t.vessel.straitName} — ${ais!.count} ${t.vessel.ships}`
+          : `${t.vessel.straitName} — ${t.vessel.aisOffline}`
       }
     >
       <canvas ref={canvasRef} className="w-full h-full block" />
@@ -259,13 +255,11 @@ export default function VesselMap() {
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-caution animate-[pulse-dot_2.4s_ease-in-out_infinite]" />
             <span className="text-[11px] font-mono text-caution uppercase tracking-[0.14em]">
-              {lang === 'en' ? 'AIS Feed Unavailable' : 'Feed AIS Indisponível'}
+              {t.vessel.feedUnavailable}
             </span>
           </div>
           <span className="text-[10px] font-mono text-text3 text-center max-w-[220px] leading-relaxed">
-            {lang === 'en'
-              ? 'Monitoring alternative open-source maritime indicators'
-              : 'Monitorando indicadores marítimos alternativos'}
+            {t.vessel.feedDesc}
           </span>
           <a
             href={process.env.NEXT_PUBLIC_SUPPORT_URL || '#'}
@@ -275,7 +269,7 @@ export default function VesselMap() {
               text-text2 border border-divider hover:border-accent/40 hover:text-accent
               bg-bg2/60 transition-all duration-200"
           >
-            {lang === 'en' ? 'Help fund AIS coverage' : 'Ajude a financiar cobertura AIS'}
+            {t.vessel.fundAis}
           </a>
         </div>
       )}
