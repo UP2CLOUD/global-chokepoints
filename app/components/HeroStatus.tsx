@@ -63,7 +63,7 @@ const STATE_TONE = {
 } as const;
 
 export default function HeroStatus({ status, loading = false, brentPrice }: Props) {
-  const { t, locale } = useLang();
+  const { lang, t, locale } = useLang();
 
   const tone =
     loading             ? 'caution'
@@ -114,7 +114,7 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
 
   const copyCardLink = () => {
     if (typeof navigator === 'undefined') return;
-    const params = new URLSearchParams({ state: status.state, tension: String(tIdx) });
+    const params = new URLSearchParams({ state: status.state, tension: String(tIdx), lang });
     if (brentPrice != null) params.set('brent', brentPrice.toFixed(2));
     navigator.clipboard.writeText(`${window.location.origin}/api/og?${params}`).then(() => {
       setCopied(true);
