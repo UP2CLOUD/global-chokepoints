@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/app/lib/constants';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.workers.dev').replace(/\/$/, '');
+  const base = SITE_URL.replace(/\/$/, '');
   const now = new Date();
   return [
     { url: `${base}/`,            lastModified: now, changeFrequency: 'always',  priority: 1.0 },
