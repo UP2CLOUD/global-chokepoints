@@ -6,6 +6,8 @@ import { getMockData } from '@/app/lib/mockData';
 import { fetchDashboardData, fetchTimeline, fetchNews, deriveStatus } from '@/app/lib/api';
 import { useLang } from '@/app/components/LangContext';
 import { LOADING_SEED_DATE } from '@/app/lib/constants';
+import { translations } from '@/app/lib/translations';
+import type { Lang } from '@/app/lib/types';
 
 const DASHBOARD_REFRESH_MS = 5 * 60_000;  // 5 min
 const TIMELINE_REFRESH_MS  = 60_000;       // 60 s
@@ -28,9 +30,7 @@ export function useDashboardData(): DashboardDataState {
     tensionIndex: 0,
     lastUpdated:  LOADING_SEED_DATE,
     confidence:   0,
-    reason:       lang === 'pt'
-      ? 'Obtendo dados de inteligência ao vivo…'
-      : 'Fetching live intelligence data…',
+    reason:       translations[lang as Lang]?.loading ?? translations.en.loading,
   };
 
   const [data, setData] = useState<DashboardData>(() => ({

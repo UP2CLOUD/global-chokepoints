@@ -138,6 +138,24 @@ const spec = {
             description: 'Return only events at or after this ISO 8601 timestamp',
             schema: { type: 'string', format: 'date-time', example: '2026-05-13T00:00:00Z' },
           },
+          {
+            name: 'severity',
+            in: 'query',
+            description: 'Comma-separated severity filter (low, medium, high, critical)',
+            schema: { type: 'string', example: 'high,critical' },
+          },
+          {
+            name: 'category',
+            in: 'query',
+            description: 'Comma-separated category filter (incident, military, diplomatic, economic)',
+            schema: { type: 'string', example: 'military,incident' },
+          },
+          {
+            name: 'chokepoint',
+            in: 'query',
+            description: 'Filter events by chokepoint keywords (hormuz, redsea, suez, panama, taiwan)',
+            schema: { type: 'string', enum: ['hormuz', 'redsea', 'suez', 'panama', 'taiwan'] },
+          },
         ],
         responses: {
           '200': {

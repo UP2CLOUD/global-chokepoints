@@ -26,6 +26,9 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS });
 }
 
+const VALID_SEVERITIES = new Set(['low', 'medium', 'high', 'critical']);
+const VALID_CATEGORIES = new Set(['incident', 'military', 'diplomatic', 'economic']);
+
 export async function GET(req: NextRequest) {
   const u = new URL(req.url);
   const limit      = Math.min(100, Math.max(1, parseInt(u.searchParams.get('limit') ?? '30', 10)));
@@ -33,13 +36,27 @@ export async function GET(req: NextRequest) {
   const chokepoint = u.searchParams.get('chokepoint');
   const sinceMs    = since ? +new Date(since) : 0;
 
+  // ?severity=high,critical  — comma-separated; unknown values ignored
+  const severityRaw  = u.searchParams.get('severity');
+  const severitySet  = severityRaw
+    ? new Set(severityRaw.split(',').map(s => s.trim()).filter(s => VALID_SEVERITIES.has(s)))
+    : null;
+
+  // ?category=military,incident
+  const categoryRaw  = u.searchParams.get('category');
+  const categorySet  = categoryRaw
+    ? new Set(categoryRaw.split(',').map(c => c.trim()).filter(c => VALID_CATEGORIES.has(c)))
+    : null;
+
   const origin = u.origin;
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
   const res = await fetch(`${base}/api/timeline`);
   const json = res.ok ? await res.json() : { events: [] };
   let events: any[] = Array.isArray(json.events) ? json.events : [];
 
-  if (sinceMs) events = events.filter((e) => +new Date(e.date) >= sinceMs);
+  if (sinceMs)     events = events.filter((e) => +new Date(e.date) >= sinceMs);
+  if (severitySet?.size) events = events.filter(e => severitySet.has(e.severity));
+  if (categorySet?.size) events = events.filter(e => categorySet.has(e.category));
 
   // Filter by chokepoint keyword set when ?chokepoint= is provided
   const cpKws = chokepoint ? CP_KEYWORDS[chokepoint] : null;
@@ -56,9 +73,14 @@ export async function GET(req: NextRequest) {
     {
       events,
       count:       events.length,
-      chokepoint:  chokepoint ?? null,
+      filters: {
+        chokepoint:  chokepoint ?? null,
+        severity:    severityRaw ?? null,
+        category:    categoryRaw ?? null,
+        since:       since ?? null,
+      },
       generatedAt: new Date().toISOString(),
-      docs:        `${origin}/methodology`,
+      docs:        `${origin}/docs`,
       license:     'CC-BY-4.0',
     },
     {
