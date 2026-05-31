@@ -18,10 +18,18 @@ const CP_SHORT: Record<string, string> = {
 };
 
 function EmbedContent() {
-  const { lang } = useLang();
-  const [data, setData]     = useState<DashboardData | null>(null);
+  const { lang, setLang } = useLang();
+  const [data, setData]      = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [cpData, setCpData]  = useState<CPItem[] | null>(null);
+  const [cpData, setCpData]   = useState<CPItem[] | null>(null);
+
+  // Override stored lang from URL param (used by embed configurator preview)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const p = new URLSearchParams(window.location.search).get('lang');
+    const valid = ['en','pt','es','fr','it','ru','de','zh','ja','ar'];
+    if (p && valid.includes(p)) setLang(p as import('@/app/lib/types').Lang);
+  }, [setLang]);
 
   const loadData = useCallback(async () => {
     try {

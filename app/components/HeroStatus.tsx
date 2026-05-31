@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { StatusData } from '@/app/lib/types';
 import { useLang } from './LangContext';
 import { fmtTime, fmt } from '@/app/lib/utils';
-import { ExternalLink, Share2 } from 'lucide-react';
+import { ExternalLink, Share2, Copy } from 'lucide-react';
 import { BLOCKAGE_START_ISO } from '@/app/lib/constants';
 
 interface Props {
@@ -108,8 +108,19 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
   }, [loading, tIdx]);
 
   const [showWhy, setShowWhy] = useState(false);
+  const [copied, setCopied]   = useState(false);
   const isDisrupted = !loading && status.state !== 'OPEN';
   const elapsedMs   = useElapsedMs(isDisrupted);
+
+  const copyCardLink = () => {
+    if (typeof navigator === 'undefined') return;
+    const params = new URLSearchParams({ state: status.state, tension: String(tIdx) });
+    if (brentPrice != null) params.set('brent', brentPrice.toFixed(2));
+    navigator.clipboard.writeText(`${window.location.origin}/api/og?${params}`).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  };
 
   const shareStatus = () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -147,6 +158,14 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
         </div>
         <div className="flex items-center gap-5 text-[9px] font-mono text-text4">
           <span suppressHydrationWarning>{fmtTime(status.lastUpdated, locale)}</span>
+          <button
+            onClick={copyCardLink}
+            className="flex items-center gap-1.5 hover:text-text2 transition-colors uppercase tracking-[0.14em]"
+            aria-label="Copy card image link"
+          >
+            <Copy size={10} />
+            <span className="hidden sm:inline">{copied ? 'Copied' : 'Card'}</span>
+          </button>
           <button
             onClick={shareStatus}
             className="flex items-center gap-1.5 hover:text-text2 transition-colors uppercase tracking-[0.14em]"

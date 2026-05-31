@@ -16,10 +16,11 @@
 // ============================================================
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
-import { getD1 } from '@/app/lib/db';
+import { getD1, randomId } from '@/app/lib/db';
 import { sendEmail, alertEmailHtml } from '@/app/lib/email';
 import { deriveStatus } from '@/app/lib/api';
 import { REOPEN_CONFIDENCE_THRESHOLD } from '@/app/lib/constants';
+import { hmacSha256hex } from '@/app/lib/crypto';
 import type { StatusData } from '@/app/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -139,6 +140,14 @@ export async function POST(req: NextRequest) {
     console.error('[alert-check] Failed to upsert system_state:', err);
   }
 
+  // ── Log to status_history ────────────────────────────────
+  try {
+    await db
+      .prepare('INSERT INTO status_history (id, state, previous_state, tension, confidence, reason) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(randomId(), currentStatus, lastStatus, Math.round(status.tensionIndex ?? 0), status.confidence, status.reason)
+      .run();
+  } catch { /* table may not exist yet */ }
+
   if (subscribers.length === 0) {
     return NextResponse.json({ ok: true, changed: true, subscribers: 0, status: currentStatus });
   }
@@ -170,6 +179,38 @@ export async function POST(req: NextRequest) {
     if (result.ok) sent++; else failed++;
   }
 
+  // ── Webhook fan-out ──────────────────────────────────────
+  const webhookPayload = JSON.stringify({
+    event: 'status_change',
+    previousStatus: lastStatus,
+    currentStatus,
+    tensionIndex: status.tensionIndex ?? 0,
+    reason: status.reason,
+    timestamp: new Date().toISOString(),
+  });
+
+  let webhooksSent = 0;
+  try {
+    const { results: hooks } = await db
+      .prepare("SELECT id, url, secret FROM webhooks WHERE confirmed = 1 AND (events = 'status_change' OR events LIKE '%status_change%')")
+      .all<{ id: string; url: string; secret: string }>();
+
+    await Promise.allSettled((hooks ?? []).map(async hook => {
+      const sig = await hmacSha256hex(hook.secret, webhookPayload);
+      const res = await fetch(hook.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Signature-256': `sha256=${sig}`,
+          'User-Agent': 'GlobalChokepointsAlerts/1.0',
+        },
+        body: webhookPayload,
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (res.ok) webhooksSent++;
+    }));
+  } catch { /* webhooks table may not exist yet */ }
+
   return NextResponse.json({
     ok: true,
     changed: true,
@@ -178,6 +219,7 @@ export async function POST(req: NextRequest) {
     subscribers: subscribers.length,
     sent,
     failed,
+    webhooksSent,
   });
 }
 
