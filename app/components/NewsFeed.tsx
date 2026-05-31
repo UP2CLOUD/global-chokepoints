@@ -16,21 +16,18 @@ const SENTIMENT_GLYPH: Record<'positive' | 'negative' | 'neutral', { mark: strin
   neutral:  { mark: '─', color: 'text-text4'  },
 };
 
-type FilterKey = 'all' | 'hormuz' | 'redsea' | 'suez' | 'panama';
+type FilterKey = 'all' | 'hormuz' | 'redsea' | 'suez' | 'panama' | 'taiwan';
 
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: 'all',    label: 'ALL'     },
-  { key: 'hormuz', label: 'HORMUZ'  },
-  { key: 'redsea', label: 'RED SEA' },
-  { key: 'suez',   label: 'SUEZ'    },
-  { key: 'panama', label: 'PANAMA'  },
-];
+const FILTER_LABELS: Record<Exclude<FilterKey, 'all'>, string> = {
+  hormuz: 'HORMUZ', redsea: 'RED SEA', suez: 'SUEZ', panama: 'PANAMA', taiwan: 'TAIWAN',
+};
 
 const FILTER_KW: Record<Exclude<FilterKey, 'all'>, string[]> = {
   hormuz: ['hormuz', 'irgc', 'persian gulf', 'gulf of oman', 'iranian'],
   redsea: ['red sea', 'houthi', 'bab el-mandeb', 'bab-el-mandeb', 'yemen', 'gulf of aden'],
   suez:   ['suez'],
   panama: ['panama canal', 'panama lock'],
+  taiwan: ['taiwan strait', 'taiwan channel', 'pla navy', 'south china sea'],
 };
 
 function matchesFilter(item: NewsItem, key: FilterKey): boolean {
@@ -97,23 +94,24 @@ export default function NewsFeed({ news, loading = false }: Props) {
 
       {/* Chokepoint filter tabs */}
       <div className="flex border-b border-divider">
-        {FILTERS.map(f => {
-          const count = f.key === 'all'
+        {(['all', 'hormuz', 'redsea', 'suez', 'panama', 'taiwan'] as FilterKey[]).map(key => {
+          const label = key === 'all' ? t.timeline.filters.all : FILTER_LABELS[key];
+          const count = key === 'all'
             ? allItems.length
-            : allItems.filter(item => matchesFilter(item, f.key)).length;
+            : allItems.filter(item => matchesFilter(item, key)).length;
           return (
             <button
-              key={f.key}
-              onClick={() => setActiveFilter(f.key)}
+              key={key}
+              onClick={() => setActiveFilter(key)}
               className={`flex items-center gap-1 px-2.5 py-1.5 text-[8px] font-mono uppercase tracking-[0.14em] border-b-2 transition-colors -mb-px ${
-                activeFilter === f.key
+                activeFilter === key
                   ? 'border-accent text-accent'
                   : 'border-transparent text-text4 hover:text-text3'
               }`}
             >
-              {f.label}
+              {label}
               {count > 0 && (
-                <span className={`text-[7px] tabular-nums ${activeFilter === f.key ? 'text-accent/70' : 'text-text4/60'}`}>
+                <span className={`text-[7px] tabular-nums ${activeFilter === key ? 'text-accent/70' : 'text-text4/60'}`}>
                   {count}
                 </span>
               )}
@@ -130,7 +128,7 @@ export default function NewsFeed({ news, loading = false }: Props) {
           <div className="py-10 text-center text-[11px] font-mono text-text3">
             {activeFilter === 'all'
               ? t.news.noArticles
-              : `No ${FILTERS.find(f => f.key === activeFilter)?.label ?? ''} articles in feed`}
+              : `No ${FILTER_LABELS[activeFilter]} articles in feed`}
           </div>
         )}
 
