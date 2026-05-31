@@ -39,26 +39,47 @@ export async function GET(req: NextRequest) {
   const origin = new URL(req.url).origin;
 
   let pwChokepoints: Record<string, PwStats> = {};
-  try {
-    const r = await fetch(`${base}/api/portwatch`, { signal: AbortSignal.timeout(8_000) });
-    if (r.ok) {
-      const d = await r.json() as { chokepoints?: Record<string, PwStats> };
-      if (d?.chokepoints) pwChokepoints = d.chokepoints;
+  let hormuzLiveTension: number | null = null;
+  let hormuzLiveStatus: string | null  = null;
+
+  const [pwResult, statusResult] = await Promise.allSettled([
+    fetch(`${base}/api/portwatch`, { signal: AbortSignal.timeout(8_000) })
+      .then(r => r.ok ? r.json() as Promise<{ chokepoints?: Record<string, PwStats> }> : null),
+    fetch(`${base}/v1/status`, { signal: AbortSignal.timeout(4_000) })
+      .then(r => r.ok ? r.json() as Promise<{ tensionIndex?: number; state?: string }> : null),
+  ]);
+
+  if (pwResult.status === 'fulfilled' && pwResult.value?.chokepoints) {
+    pwChokepoints = pwResult.value.chokepoints;
+  }
+  if (statusResult.status === 'fulfilled' && statusResult.value) {
+    const sd = statusResult.value;
+    if (sd.tensionIndex != null) hormuzLiveTension = Math.round(sd.tensionIndex);
+    if (sd.state) {
+      hormuzLiveStatus =
+        sd.state === 'OPEN'             ? 'normal'   :
+        sd.state === 'PARTIALLY_CLOSED' ? 'degraded' : 'critical';
     }
-  } catch { /* fall back to static vessel counts */ }
+  }
 
   const chokepoints = CP_DEF.map(cp => {
     const pw = pwChokepoints[cp.key];
     const vessels24h = pw?.todayTotal ?? STATIC_VESSELS[cp.key] ?? 0;
     const vsBaseline  = pw?.vsBaseline ?? 0;
     const trend = vsBaseline <= -10 ? 'down' : vsBaseline >= 10 ? 'up' : 'stable';
+    const riskIndex = cp.key === 'hormuz' && hormuzLiveTension !== null
+      ? hormuzLiveTension
+      : cp.riskIndex;
+    const status = cp.key === 'hormuz' && hormuzLiveStatus !== null
+      ? hormuzLiveStatus
+      : cp.status;
     return {
       key:          cp.key,
       name:         cp.name,
       region:       cp.region,
       codes:        cp.codes,
-      status:       cp.status,
-      riskIndex:    cp.riskIndex,
+      status,
+      riskIndex,
       oilMbd:       cp.oilMbd,
       tradePerDayB: cp.tradePerDayB,
       vessels24h,

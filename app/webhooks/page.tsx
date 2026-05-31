@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Webhook, Copy, Check, Trash2, Plus } from 'lucide-react';
+import { Webhook, Copy, Check, Plus } from 'lucide-react';
 
 type WebhookResult = {
   id: string;

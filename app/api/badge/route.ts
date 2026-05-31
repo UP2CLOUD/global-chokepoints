@@ -11,8 +11,8 @@ const STATE_COLOR: Record<string, { fill: string; text: string }> = {
 
 function badge(state: string, tension: number): string {
   const { fill, text } = STATE_COLOR[state] ?? STATE_COLOR.OPEN;
-  const label    = 'strait of hormuz';
-  const labelW   = 130;
+  const label    = 'global chokepoints';
+  const labelW   = 138;
   const valueW   = text.length * 7 + 16;
   const totalW   = labelW + valueW;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="20">
@@ -32,7 +32,7 @@ function badge(state: string, tension: number): string {
 </svg>`;
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
   let state   = 'OPEN';
   let tension = 0;

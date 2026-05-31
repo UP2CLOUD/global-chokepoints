@@ -1,11 +1,23 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data: https: blob:",
+  "connect-src 'self' https:",
+  "object-src 'none'",
+  "base-uri 'self'",
+].join('; ');
+
 function addSecurityHeaders(res: NextResponse): NextResponse {
   res.headers.set('X-Content-Type-Options', 'nosniff');
   res.headers.set('X-DNS-Prefetch-Control', 'on');
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.headers.set('Content-Security-Policy', CSP);
   return res;
 }
 import { getRequestContext } from '@cloudflare/next-on-pages';
@@ -28,16 +40,18 @@ function getKV(): KVNamespace | null {
 // embeds. Auth is only required for non-GET methods, and even then only
 // when V1_API_KEY is configured. gca_* keys are validated + rate-limited via KV.
 export async function middleware(request: NextRequest) {
-  // X-Frame-Options: allow embedding only from /embed routes
   const isEmbed = request.nextUrl.pathname === '/embed' || request.nextUrl.pathname.startsWith('/embed/');
-  if (!isEmbed && !request.nextUrl.pathname.startsWith('/v1/')) {
-    const res = NextResponse.next();
-    res.headers.set('X-Frame-Options', 'SAMEORIGIN');
-    return res;
-  }
+  const isV1    = request.nextUrl.pathname.startsWith('/v1/');
 
   if (request.method === 'OPTIONS') {
-    return NextResponse.next();
+    return addSecurityHeaders(NextResponse.next());
+  }
+
+  // Non-embed, non-v1 pages: deny framing and return early with security headers.
+  if (!isEmbed && !isV1) {
+    const res = addSecurityHeaders(NextResponse.next());
+    res.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    return res;
   }
 
   // Validate gca_* API keys and enforce per-key rate limits

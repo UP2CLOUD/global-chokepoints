@@ -1,9 +1,12 @@
 // ============================================================
 // /api/health — Feed health probe used by the StatusBar
 // Probes each upstream and returns (ok|degraded|down) + age.
+// Also reports D1 and KV binding availability.
 // ============================================================
 export const runtime = 'edge';
 import { NextResponse } from 'next/server';
+import { getD1 } from '@/app/lib/db';
+import { getKV } from '@/app/lib/kv';
 
 export const revalidate = 30;
 export const dynamic = 'force-dynamic';
@@ -46,14 +49,14 @@ const PROBES: Probe[] = [
     expectedRefreshMs: 15 * 60_000 },
 ];
 
-async function probe(p: Probe): Promise<{ key: string; label: string; status: Status; latencyMs: number; httpStatus: number | null }> {
+async function probeUpstream(p: Probe): Promise<{ key: string; label: string; status: Status; latencyMs: number; httpStatus: number | null }> {
   const start = Date.now();
   const timeout = p.timeoutMs ?? 5000;
   const degradedAt = p.degradedThresholdMs ?? 2500;
   try {
     const res = await fetch(p.url, {
       method: 'GET',
-      headers: { 'User-Agent': 'IsHormuzOpen/health' },
+      headers: { 'User-Agent': 'GlobalChokepointsAlerts/health' },
       signal: AbortSignal.timeout(timeout),
     });
     const latencyMs = Date.now() - start;
@@ -66,15 +69,50 @@ async function probe(p: Probe): Promise<{ key: string; label: string; status: St
   }
 }
 
+async function probeD1(): Promise<{ available: boolean; latencyMs: number; error?: string }> {
+  const start = Date.now();
+  const db = getD1();
+  if (!db) return { available: false, latencyMs: 0, error: 'binding not configured' };
+  try {
+    await db.prepare('SELECT 1').first();
+    return { available: true, latencyMs: Date.now() - start };
+  } catch (e) {
+    return { available: false, latencyMs: Date.now() - start, error: String(e) };
+  }
+}
+
+async function probeKV(): Promise<{ available: boolean; latencyMs: number; error?: string }> {
+  const start = Date.now();
+  const kv = getKV();
+  if (!kv) return { available: false, latencyMs: 0, error: 'binding not configured' };
+  try {
+    await kv.get('health:ping');
+    return { available: true, latencyMs: Date.now() - start };
+  } catch (e) {
+    return { available: false, latencyMs: Date.now() - start, error: String(e) };
+  }
+}
+
 export async function GET() {
-  const results = await Promise.all(PROBES.map(probe));
-  const overall: Status = results.some(r => r.status === 'down')
+  const [upstreamResults, d1, kv] = await Promise.all([
+    Promise.all(PROBES.map(probeUpstream)),
+    probeD1(),
+    probeKV(),
+  ]);
+
+  const overall: Status = upstreamResults.some(r => r.status === 'down')
     ? 'degraded'
-    : results.some(r => r.status === 'degraded')
+    : upstreamResults.some(r => r.status === 'degraded')
       ? 'degraded'
       : 'ok';
+
   return NextResponse.json(
-    { overall, probes: results, generatedAt: new Date().toISOString() },
+    {
+      overall,
+      probes: upstreamResults,
+      bindings: { d1, kv },
+      generatedAt: new Date().toISOString(),
+    },
     { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' } }
   );
 }
