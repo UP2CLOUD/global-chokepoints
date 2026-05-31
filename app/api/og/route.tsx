@@ -3,7 +3,9 @@
 // When called without ?state/brent/tension params (e.g. from social
 // media scrapers), the route self-fetches /v1/status and /v1/metrics
 // to display live data. Explicit params always take precedence.
-// Accepts ?lang=en|pt|es|fr|it|ru for localised text.
+// Accepts ?lang=en|pt|es|fr|it|ru|de for localised text.
+// Note: zh/ja/ar fall back to 'en' — Satori (used by ImageResponse)
+// does not support CJK or RTL without bundled fonts.
 // ============================================================
 export const runtime = 'edge';
 import { ImageResponse } from 'next/og';
@@ -15,7 +17,7 @@ import type { Lang } from '@/app/lib/types';
 // while not hammering /v1/status on every share.
 export const revalidate = 120;
 
-const VALID_LANGS: Lang[] = ['en', 'pt', 'es', 'fr', 'it', 'ru'];
+const VALID_LANGS: Lang[] = ['en', 'pt', 'es', 'fr', 'it', 'ru', 'de'];
 
 function answerFor(state: string, t: typeof translations.en): {
   word: string; color: string; sub: string; question: string; glow: string;
@@ -288,21 +290,21 @@ export async function GET(req: NextRequest) {
             <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <span style={{ fontSize: 10, color: '#4B5563', textTransform: 'uppercase', letterSpacing: 2 }}>
-                  21 Mb/d
+                  {t.facts.throughputValue}
                 </span>
-                <span style={{ fontSize: 12, color: '#9CA3AF' }}>of world oil flows</span>
+                <span style={{ fontSize: 12, color: '#9CA3AF' }}>{t.facts.throughputLabel}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <span style={{ fontSize: 10, color: '#4B5563', textTransform: 'uppercase', letterSpacing: 2 }}>
-                  5,000+ vessels/yr
+                  {t.facts.vesselsValue}
                 </span>
-                <span style={{ fontSize: 12, color: '#9CA3AF' }}>transit annually</span>
+                <span style={{ fontSize: 12, color: '#9CA3AF' }}>{t.facts.vesselsLabel}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <span style={{ fontSize: 10, color: '#4B5563', textTransform: 'uppercase', letterSpacing: 2 }}>
-                  30% of LNG trade
+                  {t.facts.shareValue}
                 </span>
-                <span style={{ fontSize: 12, color: '#9CA3AF' }}>by volume</span>
+                <span style={{ fontSize: 12, color: '#9CA3AF' }}>{t.facts.shareLabel}</span>
               </div>
             </div>
 
