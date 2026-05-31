@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+
+function addSecurityHeaders(res: NextResponse): NextResponse {
+  res.headers.set('X-Content-Type-Options', 'nosniff');
+  res.headers.set('X-DNS-Prefetch-Control', 'on');
+  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  return res;
+}
 import { getRequestContext } from '@cloudflare/next-on-pages';
 
 async function sha256hex(text: string): Promise<string> {
@@ -68,7 +76,7 @@ export async function middleware(request: NextRequest) {
         const res = NextResponse.next();
         res.headers.set('X-RateLimit-Limit', String(cached.rateLimit));
         res.headers.set('X-RateLimit-Remaining', String(cached.rateLimit - count - 1));
-        return res;
+        return addSecurityHeaders(res);
       }
       // KV unavailable (local dev) — fall through
     }
@@ -88,7 +96,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return addSecurityHeaders(NextResponse.next());
 }
 
 export const config = {
