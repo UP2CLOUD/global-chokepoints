@@ -130,14 +130,21 @@ function buildPortWatchVessels(day: PortWatchDay): PwVessel[] {
 // Anchor point for the status orb — middle of the strait
 const ORB_LATLNG: [number, number] = [26.5, 56.3];
 
-// Global chokepoints mini-panel data
+// Global chokepoints mini-panel — static names + fallback risk values
 const GLOBAL_CP = [
   { key: 'hormuz', name: 'Hormuz',  risk: 88, color: '#EF4444' },
   { key: 'redsea', name: 'Red Sea', risk: 74, color: '#F97316' },
   { key: 'suez',   name: 'Suez',    risk: 57, color: '#F59E0B' },
   { key: 'panama', name: 'Panama',  risk: 41, color: '#F59E0B' },
   { key: 'taiwan', name: 'Taiwan',  risk: 46, color: '#F59E0B' },
-] as const;
+];
+
+const CP_STATUS_COLOR: Record<string, string> = {
+  normal:   '#10B981',
+  elevated: '#F59E0B',
+  degraded: '#F97316',
+  critical: '#EF4444',
+};
 
 interface Props {
   status: StatusData;
@@ -159,6 +166,7 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
   const [mapReady, setMapReady] = useState(false);
   const [pwDay,    setPwDay]    = useState<PortWatchDay | null>(null);
   const [bebDay,   setBebDay]   = useState<PortWatchDay | null>(null);
+  const [cpLive,   setCpLive]   = useState<Record<string, { risk: number; color: string }>>({});
 
   // Yellow → status colour
   useEffect(() => {
@@ -174,6 +182,24 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
       .then(d => {
         if (d?.days?.length) setPwDay(d.days.at(-1));
         if (d?.chokepoints?.redsea?.days?.length) setBebDay(d.chokepoints.redsea.days.at(-1));
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch live chokepoint risk indices for the mini-panel
+  useEffect(() => {
+    fetch('/v1/chokepoints', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (!d?.chokepoints) return;
+        const map: Record<string, { risk: number; color: string }> = {};
+        for (const cp of d.chokepoints as { key: string; riskIndex: number; status: string }[]) {
+          map[cp.key] = {
+            risk:  cp.riskIndex,
+            color: CP_STATUS_COLOR[cp.status] ?? '#F59E0B',
+          };
+        }
+        setCpLive(map);
       })
       .catch(() => {});
   }, []);
@@ -504,15 +530,19 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
           <div style={{ fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4B5563', marginBottom: 6, paddingBottom: 4, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             {t.chokepoints.panelTitle}
           </div>
-          {GLOBAL_CP.map((cp) => (
+          {GLOBAL_CP.map((cp) => {
+            const live = cpLive[cp.key];
+            const color = live?.color ?? cp.color;
+            const risk  = live?.risk  ?? cp.risk;
+            return (
             <div key={cp.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: cp.color, flexShrink: 0 }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0 }} />
               <span style={{ fontSize: 9, fontFamily: 'monospace', color: '#94A3B8', minWidth: 56 }}>{cp.name}</span>
-              <span style={{ fontSize: 9, fontFamily: 'monospace', color: cp.color, fontWeight: 700, marginLeft: 'auto' }}>
-                {cp.risk}
+              <span style={{ fontSize: 9, fontFamily: 'monospace', color, fontWeight: 700, marginLeft: 'auto' }}>
+                {risk}
               </span>
             </div>
-          ))}
+          );})}
         </div>
       </div>
     </div>
