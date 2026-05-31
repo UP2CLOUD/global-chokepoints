@@ -28,6 +28,8 @@ export default function Footer() {
         <span className="text-text4" aria-hidden>·</span>
         <Link href="/keys" className="hover:text-text2 transition-colors">API Keys</Link>
         <span className="text-text4" aria-hidden>·</span>
+        <Link href="/webhooks" className="hover:text-text2 transition-colors">Webhooks</Link>
+        <span className="text-text4" aria-hidden>·</span>
         <Link href="/embed/configure" className="hover:text-text2 transition-colors">Embed</Link>
         <span className="text-text4" aria-hidden>·</span>
         <SubscribeBellButton />

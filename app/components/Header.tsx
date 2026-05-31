@@ -144,6 +144,12 @@ export default function Header({ status, metrics, loading, vesselCount }: Props)
             >
               API Keys
             </a>
+            <a
+              href="/webhooks"
+              className="hidden md:block text-[9px] font-mono text-text3 hover:text-text2 transition-colors uppercase tracking-[0.18em]"
+            >
+              Webhooks
+            </a>
             <SupportButton variant="header" />
           </div>
         </div>
