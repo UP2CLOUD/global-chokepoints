@@ -78,13 +78,13 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
       });
       const json = await res.json();
       if (!res.ok) {
-        setErrorMsg(json.error ?? 'Something went wrong. Please try again.');
+        setErrorMsg(json.error ?? t.subscribe.unknownError);
         setPhase('error');
         return;
       }
       setPhase(json.alreadyConfirmed ? 'already' : 'success');
     } catch {
-      setErrorMsg('Network error. Please check your connection.');
+      setErrorMsg(t.subscribe.networkError);
       setPhase('error');
     }
   }
@@ -110,7 +110,7 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
               {t.subscribe.title}
             </span>
           </div>
-          <button onClick={onClose} className="text-text3 hover:text-text transition-colors" aria-label="Close">
+          <button onClick={onClose} className="text-text3 hover:text-text transition-colors" aria-label={t.subscribe.closeLabel}>
             <X size={16} />
           </button>
         </div>
