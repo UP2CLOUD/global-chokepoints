@@ -224,6 +224,90 @@ const spec = {
       },
     },
 
+    '/v1/history': {
+      get: {
+        operationId: 'getHistory',
+        tags: ['Public v1'],
+        summary: 'Paginated log of strait status changes',
+        description:
+          'Returns a reverse-chronological list of recorded state transitions written by the alert-check cron ' +
+          'whenever the strait status changes. Supports filtering by state and ISO timestamp. Cache TTL: 60 s.',
+        security: [{}],
+        parameters: [
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'integer', minimum: 1, maximum: 200, default: 50 },
+            description: 'Maximum number of records to return (1–200).',
+          },
+          {
+            name: 'since',
+            in: 'query',
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Return only records after this ISO 8601 timestamp.',
+          },
+          {
+            name: 'state',
+            in: 'query',
+            schema: { type: 'string', enum: ['OPEN', 'CLOSED', 'PARTIALLY_CLOSED', 'DISRUPTED'] },
+            description: 'Filter to a specific strait state.',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Status history records',
+            headers: {
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60' } },
+              'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
+            },
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok:          { type: 'boolean' },
+                    count:       { type: 'integer' },
+                    limit:       { type: 'integer' },
+                    since:       { type: 'string', format: 'date-time' },
+                    stateFilter: { type: 'string' },
+                    items: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id:            { type: 'string' },
+                          state:         { type: 'string', enum: ['OPEN', 'CLOSED', 'PARTIALLY_CLOSED', 'DISRUPTED'] },
+                          previousState: { type: 'string', nullable: true },
+                          tension:       { type: 'integer', nullable: true, minimum: 0, maximum: 100 },
+                          confidence:    { type: 'number', nullable: true, minimum: 0, maximum: 1 },
+                          reason:        { type: 'string', nullable: true },
+                          timestamp:     { type: 'string', format: 'date-time' },
+                        },
+                        required: ['id', 'state', 'timestamp'],
+                      },
+                    },
+                    license: { type: 'string' },
+                  },
+                },
+                example: {
+                  ok: true,
+                  count: 2,
+                  limit: 50,
+                  items: [
+                    { id: 'hist_abc123', state: 'OPEN', previousState: 'PARTIALLY_CLOSED', tension: 34, confidence: 0.88, reason: 'Tensions eased following diplomatic talks.', timestamp: '2026-05-30T12:00:00Z' },
+                    { id: 'hist_def456', state: 'PARTIALLY_CLOSED', previousState: 'OPEN', tension: 67, confidence: 0.72, reason: 'IRGC exercises reported near Strait entrance.', timestamp: '2026-05-29T08:15:00Z' },
+                  ],
+                  license: 'CC-BY-4.0 (attribution required: "Global Chokepoints Alerts")',
+                },
+              },
+            },
+          },
+          '400': { description: 'Invalid state filter value' },
+          '500': { description: 'Database query error' },
+        },
+      },
+    },
+
     '/v1/metrics': {
       get: {
         operationId: 'getMetrics',
