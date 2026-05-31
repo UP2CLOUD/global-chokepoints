@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
 
     const result = await sendEmail({
       to:      sub.email,
-      subject: `Strait of Hormuz is now ${label} — Global Chokepoints Alerts`,
+      subject: `[Alert] Strait of Hormuz is now ${label} — Global Chokepoints`,
       html,
     });
 

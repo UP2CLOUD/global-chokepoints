@@ -84,10 +84,10 @@ export function alertEmailHtml(opts: {
   const statusWord = isOpen ? 'OPEN ✓' : isDisrupted ? 'DISRUPTED ⚠' : 'CLOSED ✗';
   const prevWord = opts.previousStatus === 'OPEN' ? 'Open' : opts.previousStatus === 'PARTIALLY_CLOSED' ? 'Disrupted' : 'Closed';
   const title = isOpen
-    ? 'Strait of Hormuz is now Open'
+    ? 'Strait of Hormuz — Traffic Restored'
     : isDisrupted
-    ? 'Strait of Hormuz — Disruption Detected'
-    : 'Strait of Hormuz Closure Alert';
+    ? 'Strait of Hormuz — Disruption Alert'
+    : 'Strait of Hormuz — Closure Alert';
 
   const officialSourcesBlock = isOpen ? `
     <div style="margin:20px 0;padding:16px;background:#0B1A14;border:1px solid #10B98140;border-radius:6px;">
