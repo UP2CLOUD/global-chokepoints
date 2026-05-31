@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PortWatchDay } from '@/app/api/portwatch/route';
 import { useLang } from './LangContext';
+import { fmt } from '@/app/lib/utils';
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 
 // Chart layout constants shared between draw effect and mouse handler
@@ -169,7 +170,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 // ── Main component ────────────────────────────────────────────
 export default function TransitChart() {
-  const { lang } = useLang();
+  const { t } = useLang();
   const [data, setData] = useState<TransitData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<CPKey>('hormuz');
@@ -212,7 +213,7 @@ export default function TransitChart() {
   if (!data) {
     return (
       <div className="flex items-center justify-center h-36 text-text3 text-[11px] font-mono">
-        {lang === 'en' ? 'Transit data unavailable' : 'Dados de trânsito indisponíveis'}
+        {t.transit.unavailable}
       </div>
     );
   }
@@ -228,7 +229,7 @@ export default function TransitChart() {
         {/* Tab bar */}
         <TabBar activeTab={activeTab} onSelect={setActiveTab} />
         <div className="flex items-center justify-center h-36 text-text3 text-[11px] font-mono border border-divider">
-          {lang === 'en' ? 'No data for this chokepoint' : 'Sem dados para este ponto'}
+          {t.transit.noData}
         </div>
       </div>
     );
@@ -238,10 +239,10 @@ export default function TransitChart() {
   const baseline = baselineDaily || STATIC_BASELINES[activeTab];
 
   const pctText = vsBaseline < 0
-    ? `${Math.abs(vsBaseline)}% ${lang === 'en' ? 'below' : 'abaixo'} avg`
+    ? `${Math.abs(vsBaseline)}% ${t.transit.below} avg`
     : vsBaseline > 0
-    ? `${vsBaseline}% ${lang === 'en' ? 'above' : 'acima'} avg`
-    : lang === 'en' ? 'at baseline' : 'na linha base';
+    ? `${vsBaseline}% ${t.transit.above} avg`
+    : t.transit.atBaseline;
   const pctColor = vsBaseline < -50 ? 'text-danger' : vsBaseline < -20 ? 'text-caution' : vsBaseline > 10 ? 'text-ok' : 'text-text3';
 
   const TrendIcon = vsBaseline < -5 ? TrendingDown : vsBaseline > 5 ? TrendingUp : Minus;
@@ -281,20 +282,20 @@ export default function TransitChart() {
       <div className="flex items-start justify-between mb-1 mt-3">
         <div>
           <div className="text-[11px] font-mono text-text3 uppercase tracking-wider mb-0.5">
-            {lang === 'en' ? 'Today' : 'Hoje'}
+            {t.transit.today}
           </div>
           <div className="flex items-baseline gap-2">
             <span className={`text-2xl font-black font-mono ${todayTotal === 0 ? 'text-danger' : todayTotal < baseline * 0.3 ? 'text-caution' : 'text-ok'}`}>
               {todayTotal}
             </span>
             <span className="text-[11px] text-text3 font-mono">
-              {lang === 'en' ? 'vessels' : 'navios'}
+              {t.transit.vessels}
             </span>
           </div>
         </div>
         <div className="text-right">
           <div className="text-[10px] font-mono text-text4 mb-0.5">
-            {lang === 'en' ? '7d avg' : 'média 7d'}
+            {t.transit.sevenDayAvg}
           </div>
           <div className="text-[13px] font-mono font-semibold text-text2">
             {sevenDayAvg.toFixed(1)}
@@ -313,12 +314,10 @@ export default function TransitChart() {
       <div className="flex items-center justify-between mt-1">
         <div className="flex items-center gap-2 text-[9px] font-mono text-text4">
           <span className="inline-block w-3 h-[2px] bg-amber-400/50" />
-          {lang === 'en'
-            ? `pre-2026 baseline (~${baseline}/day)`
-            : `linha base pré-2026 (~${baseline}/dia)`}
+          {fmt(t.transit.baselineLabel, { n: baseline })}
         </div>
         <span className="text-[9px] font-mono text-text4">
-          {lang === 'en' ? 'as of' : 'em'} {latestDate} · IMF PortWatch
+          {t.transit.asOf} {latestDate} · IMF PortWatch
         </span>
       </div>
     </div>
