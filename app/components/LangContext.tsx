@@ -22,7 +22,7 @@ const RTL_LANGS = new Set<Lang>(['ar']);
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('en');
 
-  // Restore saved language preference on mount
+  // Restore saved language preference, or auto-detect from browser on first visit
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
@@ -30,9 +30,19 @@ export function LangProvider({ children }: { children: ReactNode }) {
         setLangState(saved);
         document.documentElement.lang = HTML_LANG[saved];
         document.documentElement.dir = RTL_LANGS.has(saved) ? 'rtl' : 'ltr';
+        return;
+      }
+      // No saved preference — detect from browser
+      const preferred = [...(navigator.languages ?? []), navigator.language]
+        .flatMap(l => [l?.toLowerCase(), l?.split('-')[0]?.toLowerCase()])
+        .find(l => l && VALID_LANGS.includes(l as Lang)) as Lang | undefined;
+      if (preferred) {
+        setLangState(preferred);
+        document.documentElement.lang = HTML_LANG[preferred];
+        document.documentElement.dir = RTL_LANGS.has(preferred) ? 'rtl' : 'ltr';
       }
     } catch {
-      // localStorage may be blocked in some environments
+      // localStorage or navigator may be blocked in some environments
     }
   }, []);
 
