@@ -111,7 +111,7 @@ function DashboardContent() {
       </section>
 
       {/* ── BRIEFING DOCUMENT ────────────────────────────────── */}
-      <main className="max-w-[1440px] mx-auto px-4 md:px-8 pb-0">
+      <main id="main-content" className="max-w-[1440px] mx-auto px-4 md:px-8 pb-0">
 
         {/* Status Dispatch */}
         <section className="py-4 md:py-6 animate-fadeInUp" style={{ animationDelay: '0.05s' }}>

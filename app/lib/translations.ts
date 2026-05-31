@@ -255,6 +255,7 @@ export const translations = {
       selectLanguage: 'Select language',
       scroll: 'Scroll',
       scrollAriaLabel: 'Scroll to content',
+      skipToMain: 'Skip to main content',
       supportedBy: 'Supported by',
     },
     dashboard: {
@@ -638,6 +639,7 @@ export const translations = {
       selectLanguage: 'Selecionar idioma',
       scroll: 'Rolar',
       scrollAriaLabel: 'Rolar para o conteúdo',
+      skipToMain: 'Ir para o conteúdo principal',
       supportedBy: 'Apoiado por',
     },
     dashboard: {
@@ -1021,6 +1023,7 @@ export const translations = {
       selectLanguage: 'Seleccionar idioma',
       scroll: 'Desplazar',
       scrollAriaLabel: 'Desplazarse al contenido',
+      skipToMain: 'Ir al contenido principal',
       supportedBy: 'Patrocinado por',
     },
     dashboard: {
@@ -1404,6 +1407,7 @@ export const translations = {
       selectLanguage: 'Choisir la langue',
       scroll: 'Défiler',
       scrollAriaLabel: 'Défiler vers le contenu',
+      skipToMain: 'Aller au contenu principal',
       supportedBy: 'Soutenu par',
     },
     dashboard: {
@@ -1787,6 +1791,7 @@ export const translations = {
       selectLanguage: 'Seleziona lingua',
       scroll: 'Scorri',
       scrollAriaLabel: 'Scorri al contenuto',
+      skipToMain: 'Vai al contenuto principale',
       supportedBy: 'Supportato da',
     },
     dashboard: {
@@ -2170,6 +2175,7 @@ export const translations = {
       selectLanguage: 'Выбрать язык',
       scroll: 'Прокрутить',
       scrollAriaLabel: 'Прокрутить к содержанию',
+      skipToMain: 'Перейти к основному содержанию',
       supportedBy: 'При поддержке',
     },
     dashboard: {
@@ -2553,6 +2559,7 @@ export const translations = {
       selectLanguage: 'Sprache wählen',
       scroll: 'Scrollen',
       scrollAriaLabel: 'Zum Inhalt scrollen',
+      skipToMain: 'Zum Hauptinhalt springen',
       supportedBy: 'Unterstützt von',
     },
     subscribe: {
@@ -2906,6 +2913,7 @@ export const translations = {
       selectLanguage: '选择语言',
       scroll: '滚动',
       scrollAriaLabel: '滚动至内容',
+      skipToMain: '跳至主要内容',
       supportedBy: '由…支持',
     },
     subscribe: {
@@ -3259,6 +3267,7 @@ export const translations = {
       selectLanguage: '言語を選択',
       scroll: 'スクロール',
       scrollAriaLabel: 'コンテンツへスクロール',
+      skipToMain: 'メインコンテンツへスキップ',
       supportedBy: '提供：',
     },
     subscribe: {
@@ -3612,6 +3621,7 @@ export const translations = {
       selectLanguage: 'اختر اللغة',
       scroll: 'تمرير',
       scrollAriaLabel: 'التمرير إلى المحتوى',
+      skipToMain: 'التخطي إلى المحتوى الرئيسي',
       supportedBy: 'بدعم من',
     },
     subscribe: {

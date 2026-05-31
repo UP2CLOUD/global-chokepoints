@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono, IBM_Plex_Mono } from 'next/font/google';
 import AdSenseLoader from '@/app/components/AdSenseLoader';
 import { LangProvider } from '@/app/components/LangContext';
 import PWAInit from '@/app/components/PWAInit';
+import SkipLink from '@/app/components/SkipLink';
 import './globals.css';
 
 const inter = Inter({
@@ -108,6 +109,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
         />
         <LangProvider>
+          <SkipLink />
           {children}
           <PWAInit />
         </LangProvider>
