@@ -365,6 +365,15 @@ export const translations = {
     now: 'now',
     hoursAgo: 'h ago',
     daysAgo: 'd ago',
+    notFound: {
+      message: 'This route does not exist. The strait is still being monitored.',
+      liveStatus: 'Live Status',
+    },
+    error: {
+      title: 'SYSTEM ERROR',
+      message: 'Something went wrong. The monitoring systems are still running.',
+      retry: 'Try Again',
+    },
     pwa: {
       title: 'Install App',
       description: 'Add Global Chokepoints Alerts to your home screen for offline access and instant alerts.',
@@ -739,6 +748,15 @@ export const translations = {
     now: 'agora',
     hoursAgo: 'h atrás',
     daysAgo: 'd atrás',
+    notFound: {
+      message: 'Esta rota não existe. O estreito continua sendo monitorado.',
+      liveStatus: 'Status ao Vivo',
+    },
+    error: {
+      title: 'ERRO DO SISTEMA',
+      message: 'Algo correu mal. Os sistemas de monitoramento ainda estão a funcionar.',
+      retry: 'Tentar Novamente',
+    },
     pwa: {
       title: 'Instalar App',
       description: 'Adicione o Global Chokepoints Alerts à sua tela inicial para acesso offline e alertas instantâneos.',
@@ -1113,6 +1131,15 @@ export const translations = {
     now: 'ahora',
     hoursAgo: 'h atrás',
     daysAgo: 'd atrás',
+    notFound: {
+      message: 'Esta ruta no existe. El estrecho sigue siendo monitorizado.',
+      liveStatus: 'Estado en Vivo',
+    },
+    error: {
+      title: 'ERROR DEL SISTEMA',
+      message: 'Algo salió mal. Los sistemas de monitoreo siguen funcionando.',
+      retry: 'Intentar de Nuevo',
+    },
     pwa: {
       title: 'Instalar App',
       description: 'Agrega Global Chokepoints Alerts a tu pantalla de inicio para acceso sin conexión y alertas instantáneas.',
@@ -1487,6 +1514,15 @@ export const translations = {
     now: 'maintenant',
     hoursAgo: 'h avant',
     daysAgo: 'j avant',
+    notFound: {
+      message: "Cette route n'existe pas. Le détroit est toujours surveillé.",
+      liveStatus: 'Statut en Direct',
+    },
+    error: {
+      title: 'ERREUR SYSTÈME',
+      message: 'Une erreur est survenue. Les systèmes de surveillance fonctionnent toujours.',
+      retry: 'Réessayer',
+    },
     pwa: {
       title: "Installer l'app",
       description: "Ajoutez Global Chokepoints Alerts à votre écran d'accueil pour un accès hors ligne et des alertes instantanées.",
@@ -1861,6 +1897,15 @@ export const translations = {
     now: 'adesso',
     hoursAgo: 'h fa',
     daysAgo: 'g fa',
+    notFound: {
+      message: 'Questa route non esiste. Lo stretto è ancora monitorato.',
+      liveStatus: 'Stato in Tempo Reale',
+    },
+    error: {
+      title: 'ERRORE DI SISTEMA',
+      message: 'Qualcosa è andato storto. I sistemi di monitoraggio funzionano ancora.',
+      retry: 'Riprova',
+    },
     pwa: {
       title: 'Installa App',
       description: "Aggiungi Global Chokepoints Alerts alla tua schermata Home per accesso offline e avvisi istantanei.",
@@ -2235,6 +2280,15 @@ export const translations = {
     now: 'сейчас',
     hoursAgo: 'ч назад',
     daysAgo: 'д назад',
+    notFound: {
+      message: 'Этот маршрут не существует. Пролив по-прежнему отслеживается.',
+      liveStatus: 'Текущий Статус',
+    },
+    error: {
+      title: 'СИСТЕМНАЯ ОШИБКА',
+      message: 'Что-то пошло не так. Системы мониторинга продолжают работать.',
+      retry: 'Повторить',
+    },
     pwa: {
       title: 'Приложение',
       description: 'Добавьте Global Chokepoints Alerts на главный экран для работы офлайн и мгновенных уведомлений.',
@@ -2596,6 +2650,15 @@ export const translations = {
     now: 'jetzt',
     hoursAgo: 'Std. vor',
     daysAgo: 'T. vor',
+    notFound: {
+      message: 'Diese Route existiert nicht. Die Meerenge wird weiterhin überwacht.',
+      liveStatus: 'Live-Status',
+    },
+    error: {
+      title: 'SYSTEMFEHLER',
+      message: 'Etwas ist schiefgelaufen. Die Überwachungssysteme laufen noch.',
+      retry: 'Erneut versuchen',
+    },
     pwa: {
       title: 'App installieren',
       description: 'Fügen Sie Global Chokepoints Alerts zu Ihrem Startbildschirm hinzu für Offline-Zugang und sofortige Benachrichtigungen.',
@@ -2940,6 +3003,15 @@ export const translations = {
     now: '刚刚',
     hoursAgo: '小时前',
     daysAgo: '天前',
+    notFound: {
+      message: '该路径不存在。霍尔木兹海峡仍在监控中。',
+      liveStatus: '实时状态',
+    },
+    error: {
+      title: '系统错误',
+      message: '出现错误。监控系统仍在运行中。',
+      retry: '重试',
+    },
     pwa: {
       title: '安装应用',
       description: '将Global Chokepoints Alerts添加到主屏幕，以便离线访问和即时提醒。',
@@ -3284,6 +3356,15 @@ export const translations = {
     now: '今',
     hoursAgo: '時間前',
     daysAgo: '日前',
+    notFound: {
+      message: 'このルートは存在しません。海峡は引き続き監視されています。',
+      liveStatus: 'ライブ状況',
+    },
+    error: {
+      title: 'システムエラー',
+      message: 'エラーが発生しました。監視システムは稼働中です。',
+      retry: '再試行',
+    },
     pwa: {
       title: 'アプリをインストール',
       description: 'Global Chokepoints Alertsをホーム画面に追加してオフライン利用と即時アラートを受け取りましょう。',
@@ -3628,6 +3709,15 @@ export const translations = {
     now: 'الآن',
     hoursAgo: 'س مضت',
     daysAgo: 'ي مضت',
+    notFound: {
+      message: 'هذا المسار غير موجود. المضيق لا يزال تحت المراقبة.',
+      liveStatus: 'الحالة المباشرة',
+    },
+    error: {
+      title: 'خطأ في النظام',
+      message: 'حدث خطأ ما. أنظمة المراقبة لا تزال تعمل.',
+      retry: 'إعادة المحاولة',
+    },
     pwa: {
       title: 'تثبيت التطبيق',
       description: 'أضف Global Chokepoints Alerts إلى شاشتك الرئيسية للوصول دون اتصال والتنبيهات الفورية.',
