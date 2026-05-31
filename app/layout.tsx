@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono, IBM_Plex_Mono } from 'next/font/google';
 import AdSenseLoader from '@/app/components/AdSenseLoader';
 import { LangProvider } from '@/app/components/LangContext';
+import PWAInit from '@/app/components/PWAInit';
 import './globals.css';
 
 const inter = Inter({
@@ -88,12 +89,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link
-          rel="alternate"
-          type="application/rss+xml"
-          title="Global Chokepoints Alerts — event feed"
-          href="/feed.xml"
-        />
+        <link rel="alternate" type="application/rss+xml" title="Global Chokepoints Alerts — event feed" href="/feed.xml" />
+        <link rel="alternate" type="application/rss+xml" title="Global Chokepoints Alerts — status changes" href="/status-feed.xml" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body
         className={`antialiased ${inter.variable} ${jetbrainsMono.variable} ${ibmPlexMono.variable}`}
@@ -105,7 +107,10 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
         />
-        <LangProvider>{children}</LangProvider>
+        <LangProvider>
+          {children}
+          <PWAInit />
+        </LangProvider>
       </body>
       {/* AdSense loaded client-side via useEffect to avoid data-nscript hydration error #418 */}
       {process.env.NEXT_PUBLIC_ADS_ENABLED === 'true' && <AdSenseLoader />}

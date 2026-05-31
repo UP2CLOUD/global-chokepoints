@@ -5,6 +5,7 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { deriveStatus } from '@/app/lib/api';
+import { getD1 } from '@/app/lib/db';
 
 export const revalidate = 30;
 export const dynamic = 'force-dynamic';
@@ -34,6 +35,30 @@ export async function GET(req: NextRequest) {
   const brentPct = brent?.changePercent ?? null;
 
   const status = deriveStatus(timeline, brentPct, 'en');
+
+  // Optional history query: ?history=7d (1–30 days)
+  const historyParam = req.nextUrl.searchParams.get('history');
+  let history: { state: string; tension: number | null; reason: string | null; timestamp: string }[] = [];
+  if (historyParam) {
+    const days  = Math.min(30, Math.max(1, parseInt(historyParam) || 7));
+    const since = Math.floor(Date.now() / 1000) - days * 86400;
+    const db    = getD1();
+    if (db) {
+      try {
+        const { results } = await db
+          .prepare('SELECT state, tension, reason, created_at FROM status_history WHERE created_at >= ? ORDER BY created_at DESC')
+          .bind(since)
+          .all<{ state: string; tension: number | null; reason: string | null; created_at: number }>();
+        history = (results ?? []).map(r => ({
+          state: r.state,
+          tension: r.tension,
+          reason: r.reason,
+          timestamp: new Date(r.created_at * 1000).toISOString(),
+        }));
+      } catch { /* table may not exist yet */ }
+    }
+  }
+
   const payload = {
     state: status.state,
     tensionLevel: status.tensionLevel,
@@ -50,6 +75,7 @@ export async function GET(req: NextRequest) {
     sources: ['Yahoo Finance', 'GDELT', 'CNN', 'BBC', 'Al Jazeera', 'Reuters'],
     docs: `${origin}/methodology`,
     license: 'CC-BY-4.0 (attribution required: "Global Chokepoints Alerts")',
+    ...(historyParam ? { history } : {}),
   };
 
   return NextResponse.json(payload, {

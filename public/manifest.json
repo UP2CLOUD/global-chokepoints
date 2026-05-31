@@ -1,0 +1,18 @@
+{
+  "name": "Global Chokepoints Alerts",
+  "short_name": "GCA",
+  "description": "Real-time maritime chokepoint intelligence — Hormuz, Red Sea, Suez, Panama",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070B11",
+  "theme_color": "#070B11",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Live Status", "url": "/", "description": "Current strait status" },
+    { "name": "API Docs",    "url": "/docs", "description": "Public API reference" },
+    { "name": "Get API Key", "url": "/keys", "description": "Issue an API key" }
+  ]
+}
