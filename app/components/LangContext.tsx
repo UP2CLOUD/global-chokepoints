@@ -22,9 +22,20 @@ const RTL_LANGS = new Set<Lang>(['ar']);
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('en');
 
-  // Restore saved language preference, or auto-detect from browser on first visit
+  // Language resolution priority: ?lang= URL param > localStorage > navigator.languages > 'en'
   useEffect(() => {
     try {
+      // 1. Explicit ?lang= URL parameter — apply and persist as new preference
+      const urlParam = new URLSearchParams(window.location.search).get('lang') as Lang | null;
+      if (urlParam && VALID_LANGS.includes(urlParam)) {
+        setLangState(urlParam);
+        document.documentElement.lang = HTML_LANG[urlParam];
+        document.documentElement.dir = RTL_LANGS.has(urlParam) ? 'rtl' : 'ltr';
+        localStorage.setItem(STORAGE_KEY, urlParam);
+        return;
+      }
+
+      // 2. Saved localStorage preference
       const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
       if (saved && VALID_LANGS.includes(saved)) {
         setLangState(saved);
@@ -32,7 +43,8 @@ export function LangProvider({ children }: { children: ReactNode }) {
         document.documentElement.dir = RTL_LANGS.has(saved) ? 'rtl' : 'ltr';
         return;
       }
-      // No saved preference — detect from browser
+
+      // 3. Auto-detect from browser language
       const preferred = [...(navigator.languages ?? []), navigator.language]
         .flatMap(l => [l?.toLowerCase(), l?.split('-')[0]?.toLowerCase()])
         .find(l => l && VALID_LANGS.includes(l as Lang)) as Lang | undefined;
