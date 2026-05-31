@@ -381,6 +381,14 @@ export const translations = {
       install: 'Install',
       notNow: 'Not now',
     },
+    alert: {
+      criticalTitle: 'STRAIT CLOSED',
+      criticalBody: 'The Strait of Hormuz is currently closed to maritime traffic. Significant disruption to global oil supply expected.',
+      warningTitle: 'TRANSIT DISRUPTED',
+      warningBody: 'The Strait of Hormuz is experiencing disruptions. Elevated risk to maritime transit and oil supply.',
+      dismiss: 'Dismiss',
+      learnMore: 'Details',
+    },
   },
 
   pt: {
@@ -764,6 +772,14 @@ export const translations = {
       description: 'Adicione o Global Chokepoints Alerts à sua tela inicial para acesso offline e alertas instantâneos.',
       install: 'Instalar',
       notNow: 'Agora não',
+    },
+    alert: {
+      criticalTitle: 'ESTREITO FECHADO',
+      criticalBody: 'O Estreito de Ormuz encontra-se atualmente fechado ao tráfego marítimo. Prevê-se uma disrupção significativa no fornecimento global de petróleo.',
+      warningTitle: 'TRÂNSITO PERTURBADO',
+      warningBody: 'O Estreito de Ormuz está a sofrer perturbações. Risco elevado para o trânsito marítimo e o fornecimento de petróleo.',
+      dismiss: 'Dispensar',
+      learnMore: 'Detalhes',
     },
   },
 
@@ -1149,6 +1165,14 @@ export const translations = {
       install: 'Instalar',
       notNow: 'Ahora no',
     },
+    alert: {
+      criticalTitle: 'ESTRECHO CERRADO',
+      criticalBody: 'El Estrecho de Ormuz está actualmente cerrado al tráfico marítimo. Se espera una interrupción significativa en el suministro mundial de petróleo.',
+      warningTitle: 'TRÁNSITO PERTURBADO',
+      warningBody: 'El Estrecho de Ormuz está experimentando perturbaciones. Riesgo elevado para el tránsito marítimo y el suministro de petróleo.',
+      dismiss: 'Descartar',
+      learnMore: 'Detalles',
+    },
   },
 
   fr: {
@@ -1532,6 +1556,14 @@ export const translations = {
       description: "Ajoutez Global Chokepoints Alerts à votre écran d'accueil pour un accès hors ligne et des alertes instantanées.",
       install: 'Installer',
       notNow: 'Pas maintenant',
+    },
+    alert: {
+      criticalTitle: 'DÉTROIT FERMÉ',
+      criticalBody: "Le Détroit d'Ormuz est actuellement fermé au trafic maritime. Une perturbation significative de l'approvisionnement mondial en pétrole est attendue.",
+      warningTitle: 'TRANSIT PERTURBÉ',
+      warningBody: "Le Détroit d'Ormuz connaît des perturbations. Risque élevé pour le transit maritime et l'approvisionnement en pétrole.",
+      dismiss: 'Ignorer',
+      learnMore: 'Détails',
     },
   },
 
@@ -1917,6 +1949,14 @@ export const translations = {
       install: 'Installa',
       notNow: 'Non ora',
     },
+    alert: {
+      criticalTitle: 'STRETTO CHIUSO',
+      criticalBody: "Lo Stretto di Hormuz è attualmente chiuso al traffico marittimo. Si prevede una significativa interruzione dell'approvvigionamento globale di petrolio.",
+      warningTitle: 'TRANSITO PERTURBATO',
+      warningBody: "Lo Stretto di Hormuz sta subendo interruzioni. Rischio elevato per il transito marittimo e l'approvvigionamento di petrolio.",
+      dismiss: 'Ignora',
+      learnMore: 'Dettagli',
+    },
   },
 
   ru: {
@@ -2301,6 +2341,14 @@ export const translations = {
       install: 'Установить',
       notNow: 'Не сейчас',
     },
+    alert: {
+      criticalTitle: 'ПРОЛИВ ЗАКРЫТ',
+      criticalBody: 'Ормузский пролив в настоящее время закрыт для морского судоходства. Ожидается значительное нарушение мировых поставок нефти.',
+      warningTitle: 'ТРАНЗИТ НАРУШЕН',
+      warningBody: 'В Ормузском проливе наблюдаются перебои. Повышенный риск для морского транзита и поставок нефти.',
+      dismiss: 'Закрыть',
+      learnMore: 'Подробнее',
+    },
   },
 
   de: {
@@ -2672,6 +2720,14 @@ export const translations = {
       install: 'Installieren',
       notNow: 'Nicht jetzt',
     },
+    alert: {
+      criticalTitle: 'STRASSE GESPERRT',
+      criticalBody: 'Die Straße von Hormus ist derzeit für den Schiffsverkehr gesperrt. Es werden erhebliche Störungen der globalen Ölversorgung erwartet.',
+      warningTitle: 'TRANSIT GESTÖRT',
+      warningBody: 'Die Straße von Hormus ist von Störungen betroffen. Erhöhtes Risiko für den Seeverkehr und die Ölversorgung.',
+      dismiss: 'Schließen',
+      learnMore: 'Details',
+    },
   },
 
   zh: {
@@ -3025,6 +3081,14 @@ export const translations = {
       description: '将Global Chokepoints Alerts添加到主屏幕，以便离线访问和即时提醒。',
       install: '安装',
       notNow: '暂不',
+    },
+    alert: {
+      criticalTitle: '海峡封闭',
+      criticalBody: '霍尔木兹海峡目前已对海上交通关闭。全球石油供应将受到重大影响。',
+      warningTitle: '过境受阻',
+      warningBody: '霍尔木兹海峡正在经历干扰。海上运输和石油供应面临较高风险。',
+      dismiss: '关闭',
+      learnMore: '详情',
     },
   },
 
@@ -3380,6 +3444,14 @@ export const translations = {
       install: 'インストール',
       notNow: '後で',
     },
+    alert: {
+      criticalTitle: '海峡閉鎖',
+      criticalBody: 'ホルムズ海峡は現在、海上交通に対して閉鎖されています。世界の石油供給に重大な影響が見込まれます。',
+      warningTitle: '通行が混乱',
+      warningBody: 'ホルムズ海峡で混乱が発生しています。海上通行と石油供給にリスクが高まっています。',
+      dismiss: '閉じる',
+      learnMore: '詳細',
+    },
   },
 
   ar: {
@@ -3733,6 +3805,14 @@ export const translations = {
       description: 'أضف Global Chokepoints Alerts إلى شاشتك الرئيسية للوصول دون اتصال والتنبيهات الفورية.',
       install: 'تثبيت',
       notNow: 'ليس الآن',
+    },
+    alert: {
+      criticalTitle: 'المضيق مغلق',
+      criticalBody: 'مضيق هرمز مغلق حاليًا أمام حركة الملاحة البحرية. ومن المتوقع حدوث اضطراب كبير في إمدادات النفط العالمية.',
+      warningTitle: 'العبور مضطرب',
+      warningBody: 'يشهد مضيق هرمز اضطرابات. مخاطر مرتفعة على العبور البحري وإمدادات النفط.',
+      dismiss: 'إغلاق',
+      learnMore: 'تفاصيل',
     },
   },
 } as const;
