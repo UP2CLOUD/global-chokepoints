@@ -161,10 +161,10 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
           <button
             onClick={copyCardLink}
             className="flex items-center gap-1.5 hover:text-text2 transition-colors uppercase tracking-[0.14em]"
-            aria-label="Copy card image link"
+            aria-label={t.hero.copyCard}
           >
             <Copy size={10} />
-            <span className="hidden sm:inline">{copied ? 'Copied' : 'Card'}</span>
+            <span className="hidden sm:inline">{copied ? t.hero.copied : t.hero.copyCard}</span>
           </button>
           <button
             onClick={shareStatus}
