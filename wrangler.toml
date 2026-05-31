@@ -18,7 +18,7 @@
 #   7. Deploy:             npm run deploy:cf
 # ============================================================
 
-name = "strait-of-hormuz-monitor"
+name = "global-chokepoints"
 pages_build_output_dir = ".vercel/output/static"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
@@ -29,6 +29,9 @@ binding = "DB"
 database_name = "strait-subscriptions"
 database_id = "27666582-3b79-4e35-bce0-961f37ea655a"
 
+# Migrations: npm run db:migrate (runs 0001 + 0002 against remote DB)
+# Local:      npm run db:migrate:local
+
 # ── Cloudflare KV — persistent API response cache ────────────
 [[kv_namespaces]]
 binding = "HORMUZ_KV"
@@ -36,5 +39,9 @@ id = "015d621e444a42d0a18a07bcb6dc0188"
 
 # ── Public environment variables ─────────────────────────────
 [vars]
-NEXT_PUBLIC_SITE_URL  = "https://strait-of-hormuz-monitor.pages.dev"
+NEXT_PUBLIC_SITE_URL = "https://global-chokepoints.pages.dev"
 NEXT_PUBLIC_ADS_ENABLED = "true"
+
+# ── Cron Trigger — alert check every 10 min ──────────────────
+[[triggers]]
+crons = ["*/10 * * * *"]

@@ -28,8 +28,12 @@ function getKV(): KVNamespace | null {
 // embeds. Auth is only required for non-GET methods, and even then only
 // when V1_API_KEY is configured. gca_* keys are validated + rate-limited via KV.
 export async function middleware(request: NextRequest) {
-  if (!request.nextUrl.pathname.startsWith('/v1/')) {
-    return NextResponse.next();
+  // X-Frame-Options: allow embedding only from /embed routes
+  const isEmbed = request.nextUrl.pathname === '/embed' || request.nextUrl.pathname.startsWith('/embed/');
+  if (!isEmbed && !request.nextUrl.pathname.startsWith('/v1/')) {
+    const res = NextResponse.next();
+    res.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    return res;
   }
 
   if (request.method === 'OPTIONS') {
@@ -100,5 +104,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/v1/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.svg|sw.js|manifest.json).*)'],
 };

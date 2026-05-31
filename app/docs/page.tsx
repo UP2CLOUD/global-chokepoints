@@ -178,16 +178,20 @@ function EndpointCard({
 
 // ── Nav items ──────────────────────────────────────────────────────────────────
 const NAV = [
-  { id: 'overview',   label: 'Overview' },
-  { id: 'auth',       label: 'Authentication' },
-  { id: 'public-api', label: 'Public v1 API' },
-  { id: 'status',     label: '  GET /v1/status' },
-  { id: 'events',     label: '  GET /v1/events' },
-  { id: 'metrics',    label: '  GET /v1/metrics' },
-  { id: 'feeds',      label: 'Data Feed Routes' },
-  { id: 'subscribe',  label: 'Subscriptions' },
-  { id: 'types',      label: 'Types reference' },
-  { id: 'openapi',    label: 'OpenAPI spec' },
+  { id: 'overview',       label: 'Overview' },
+  { id: 'auth',           label: 'Authentication' },
+  { id: 'public-api',     label: 'Public v1 API' },
+  { id: 'status',         label: '  GET /v1/status' },
+  { id: 'status-history', label: '  GET /v1/status?history' },
+  { id: 'events',         label: '  GET /v1/events' },
+  { id: 'metrics',        label: '  GET /v1/metrics' },
+  { id: 'feeds',          label: 'Data Feed Routes' },
+  { id: 'webhooks',       label: 'Webhooks' },
+  { id: 'badge',          label: '  GET /api/badge' },
+  { id: 'status-feed',    label: '  GET /status-feed.xml' },
+  { id: 'subscribe',      label: 'Subscriptions' },
+  { id: 'types',          label: 'Types reference' },
+  { id: 'openapi',        label: 'OpenAPI spec' },
 ];
 
 const SITE = SITE_URL;
@@ -406,6 +410,33 @@ console.log(data.reason);       // "Maritime traffic operational. ..."`}
             />
           </div>
 
+          {/* v1/status?history */}
+          <div id="status-history" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/v1/status?history=7d"
+              summary="Status history time-series"
+              badge={<SeverityPill level="info" label="60 s cache" />}
+              description="Returns a time-series of recorded strait status snapshots from D1, useful for charting tension trends. Supports up to 30 days of lookback."
+              params={[
+                { name: 'history', in: 'query', type: 'string', required: true, desc: 'Lookback window — e.g. 7d, 24h, 30d (max 30d)' },
+              ]}
+              responseFields={[
+                { name: 'history[].ts',           type: 'ISO 8601', desc: 'Snapshot timestamp' },
+                { name: 'history[].state',         type: 'enum',     desc: 'OPEN | PARTIALLY_CLOSED | CLOSED at that time' },
+                { name: 'history[].tensionIndex',  type: 'integer',  desc: '0–100 threat score recorded at that time' },
+                { name: 'count',                   type: 'integer',  desc: 'Number of snapshots returned' },
+              ]}
+              curlExample={`# Last 7 days of status history
+curl "${SITE}/v1/status?history=7d"
+
+# Last 24 hours
+curl "${SITE}/v1/status?history=24h"`}
+              jsExample={`const { history } = await fetch('${SITE}/v1/status?history=7d').then(r => r.json());
+history.forEach(snap => console.log(snap.ts, snap.state, snap.tensionIndex));`}
+            />
+          </div>
+
           {/* v1/events */}
           <div id="events" className="scroll-mt-20">
             <EndpointCard
@@ -517,6 +548,100 @@ if (weather) {
               </tbody>
             </table>
           </Section>
+
+          {/* Webhooks */}
+          <Section id="webhooks" title="Webhooks &amp; Utilities">
+            <p>
+              Register HTTP webhooks to receive a <Code>POST</Code> payload whenever the strait state changes.
+              The <Code>POST /api/keys</Code> endpoint issues API keys for rate-limited <Code>/v1/*</Code> access.
+              A static SVG badge and an RSS status-change feed are also available for embed and monitoring use-cases.
+            </p>
+            <div className="space-y-3 mt-2">
+              <EndpointCard
+                method="POST"
+                path="/api/webhooks"
+                summary="Register a webhook"
+                description="Creates a new webhook subscription. Returns the webhook id and a secret token — store both; the secret is only shown once and is required to verify or delete the webhook."
+                params={[
+                  { name: 'url',    in: 'body', type: 'string',   required: true,  desc: 'HTTPS URL that will receive POST payloads on state change' },
+                  { name: 'events', in: 'body', type: 'string[]', required: false, desc: 'Event types to subscribe to — defaults to ["status_change"]' },
+                ]}
+                responseFields={[
+                  { name: 'id',     type: 'string', desc: 'Webhook identifier (UUID)' },
+                  { name: 'secret', type: 'string', desc: 'HMAC signing secret — shown once, store securely' },
+                  { name: 'url',    type: 'string', desc: 'Registered callback URL' },
+                  { name: 'events', type: 'string[]', desc: 'Subscribed event types' },
+                ]}
+                curlExample={`curl -X POST ${SITE}/api/webhooks \\
+  -H "Content-Type: application/json" \\
+  -d '{"url": "https://your-server.example.com/hook"}'`}
+              />
+              <div className="text-[12px] text-text3 space-y-1">
+                <p>
+                  <Code>GET /api/webhooks/[id]</Code> — verify webhook registration (requires <Code>x-webhook-secret</Code> header)
+                </p>
+                <p>
+                  <Code>DELETE /api/webhooks/[id]</Code> — unregister webhook (requires <Code>x-webhook-secret</Code> header)
+                </p>
+                <p>
+                  <Code>POST /api/webhooks/[id]/test</Code> — send a test delivery to the registered URL (requires <Code>x-webhook-secret</Code> header)
+                </p>
+              </div>
+              <EndpointCard
+                method="POST"
+                path="/api/keys"
+                summary="Issue API key"
+                description="Issues a gca_* API key for rate-limited access to /v1/* endpoints. Keys are stored as SHA-256 hashes in KV and are validated by the middleware on each request."
+                params={[
+                  { name: 'label',     in: 'body', type: 'string',  required: false, desc: 'Human-readable label for this key' },
+                  { name: 'rateLimit', in: 'body', type: 'integer', required: false, desc: 'Max requests per day (default: 1000)' },
+                ]}
+                responseFields={[
+                  { name: 'key',       type: 'string',  desc: 'gca_* API key — shown once, store securely' },
+                  { name: 'id',        type: 'string',  desc: 'Key identifier' },
+                  { name: 'rateLimit', type: 'integer', desc: 'Daily request allowance' },
+                ]}
+                curlExample={`curl -X POST ${SITE}/api/keys \\
+  -H "Content-Type: application/json" \\
+  -d '{"label": "my-app", "rateLimit": 500}'`}
+              />
+            </div>
+          </Section>
+
+          {/* Badge */}
+          <div id="badge" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/api/badge"
+              summary="SVG status badge"
+              badge={<SeverityPill level="neutral" label="no cache" />}
+              description="Returns a dynamic SVG badge showing the current strait status and tension index. Suitable for embedding in READMEs, dashboards, or status pages via an <img> tag."
+              params={[
+                { name: 'style', in: 'query', type: 'string', desc: 'Badge style: flat (default) | flat-square | plastic' },
+              ]}
+              curlExample={`# Direct embed
+curl ${SITE}/api/badge -o badge.svg
+
+# Markdown embed
+![Strait Status](${SITE}/api/badge)`}
+            />
+          </div>
+
+          {/* Status feed */}
+          <div id="status-feed" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/status-feed.xml"
+              summary="RSS/Atom status change feed"
+              badge={<SeverityPill level="info" label="5 min cache" />}
+              description="An RSS 2.0 / Atom feed that publishes one entry per strait status change. Subscribe in any feed reader to receive push-style alerts when the state transitions between OPEN, PARTIALLY_CLOSED, and CLOSED."
+              curlExample={`# Fetch latest entries
+curl ${SITE}/status-feed.xml
+
+# Subscribe in curl-based polling
+curl -s ${SITE}/status-feed.xml | grep -oP '(?<=<title>)[^<]+'`}
+            />
+          </div>
 
           {/* Subscriptions */}
           <Section id="subscribe" title="Subscriptions">
