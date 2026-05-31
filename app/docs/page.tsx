@@ -665,15 +665,22 @@ const hotspots = chokepoints.filter(cp => cp.riskIndex >= 70);`}
               path="/api/badge"
               summary="SVG status badge"
               badge={<SeverityPill level="neutral" label="no cache" />}
-              description="Returns a dynamic SVG badge showing the current strait status and tension index. Suitable for embedding in READMEs, dashboards, or status pages via an <img> tag."
+              description="Returns a dynamic SVG badge showing the current status and risk index for any of the five tracked chokepoints. Suitable for embedding in READMEs, dashboards, or status pages via an <img> tag."
               params={[
-                { name: 'style', in: 'query', type: 'string', desc: 'Badge style: flat (default) | flat-square | plastic' },
+                { name: 'cp', in: 'query', type: 'enum', desc: 'Chokepoint slug: hormuz (default) | redsea | suez | panama | taiwan' },
               ]}
-              curlExample={`# Direct embed
+              curlExample={`# Hormuz (default)
 curl ${SITE}/api/badge -o badge.svg
 
-# Markdown embed
-![Strait Status](${SITE}/api/badge)`}
+# Red Sea
+curl "${SITE}/api/badge?cp=redsea" -o redsea-badge.svg
+
+# Markdown embed — all five chokepoints
+![Hormuz](${SITE}/api/badge)
+![Red Sea](${SITE}/api/badge?cp=redsea)
+![Suez](${SITE}/api/badge?cp=suez)
+![Panama](${SITE}/api/badge?cp=panama)
+![Taiwan](${SITE}/api/badge?cp=taiwan)`}
             />
           </div>
 
