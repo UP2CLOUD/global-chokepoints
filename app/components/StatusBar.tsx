@@ -3,30 +3,26 @@
 import { useEffect, useState } from 'react';
 import { Activity, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import { useLang } from './LangContext';
+import { LANG_LOCALE } from '@/app/lib/translations';
 
 type ProbeStatus = 'ok' | 'degraded' | 'down';
 type Probe = { key: string; label: string; status: ProbeStatus; latencyMs: number; httpStatus: number | null };
-type Health = { overall: ProbeStatus; probes: Probe[]; generatedAt: string };
+type BindingProbe = { available: boolean; latencyMs: number; error?: string };
+type Health = {
+  overall: ProbeStatus;
+  probes: Probe[];
+  bindings?: { d1?: BindingProbe; kv?: BindingProbe };
+  generatedAt: string;
+};
 
 const ICON: Record<ProbeStatus, JSX.Element> = {
-  ok: <CheckCircle2 size={12} className="text-ok" />,
+  ok:       <CheckCircle2 size={12} className="text-ok" />,
   degraded: <AlertTriangle size={12} className="text-caution" />,
-  down: <XCircle size={12} className="text-danger" />,
-};
-
-const OVERALL_LABEL_EN: Record<ProbeStatus, string> = {
-  ok: 'All feeds healthy',
-  degraded: 'Some feeds degraded',
-  down: 'Multiple feeds down',
-};
-const OVERALL_LABEL_PT: Record<ProbeStatus, string> = {
-  ok: 'Todos os feeds saudáveis',
-  degraded: 'Alguns feeds degradados',
-  down: 'Múltiplos feeds indisponíveis',
+  down:     <XCircle size={12} className="text-danger" />,
 };
 
 export default function StatusBar() {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const [health, setHealth] = useState<Health | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -48,9 +44,10 @@ export default function StatusBar() {
   }, []);
 
   const overall = health?.overall ?? 'ok';
-  const overallLabel = (lang === 'en' ? OVERALL_LABEL_EN : OVERALL_LABEL_PT)[overall];
+  const overallLabel = t.statusBar[overall];
+  const locale = LANG_LOCALE[lang];
   const time = health
-    ? new Date(health.generatedAt).toLocaleTimeString(lang === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
+    ? new Date(health.generatedAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
     : '—';
 
   const dotClass = overall === 'ok' ? 'bg-ok' : overall === 'degraded' ? 'bg-caution' : 'bg-danger';
@@ -75,7 +72,7 @@ export default function StatusBar() {
         <span className="text-text3" suppressHydrationWarning><Activity size={11} className="inline mr-1 -mt-0.5" />{time} UTC</span>
 
         <div className="ml-auto hidden md:flex items-center gap-3 text-text3">
-          <a href="/methodology" className="hover:text-cyan transition-colors duration-180">Methodology</a>
+          <a href="/methodology" className="hover:text-cyan transition-colors duration-180">{t.header.methodology}</a>
           <a href="/feed.xml" className="hover:text-cyan transition-colors duration-180">RSS</a>
           <a href="/v1/status" className="hover:text-cyan transition-colors duration-180">API</a>
         </div>
@@ -91,6 +88,28 @@ export default function StatusBar() {
                 <span className="ml-auto font-mono text-text3">{p.latencyMs}ms</span>
               </div>
             ))}
+            {health.bindings && (
+              <>
+                {health.bindings.d1 && (
+                  <div className="flex items-center gap-1.5 text-text2">
+                    {health.bindings.d1.available ? ICON.ok : ICON.down}
+                    <span className="truncate">D1 (database)</span>
+                    {health.bindings.d1.available && (
+                      <span className="ml-auto font-mono text-text3">{health.bindings.d1.latencyMs}ms</span>
+                    )}
+                  </div>
+                )}
+                {health.bindings.kv && (
+                  <div className="flex items-center gap-1.5 text-text2">
+                    {health.bindings.kv.available ? ICON.ok : ICON.down}
+                    <span className="truncate">KV (cache)</span>
+                    {health.bindings.kv.available && (
+                      <span className="ml-auto font-mono text-text3">{health.bindings.kv.latencyMs}ms</span>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}

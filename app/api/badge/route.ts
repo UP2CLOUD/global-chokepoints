@@ -32,7 +32,7 @@ function badge(state: string, tension: number): string {
 </svg>`;
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
   let state   = 'OPEN';
   let tension = 0;
