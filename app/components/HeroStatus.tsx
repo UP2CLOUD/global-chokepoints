@@ -169,7 +169,7 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
           <button
             onClick={shareStatus}
             className="flex items-center gap-1.5 hover:text-text2 transition-colors uppercase tracking-[0.14em]"
-            aria-label="Share current status"
+            aria-label={t.hero.share}
           >
             <Share2 size={10} />
             <span className="hidden sm:inline">{t.hero.share}</span>

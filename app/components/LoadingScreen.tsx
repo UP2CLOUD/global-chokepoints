@@ -8,7 +8,7 @@ export default function LoadingScreen() {
   return (
     <div
       role="status"
-      aria-label="Loading dashboard"
+      aria-label={t.loading}
       className="fixed inset-0 bg-bg flex flex-col items-center justify-center gap-4 z-[100]"
     >
       <div className="w-8 h-8 border-2 border-divider border-t-accent rounded-full animate-spin" aria-hidden />

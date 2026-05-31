@@ -142,13 +142,13 @@ export default function Header({ status, metrics, loading, vesselCount }: Props)
               href="/keys"
               className="hidden md:block text-[9px] font-mono text-text3 hover:text-text2 transition-colors uppercase tracking-[0.18em]"
             >
-              API Keys
+              {t.footer.apiKeys}
             </a>
             <a
               href="/webhooks"
               className="hidden md:block text-[9px] font-mono text-text3 hover:text-text2 transition-colors uppercase tracking-[0.18em]"
             >
-              Webhooks
+              {t.footer.webhooks}
             </a>
             <SupportButton variant="header" />
           </div>
