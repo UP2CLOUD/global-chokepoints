@@ -138,6 +138,12 @@ export default function Header({ status, metrics, loading, vesselCount }: Props)
             >
               {t.header.api}
             </a>
+            <a
+              href="/keys"
+              className="hidden md:block text-[9px] font-mono text-text3 hover:text-text2 transition-colors uppercase tracking-[0.18em]"
+            >
+              API Keys
+            </a>
             <SupportButton variant="header" />
           </div>
         </div>

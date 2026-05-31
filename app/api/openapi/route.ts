@@ -65,6 +65,8 @@ const spec = {
     { name: 'Public v1', description: 'CC-BY-4.0 licensed, CORS-open endpoints for partners and embeds' },
     { name: 'Data feeds', description: 'Internal feed routes polled by the dashboard' },
     { name: 'Subscriptions', description: 'Email alert opt-in / opt-out' },
+    { name: 'Webhooks', description: 'Register HTTPS endpoints for status change push notifications' },
+    { name: 'API Keys', description: 'Self-serve gca_* key issuance' },
   ],
   paths: {
     '/v1/status': {
@@ -76,6 +78,14 @@ const spec = {
           'Returns the computed operational state, tension level (0–100 threat score), ' +
           'confidence, and the driving reason string. Refreshed every 30 s at the edge.',
         security: [{}],
+        parameters: [
+          {
+            name: 'history',
+            in: 'query',
+            schema: { type: 'string', example: '7d' },
+            description: 'Return up to N days of status history (e.g. 7d, 30d). Adds a history[] array to the response.',
+          },
+        ],
         responses: {
           '200': {
             description: 'Strait status',
@@ -440,6 +450,61 @@ const spec = {
               },
             },
           },
+        },
+      },
+    },
+
+    '/api/webhooks': {
+      post: {
+        operationId: 'registerWebhook',
+        summary: 'Register a webhook',
+        description: 'Register an HTTPS endpoint to receive HMAC-SHA256-signed status change notifications.',
+        tags: ['Webhooks'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['url'],
+                properties: {
+                  url:    { type: 'string', format: 'uri', description: 'HTTPS endpoint URL' },
+                  events: { type: 'string', default: 'status_change', description: 'Comma-separated event types' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Webhook registered. Store the returned secret — it is used to verify HMAC-SHA256 signatures.' },
+          '400': { description: 'Invalid URL or missing required fields' },
+          '503': { description: 'D1 database not available' },
+        },
+      },
+    },
+
+    '/api/keys': {
+      post: {
+        operationId: 'issueApiKey',
+        summary: 'Issue an API key',
+        description: 'Issue a self-serve gca_* API key with configurable daily rate limit. Key is shown once.',
+        tags: ['API Keys'],
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  label:     { type: 'string', maxLength: 80 },
+                  rateLimit: { type: 'integer', minimum: 100, maximum: 10000, default: 1000, description: 'Daily request quota' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Key issued. The key field is shown once — store it securely.' },
+          '503': { description: 'D1 database not available' },
         },
       },
     },
