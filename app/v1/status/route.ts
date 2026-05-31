@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
   const payload = {
     state: status.state,
     tensionLevel: status.tensionLevel,
+    tensionIndex: Math.round(status.tensionIndex ?? 0),
     confidence: status.confidence,
     reason: status.reason,
     brent: brent
