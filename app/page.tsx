@@ -14,9 +14,10 @@ import WeatherPanel    from '@/app/components/WeatherPanel';
 import NewsFeed        from '@/app/components/NewsFeed';
 import Timeline        from '@/app/components/Timeline';
 import Footer          from '@/app/components/Footer';
-import RefreshButton   from '@/app/components/RefreshButton';
-import ScrollIndicator from '@/app/components/ScrollIndicator';
-import AdSlot          from '@/app/components/AdSlot';
+import RefreshButton        from '@/app/components/RefreshButton';
+import ScrollIndicator      from '@/app/components/ScrollIndicator';
+import AdSlot               from '@/app/components/AdSlot';
+import CriticalAlertBanner  from '@/app/components/CriticalAlertBanner';
 import { SubscribeInlineCTA } from '@/app/components/SubscribeModal';
 import GlobalExposurePanel    from '@/app/components/GlobalExposurePanel';
 import StraitContextPanel     from '@/app/components/StraitContextPanel';
@@ -52,6 +53,9 @@ function DashboardContent() {
         loading={!dataReady}
         vesselCount={vessels.length > 0 ? vessels.length : undefined}
       />
+
+      {/* ── CRITICAL ALERT BANNER ──────────────────────────── */}
+      <CriticalAlertBanner state={dataReady ? data.status.state : undefined} />
 
       {/* ── LIVE TICKER ─────────────────────────────────────── */}
       <TickerBar
