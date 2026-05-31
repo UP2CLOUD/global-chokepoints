@@ -244,7 +244,13 @@ const spec = {
             name: 'since',
             in: 'query',
             schema: { type: 'string', format: 'date-time' },
-            description: 'Return only records after this ISO 8601 timestamp.',
+            description: 'Return only records after this ISO 8601 timestamp (exclusive).',
+          },
+          {
+            name: 'before',
+            in: 'query',
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Return only records before this ISO 8601 timestamp — use the nextCursor value from a previous response to page backward through history.',
           },
           {
             name: 'state',
@@ -269,7 +275,9 @@ const spec = {
                     count:       { type: 'integer' },
                     limit:       { type: 'integer' },
                     since:       { type: 'string', format: 'date-time' },
+                    before:      { type: 'string', format: 'date-time' },
                     stateFilter: { type: 'string' },
+                    nextCursor:  { type: 'string', format: 'date-time', nullable: true, description: 'Pass as ?before= to fetch the next (older) page. Null when no further records exist.' },
                     items: {
                       type: 'array',
                       items: {
@@ -291,8 +299,9 @@ const spec = {
                 },
                 example: {
                   ok: true,
-                  count: 2,
+                  count: 50,
                   limit: 50,
+                  nextCursor: '2026-05-29T08:15:00Z',
                   items: [
                     { id: 'hist_abc123', state: 'OPEN', previousState: 'PARTIALLY_CLOSED', tension: 34, confidence: 0.88, reason: 'Tensions eased following diplomatic talks.', timestamp: '2026-05-30T12:00:00Z' },
                     { id: 'hist_def456', state: 'PARTIALLY_CLOSED', previousState: 'OPEN', tension: 67, confidence: 0.72, reason: 'IRGC exercises reported near Strait entrance.', timestamp: '2026-05-29T08:15:00Z' },

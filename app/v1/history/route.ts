@@ -29,10 +29,15 @@ export async function GET(req: NextRequest) {
   // Clamp limit 1–200, default 50
   const limit = Math.min(200, Math.max(1, parseInt(u.searchParams.get('limit') ?? '50', 10) || 50));
 
-  // Optional ISO timestamp filter
+  // ?since — return only records AFTER this ISO timestamp (exclusive)
   const sinceParam = u.searchParams.get('since');
   const sinceMs    = sinceParam ? +new Date(sinceParam) : NaN;
   const sinceUnix  = !isNaN(sinceMs) ? Math.floor(sinceMs / 1000) : null;
+
+  // ?before — return only records BEFORE this ISO timestamp (cursor for backward pagination)
+  const beforeParam = u.searchParams.get('before');
+  const beforeMs    = beforeParam ? +new Date(beforeParam) : NaN;
+  const beforeUnix  = !isNaN(beforeMs) ? Math.floor(beforeMs / 1000) : null;
 
   // Optional state filter (OPEN | CLOSED | PARTIALLY_CLOSED | DISRUPTED)
   const stateParam = (u.searchParams.get('state') ?? '').toUpperCase() || null;
@@ -46,7 +51,7 @@ export async function GET(req: NextRequest) {
   const db = getD1();
   if (!db) {
     return NextResponse.json(
-      { ok: true, count: 0, items: [], note: 'Database unavailable in this environment' },
+      { ok: true, count: 0, items: [], nextCursor: null, note: 'Database unavailable in this environment' },
       { status: 200, headers: { ...CORS, 'Cache-Control': 'no-store' } }
     );
   }
@@ -59,6 +64,10 @@ export async function GET(req: NextRequest) {
     if (sinceUnix !== null) {
       conditions.push('created_at > ?');
       bindings.push(sinceUnix);
+    }
+    if (beforeUnix !== null) {
+      conditions.push('created_at < ?');
+      bindings.push(beforeUnix);
     }
     if (stateParam) {
       conditions.push('state = ?');
@@ -91,13 +100,19 @@ export async function GET(req: NextRequest) {
       timestamp:     new Date(r.created_at * 1000).toISOString(),
     }));
 
+    // nextCursor: if a full page was returned there may be more; pass the oldest
+    // item's timestamp as ?before= to fetch the next page.
+    const nextCursor = items.length === limit ? items[items.length - 1].timestamp : null;
+
     return NextResponse.json(
       {
         ok:      true,
         count:   items.length,
         limit,
-        ...(sinceParam ? { since: sinceParam } : {}),
-        ...(stateParam ? { stateFilter: stateParam } : {}),
+        ...(sinceParam  ? { since:  sinceParam  } : {}),
+        ...(beforeParam ? { before: beforeParam } : {}),
+        ...(stateParam  ? { stateFilter: stateParam } : {}),
+        nextCursor,
         items,
         license: 'CC-BY-4.0 (attribution required: "Global Chokepoints Alerts")',
       },
