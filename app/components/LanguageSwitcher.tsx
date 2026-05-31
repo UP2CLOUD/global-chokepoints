@@ -9,7 +9,7 @@ import { LANG_FLAG, LANG_LABEL, LANG_NATIVE } from '@/app/lib/translations';
 const LANGS = Object.keys(LANG_LABEL) as Lang[];
 
 export default function LanguageSwitcher() {
-  const { lang, setLang } = useLang();
+  const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -26,7 +26,7 @@ export default function LanguageSwitcher() {
       <button
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-1.5 px-2.5 py-1 bg-bg2/80 border border-divider text-[10px] font-mono text-text2 hover:border-accent/40 hover:text-accent transition-colors duration-180"
-        aria-label="Select language"
+        aria-label={t.nav.selectLanguage}
         aria-expanded={open}
       >
         <Globe size={12} />

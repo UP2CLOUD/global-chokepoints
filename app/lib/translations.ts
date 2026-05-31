@@ -252,6 +252,7 @@ export const translations = {
       apiDescription: 'Embed strait status in your platform. Free JSON API — CORS-open, edge-cached, CC-BY-4.0.',
       apiDocsLink: 'API Docs →',
       poweredBy: 'Powered by Global Chokepoints Alerts',
+      selectLanguage: 'Select language',
     },
     dashboard: {
       intelligenceFeed: 'Intelligence Feed',
@@ -361,6 +362,12 @@ export const translations = {
     now: 'now',
     hoursAgo: 'h ago',
     daysAgo: 'd ago',
+    pwa: {
+      title: 'Install App',
+      description: 'Add Global Chokepoints Alerts to your home screen for offline access and instant alerts.',
+      install: 'Install',
+      notNow: 'Not now',
+    },
   },
 
   pt: {
@@ -616,6 +623,7 @@ export const translations = {
       apiDescription: 'Integre o status do Estreito em sua plataforma. API JSON gratuita — CORS aberto, cache na borda, CC-BY-4.0.',
       apiDocsLink: 'Docs da API →',
       poweredBy: 'Desenvolvido por Global Chokepoints Alerts',
+      selectLanguage: 'Selecionar idioma',
     },
     dashboard: {
       intelligenceFeed: 'Feed de Inteligência',
@@ -725,6 +733,12 @@ export const translations = {
     now: 'agora',
     hoursAgo: 'h atrás',
     daysAgo: 'd atrás',
+    pwa: {
+      title: 'Instalar App',
+      description: 'Adicione o Global Chokepoints Alerts à sua tela inicial para acesso offline e alertas instantâneos.',
+      install: 'Instalar',
+      notNow: 'Agora não',
+    },
   },
 
   es: {
@@ -980,6 +994,7 @@ export const translations = {
       apiDescription: 'Integra el estado del Estrecho en tu plataforma. API JSON gratuita — CORS abierto, caché en el borde, CC-BY-4.0.',
       apiDocsLink: 'Docs de API →',
       poweredBy: 'Desarrollado por Global Chokepoints Alerts',
+      selectLanguage: 'Seleccionar idioma',
     },
     dashboard: {
       intelligenceFeed: 'Feed de Inteligencia',
@@ -1089,6 +1104,12 @@ export const translations = {
     now: 'ahora',
     hoursAgo: 'h atrás',
     daysAgo: 'd atrás',
+    pwa: {
+      title: 'Instalar App',
+      description: 'Agrega Global Chokepoints Alerts a tu pantalla de inicio para acceso sin conexión y alertas instantáneas.',
+      install: 'Instalar',
+      notNow: 'Ahora no',
+    },
   },
 
   fr: {
@@ -1344,6 +1365,7 @@ export const translations = {
       apiDescription: "Intégrez l'état du Détroit dans votre plateforme. API JSON gratuite — CORS ouvert, cache en périphérie, CC-BY-4.0.",
       apiDocsLink: 'Docs API →',
       poweredBy: 'Propulsé par Global Chokepoints Alerts',
+      selectLanguage: 'Choisir la langue',
     },
     dashboard: {
       intelligenceFeed: 'Flux de Renseignement',
@@ -1453,6 +1475,12 @@ export const translations = {
     now: 'maintenant',
     hoursAgo: 'h avant',
     daysAgo: 'j avant',
+    pwa: {
+      title: "Installer l'app",
+      description: "Ajoutez Global Chokepoints Alerts à votre écran d'accueil pour un accès hors ligne et des alertes instantanées.",
+      install: 'Installer',
+      notNow: 'Pas maintenant',
+    },
   },
 
   it: {
@@ -1708,6 +1736,7 @@ export const translations = {
       apiDescription: 'Incorpora lo stato dello Stretto nella tua piattaforma. API JSON gratuita — CORS aperto, cache edge, CC-BY-4.0.',
       apiDocsLink: 'Docs API →',
       poweredBy: 'Sviluppato da Global Chokepoints Alerts',
+      selectLanguage: 'Seleziona lingua',
     },
     dashboard: {
       intelligenceFeed: 'Feed Intelligence',
@@ -1817,6 +1846,12 @@ export const translations = {
     now: 'adesso',
     hoursAgo: 'h fa',
     daysAgo: 'g fa',
+    pwa: {
+      title: 'Installa App',
+      description: "Aggiungi Global Chokepoints Alerts alla tua schermata Home per accesso offline e avvisi istantanei.",
+      install: 'Installa',
+      notNow: 'Non ora',
+    },
   },
 
   ru: {
@@ -2072,6 +2107,7 @@ export const translations = {
       apiDescription: 'Встройте статус пролива в свою платформу. Бесплатный JSON API — открытый CORS, кэш на граничных серверах, CC-BY-4.0.',
       apiDocsLink: 'Документация API →',
       poweredBy: 'Работает на Global Chokepoints Alerts',
+      selectLanguage: 'Выбрать язык',
     },
     dashboard: {
       intelligenceFeed: 'Лента разведки',
@@ -2181,6 +2217,12 @@ export const translations = {
     now: 'сейчас',
     hoursAgo: 'ч назад',
     daysAgo: 'д назад',
+    pwa: {
+      title: 'Приложение',
+      description: 'Добавьте Global Chokepoints Alerts на главный экран для работы офлайн и мгновенных уведомлений.',
+      install: 'Установить',
+      notNow: 'Не сейчас',
+    },
   },
 
   de: {
@@ -2436,6 +2478,7 @@ export const translations = {
       apiDescription: 'Straßenstatus in Ihre Plattform einbetten. Kostenlose JSON-API — CORS-offen, edge-gecacht, CC-BY-4.0.',
       apiDocsLink: 'API-Dokumentation →',
       poweredBy: 'Betrieben von Global Chokepoints Alerts',
+      selectLanguage: 'Sprache wählen',
     },
     subscribe: {
       bellLabel: 'Warnungen',
@@ -2532,6 +2575,12 @@ export const translations = {
     now: 'jetzt',
     hoursAgo: 'Std. vor',
     daysAgo: 'T. vor',
+    pwa: {
+      title: 'App installieren',
+      description: 'Fügen Sie Global Chokepoints Alerts zu Ihrem Startbildschirm hinzu für Offline-Zugang und sofortige Benachrichtigungen.',
+      install: 'Installieren',
+      notNow: 'Nicht jetzt',
+    },
   },
 
   zh: {
@@ -2770,6 +2819,7 @@ export const translations = {
       apiDescription: '在您的平台嵌入海峡状态。免费JSON API——CORS开放，边缘缓存，CC-BY-4.0。',
       apiDocsLink: 'API文档 →',
       poweredBy: '由Global Chokepoints Alerts提供支持',
+      selectLanguage: '选择语言',
     },
     subscribe: {
       bellLabel: '预警',
@@ -2866,6 +2916,12 @@ export const translations = {
     now: '刚刚',
     hoursAgo: '小时前',
     daysAgo: '天前',
+    pwa: {
+      title: '安装应用',
+      description: '将Global Chokepoints Alerts添加到主屏幕，以便离线访问和即时提醒。',
+      install: '安装',
+      notNow: '暂不',
+    },
   },
 
   ja: {
@@ -3104,6 +3160,7 @@ export const translations = {
       apiDescription: '海峡の状態をプラットフォームに組み込む。無料JSONクーピーAPI——CORSオープン、エッジキャッシュ、CC-BY-4.0。',
       apiDocsLink: 'APIドキュメント →',
       poweredBy: 'Global Chokepoints Alerts提供',
+      selectLanguage: '言語を選択',
     },
     subscribe: {
       bellLabel: 'アラート',
@@ -3200,6 +3257,12 @@ export const translations = {
     now: '今',
     hoursAgo: '時間前',
     daysAgo: '日前',
+    pwa: {
+      title: 'アプリをインストール',
+      description: 'Global Chokepoints Alertsをホーム画面に追加してオフライン利用と即時アラートを受け取りましょう。',
+      install: 'インストール',
+      notNow: '後で',
+    },
   },
 
   ar: {
@@ -3438,6 +3501,7 @@ export const translations = {
       apiDescription: 'دمج حالة المضيق في منصتك. JSON API مجاني — CORS مفتوح، مخزن مؤقت، CC-BY-4.0.',
       apiDocsLink: 'وثائق API →',
       poweredBy: 'مدعوم من Global Chokepoints Alerts',
+      selectLanguage: 'اختر اللغة',
     },
     subscribe: {
       bellLabel: 'تنبيهات',
@@ -3534,6 +3598,12 @@ export const translations = {
     now: 'الآن',
     hoursAgo: 'س مضت',
     daysAgo: 'ي مضت',
+    pwa: {
+      title: 'تثبيت التطبيق',
+      description: 'أضف Global Chokepoints Alerts إلى شاشتك الرئيسية للوصول دون اتصال والتنبيهات الفورية.',
+      install: 'تثبيت',
+      notNow: 'ليس الآن',
+    },
   },
 } as const;
 
