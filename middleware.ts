@@ -12,12 +12,13 @@ const CSP = [
   "base-uri 'self'",
 ].join('; ');
 
-function addSecurityHeaders(res: NextResponse): NextResponse {
+function addSecurityHeaders(res: NextResponse, requestId?: string): NextResponse {
   res.headers.set('X-Content-Type-Options', 'nosniff');
   res.headers.set('X-DNS-Prefetch-Control', 'on');
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.headers.set('Content-Security-Policy', CSP);
+  if (requestId) res.headers.set('X-Request-ID', requestId);
   return res;
 }
 import { getRequestContext } from '@cloudflare/next-on-pages';
@@ -42,14 +43,20 @@ function getKV(): KVNamespace | null {
 export async function middleware(request: NextRequest) {
   const isEmbed = request.nextUrl.pathname === '/embed' || request.nextUrl.pathname.startsWith('/embed/');
   const isV1    = request.nextUrl.pathname.startsWith('/v1/');
+  const isApi   = request.nextUrl.pathname.startsWith('/api/');
+
+  // Echo client-supplied X-Request-ID or generate a fresh one for API/v1 routes
+  const requestId = (isV1 || isApi)
+    ? (request.headers.get('X-Request-ID') || crypto.randomUUID())
+    : undefined;
 
   if (request.method === 'OPTIONS') {
-    return addSecurityHeaders(NextResponse.next());
+    return addSecurityHeaders(NextResponse.next(), requestId);
   }
 
   // Non-embed, non-v1 pages: deny framing and return early with security headers.
   if (!isEmbed && !isV1) {
-    const res = addSecurityHeaders(NextResponse.next());
+    const res = addSecurityHeaders(NextResponse.next(), requestId);
     res.headers.set('X-Frame-Options', 'SAMEORIGIN');
     return res;
   }
@@ -68,7 +75,7 @@ export async function middleware(request: NextRequest) {
         if (!cached) {
           return NextResponse.json(
             { error: 'Invalid API key' },
-            { status: 401, headers: { 'Content-Type': 'application/json' } },
+            { status: 401, headers: { 'Content-Type': 'application/json', ...(requestId ? { 'X-Request-ID': requestId } : {}) } },
           );
         }
 
@@ -85,6 +92,7 @@ export async function middleware(request: NextRequest) {
                 'Content-Type': 'application/json',
                 'X-RateLimit-Limit': String(cached.rateLimit),
                 'X-RateLimit-Remaining': '0',
+                ...(requestId ? { 'X-Request-ID': requestId } : {}),
               },
             },
           );
@@ -94,7 +102,7 @@ export async function middleware(request: NextRequest) {
         const res = NextResponse.next();
         res.headers.set('X-RateLimit-Limit', String(cached.rateLimit));
         res.headers.set('X-RateLimit-Remaining', String(cached.rateLimit - count - 1));
-        return addSecurityHeaders(res);
+        return addSecurityHeaders(res, requestId);
       }
       // KV unavailable (local dev) — fall through
     }
@@ -108,13 +116,13 @@ export async function middleware(request: NextRequest) {
       if (!auth || (auth !== `Bearer ${validKey}` && auth !== validKey)) {
         return new NextResponse(
           JSON.stringify({ error: 'Unauthorized. Provide x-api-key or Authorization: Bearer <key>' }),
-          { status: 401, headers: { 'Content-Type': 'application/json' } },
+          { status: 401, headers: { 'Content-Type': 'application/json', ...(requestId ? { 'X-Request-ID': requestId } : {}) } },
         );
       }
     }
   }
 
-  return addSecurityHeaders(NextResponse.next());
+  return addSecurityHeaders(NextResponse.next(), requestId);
 }
 
 export const config = {
