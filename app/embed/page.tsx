@@ -18,7 +18,7 @@ const CP_SHORT: Record<string, string> = {
 };
 
 function EmbedContent() {
-  const { lang, setLang } = useLang();
+  const { lang, setLang, t } = useLang();
   const [data, setData]      = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [cpData, setCpData]   = useState<CPItem[] | null>(null);
@@ -90,7 +90,7 @@ function EmbedContent() {
 
       <div className="text-center">
         <a href="/" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-text3 hover:text-accent transition-colors">
-          Powered by Global Chokepoints Alerts
+          {t.nav.poweredBy}
         </a>
       </div>
     </div>
