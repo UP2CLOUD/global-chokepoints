@@ -186,6 +186,7 @@ const NAV = [
   { id: 'events',      label: '  GET /v1/events' },
   { id: 'metrics',     label: '  GET /v1/metrics' },
   { id: 'chokepoints', label: '  GET /v1/chokepoints' },
+  { id: 'weather',     label: '  GET /v1/weather' },
   { id: 'feeds',          label: 'Data Feed Routes' },
   { id: 'webhooks',       label: 'Webhooks' },
   { id: 'badge',          label: '  GET /api/badge' },
@@ -474,35 +475,60 @@ async function fetchAllHistory() {
               badge={<SeverityPill level="info" label="60 s cache" />}
               description="Classified events aggregated from CNN, BBC, Al Jazeera, Reuters (via Google News), and Google News RSS. Events are filtered by Hormuz/Iran/maritime keywords and scored by severity."
               params={[
-                { name: 'limit', in: 'query', type: 'integer', desc: 'Max events to return (1–100, default 30)' },
-                { name: 'since', in: 'query', type: 'ISO 8601', desc: 'Return only events at or after this timestamp — useful for incremental polling' },
+                { name: 'limit',      in: 'query', type: 'integer',  desc: 'Max events to return (1–100, default 30)' },
+                { name: 'since',      in: 'query', type: 'ISO 8601', desc: 'Return only events at or after this timestamp — useful for incremental polling' },
+                { name: 'before',     in: 'query', type: 'ISO 8601', desc: 'Return only events strictly before this timestamp — pass nextCursor to page backward through history' },
+                { name: 'severity',   in: 'query', type: 'string',   desc: 'Comma-separated severity filter: low | medium | high | critical' },
+                { name: 'category',   in: 'query', type: 'string',   desc: 'Comma-separated category filter: incident | military | diplomatic | economic' },
+                { name: 'chokepoint', in: 'query', type: 'enum',     desc: 'Filter by chokepoint: hormuz | redsea | suez | panama | taiwan' },
               ]}
               responseFields={[
-                { name: 'events[].id',          type: 'string',   desc: 'Unique event identifier (URL-derived hash)' },
-                { name: 'events[].date',         type: 'ISO 8601', desc: 'Event publication timestamp' },
-                { name: 'events[].title',        type: 'string',   desc: 'Headline' },
-                { name: 'events[].description',  type: 'string',   desc: 'Lead paragraph or snippet' },
-                { name: 'events[].category',     type: 'enum',     desc: 'incident | military | diplomatic | economic' },
-                { name: 'events[].severity',     type: 'enum',     desc: 'low | medium | high | critical' },
-                { name: 'events[].source',       type: 'string',   desc: 'Publisher name (e.g. "BBC")' },
-                { name: 'events[].url',          type: 'string',   desc: 'Original article URL' },
-                { name: 'count',                 type: 'integer',  desc: 'Total events returned' },
-                { name: 'generatedAt',           type: 'ISO 8601', desc: 'Response generation time' },
+                { name: 'events[].id',          type: 'string',       desc: 'Unique event identifier (URL-derived hash)' },
+                { name: 'events[].date',         type: 'ISO 8601',     desc: 'Event publication timestamp' },
+                { name: 'events[].title',        type: 'string',       desc: 'Headline' },
+                { name: 'events[].description',  type: 'string',       desc: 'Lead paragraph or snippet' },
+                { name: 'events[].category',     type: 'enum',         desc: 'incident | military | diplomatic | economic' },
+                { name: 'events[].severity',     type: 'enum',         desc: 'low | medium | high | critical' },
+                { name: 'events[].source',       type: 'string',       desc: 'Publisher name (e.g. "BBC")' },
+                { name: 'events[].url',          type: 'string',       desc: 'Original article URL' },
+                { name: 'count',                 type: 'integer',      desc: 'Events returned in this page' },
+                { name: 'nextCursor',            type: 'ISO 8601|null',desc: 'Pass as ?before= to fetch the next (older) page; null when exhausted' },
+                { name: 'filters',               type: 'object',       desc: 'Echoed-back filter values (chokepoint, severity, category, since, before)' },
+                { name: 'generatedAt',           type: 'ISO 8601',     desc: 'Response generation time' },
               ]}
               curlExample={`# Latest 10 events
 curl "${SITE}/v1/events?limit=10"
 
 # Incremental poll — events since last check
-curl "${SITE}/v1/events?since=2026-05-14T06:00:00Z"`}
-              jsExample={`// Incremental polling
-let cursor = new Date(Date.now() - 60_000).toISOString();
+curl "${SITE}/v1/events?since=2026-05-14T06:00:00Z"
 
+# Page backward — pass nextCursor as ?before=
+curl "${SITE}/v1/events?limit=30&before=2026-05-29T14:00:00Z"
+
+# Filter: high-severity military events at Hormuz
+curl "${SITE}/v1/events?severity=high,critical&category=military&chokepoint=hormuz"`}
+              jsExample={`// Incremental polling (forward)
+let cursor = new Date(Date.now() - 60_000).toISOString();
 setInterval(async () => {
-  const url = \`${SITE}/v1/events?limit=20&since=\${cursor}\`;
-  const { events, generatedAt } = await fetch(url).then(r => r.json());
+  const { events, generatedAt } = await fetch(
+    \`${SITE}/v1/events?limit=20&since=\${cursor}\`
+  ).then(r => r.json());
   cursor = generatedAt;
   events.forEach(e => console.log(e.severity, e.title));
-}, 60_000);`}
+}, 60_000);
+
+// Backward pagination (fetch all historical events)
+async function fetchAllEvents() {
+  const all = [];
+  let cursor = null;
+  do {
+    const url = \`${SITE}/v1/events?limit=100\${cursor ? \`&before=\${cursor}\` : ''}\`;
+    const { events, nextCursor } = await fetch(url).then(r => r.json());
+    all.push(...events);
+    cursor = nextCursor;
+  } while (cursor);
+  return all;
+}`}
             />
           </div>
 
@@ -571,6 +597,45 @@ chokepoints.forEach(cp => {
 
 // Filter to only high-risk chokepoints
 const hotspots = chokepoints.filter(cp => cp.riskIndex >= 70);`}
+            />
+          </div>
+
+          {/* v1/weather */}
+          <div id="weather" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/v1/weather"
+              summary="Marine conditions at the Strait of Hormuz"
+              badge={<SeverityPill level="info" label="15 min cache" />}
+              description="Real-time wind, temperature, visibility, wave height, and the computed navRisk index (0–100) for the Strait of Hormuz approach (26.5°N 56.4°E, Bandar Abbas). Sourced from Open-Meteo Forecast and Marine APIs — free, no API key required."
+              responseFields={[
+                { name: 'location',        type: 'object',      desc: '{ lat, lon, label } — always 26.5°N 56.4°E (Strait of Hormuz)' },
+                { name: 'temperatureC',    type: 'number',      desc: 'Air temperature in °C' },
+                { name: 'wind.speedKn',    type: 'number',      desc: 'Wind speed in knots' },
+                { name: 'wind.direction',  type: 'string',      desc: '16-point compass direction (N, NNE, NE … NNW)' },
+                { name: 'wind.directionDeg', type: 'number',    desc: 'Wind direction in degrees (0–359)' },
+                { name: 'visibilityM',     type: 'number',      desc: 'Horizontal visibility in metres' },
+                { name: 'weather',         type: 'string',      desc: 'WMO weather description (e.g. "Clear", "Thunderstorm")' },
+                { name: 'weatherCode',     type: 'integer',     desc: 'WMO weather interpretation code' },
+                { name: 'sea.waveHeightM', type: 'number',      desc: 'Significant wave height in metres' },
+                { name: 'sea.wavePeriodS', type: 'number|null', desc: 'Mean wave period in seconds' },
+                { name: 'sea.windWaveM',   type: 'number|null', desc: 'Wind-generated wave height in metres' },
+                { name: 'sea.swellM',      type: 'number|null', desc: 'Swell wave height in metres' },
+                { name: 'navRisk',         type: 'number',      desc: '0–100 composite navigation risk (wind + waves + visibility + weather code)' },
+                { name: 'navRiskLabel',    type: 'enum',        desc: 'CALM | MODERATE | ROUGH | SEVERE' },
+                { name: 'source',          type: 'string',      desc: 'Always "Open-Meteo"' },
+                { name: 'generatedAt',     type: 'ISO 8601',    desc: 'Response timestamp' },
+              ]}
+              curlExample={`curl ${SITE}/v1/weather`}
+              jsExample={`const data = await fetch('${SITE}/v1/weather').then(r => r.json());
+
+console.log(\`Wind: \${data.wind.speedKn}kn \${data.wind.direction}\`);
+console.log(\`Waves: \${data.sea.waveHeightM}m · Risk: \${data.navRiskLabel}\`);
+
+// Warn if navigating in rough conditions
+if (data.navRisk >= 50) {
+  alert(\`High nav risk (\${data.navRiskLabel}): verify UKMTO advisories\`);
+}`}
             />
           </div>
 

@@ -151,12 +151,6 @@ const spec = {
             schema: { type: 'string', example: 'military,incident' },
           },
           {
-            name: 'before',
-            in: 'query',
-            description: 'Return only events strictly before this ISO 8601 timestamp. Pass the nextCursor value from a previous response to page backward through older events.',
-            schema: { type: 'string', format: 'date-time', example: '2026-05-29T14:00:00Z' },
-          },
-          {
             name: 'chokepoint',
             in: 'query',
             description: 'Filter events by chokepoint keywords (hormuz, redsea, suez, panama, taiwan)',
@@ -339,47 +333,6 @@ const spec = {
               'application/json': { schema: { $ref: '#/components/schemas/MetricsResponse' } },
             },
           },
-        },
-      },
-    },
-
-    '/v1/weather': {
-      get: {
-        operationId: 'getV1Weather',
-        tags: ['Public v1'],
-        summary: 'Marine conditions at the Strait of Hormuz',
-        description:
-          'Returns real-time wind, temperature, visibility, wave height, and the computed `navRisk` index (0–100) ' +
-          'for the Strait of Hormuz approach. Sourced from Open-Meteo Forecast and Marine APIs. Cache TTL: 15 min.',
-        security: [{}],
-        responses: {
-          '200': {
-            description: 'Marine weather conditions',
-            headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=900' } },
-              'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
-            },
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/WeatherPayload' },
-                example: {
-                  location: { lat: 26.5, lon: 56.4, label: 'Strait of Hormuz' },
-                  temperatureC: 34.2,
-                  wind: { speedKn: 12.4, direction: 'NW', directionDeg: 315 },
-                  visibilityM: 10000,
-                  weather: 'Clear',
-                  weatherCode: 0,
-                  sea: { waveHeightM: 0.8, wavePeriodS: 6, windWaveM: 0.6, swellM: 0.3 },
-                  navRisk: 18,
-                  navRiskLabel: 'CALM',
-                  source: 'Open-Meteo',
-                  generatedAt: '2026-06-01T00:00:00.000Z',
-                  license: 'CC-BY-4.0 (attribution required: "Global Chokepoints Alerts")',
-                },
-              },
-            },
-          },
-          '503': { description: 'Upstream weather service temporarily unavailable' },
         },
       },
     },
@@ -766,17 +719,6 @@ const spec = {
         properties: {
           events:      { type: 'array', items: { $ref: '#/components/schemas/TimelineEvent' } },
           count:       { type: 'integer' },
-          nextCursor:  { type: 'string', format: 'date-time', nullable: true, description: 'Pass as ?before= to fetch the next (older) page. Null when no further events exist.' },
-          filters: {
-            type: 'object',
-            properties: {
-              chokepoint: { type: 'string', nullable: true },
-              severity:   { type: 'string', nullable: true },
-              category:   { type: 'string', nullable: true },
-              since:      { type: 'string', nullable: true },
-              before:     { type: 'string', nullable: true },
-            },
-          },
           generatedAt: { type: 'string', format: 'date-time' },
           docs:        { type: 'string' },
           license:     { type: 'string' },
