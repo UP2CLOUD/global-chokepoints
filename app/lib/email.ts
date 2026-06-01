@@ -13,7 +13,7 @@ function fromAddress() {
 }
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.workers.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
 }
 
 // ── HTML email templates ──────────────────────────────────────

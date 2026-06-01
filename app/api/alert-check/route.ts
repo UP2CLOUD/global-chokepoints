@@ -38,11 +38,11 @@ async function deriveCurrentStatus(): Promise<{ status: StatusData | null; error
   try {
     const [timelineRes, brentRes] = await Promise.all([
       fetch(`${base}/api/timeline`, {
-        headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
+        headers: { 'User-Agent': 'GlobalChokepointsAlerts/alert-check' },
         signal: AbortSignal.timeout(20_000),
       }),
       fetch(`${base}/api/brent`, {
-        headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
+        headers: { 'User-Agent': 'GlobalChokepointsAlerts/alert-check' },
         signal: AbortSignal.timeout(20_000),
       }),
     ]);

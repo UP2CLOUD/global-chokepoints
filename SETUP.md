@@ -1,4 +1,4 @@
-# IsHormuzOpen — Local Setup
+# Global Chokepoints Alerts — Local Setup
 
 Three pieces:
 
