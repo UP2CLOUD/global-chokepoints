@@ -529,6 +529,44 @@ const spec = {
       },
     },
 
+    '/feed.xml': {
+      get: {
+        operationId: 'getFeed',
+        tags: ['Public v1'],
+        summary: 'RSS 2.0 event feed',
+        description:
+          'Returns an RSS 2.0 feed of the latest Strait of Hormuz timeline events, ' +
+          'sourced from CNN, BBC, Al Jazeera, Reuters, and Google News. ' +
+          'The channel description includes the current strait status and tension index. ' +
+          'Each item contains the event title, description, category, severity, and source article link. ' +
+          'Cache TTL: 5 min.',
+        security: [{}],
+        parameters: [
+          {
+            name: 'limit',
+            in: 'query',
+            description: 'Maximum events to include (1–50, default 20)',
+            schema: { type: 'integer', minimum: 1, maximum: 50, default: 20 },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'RSS 2.0 XML feed',
+            headers: {
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300' } },
+              'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
+            },
+            content: {
+              'application/rss+xml': {
+                schema: { type: 'string', format: 'xml' },
+                example: '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>...</channel>\n</rss>',
+              },
+            },
+          },
+        },
+      },
+    },
+
     '/api/brent': {
       get: {
         operationId: 'getBrent',
