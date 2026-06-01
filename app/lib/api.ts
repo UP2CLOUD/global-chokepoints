@@ -1,5 +1,5 @@
 // ============================================================
-// CLIENT-SIDE API HELPERS — IsHormuzOpen
+// CLIENT-SIDE API HELPERS — Global Chokepoints Alerts
 // ============================================================
 // All real-data calls go through our own /api/* routes:
 //   - /api/brent     — Brent crude from Yahoo Finance

@@ -10,7 +10,7 @@ import { getD1 } from '@/app/lib/db';
 export const dynamic = 'force-dynamic';
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.workers.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
 }
 
 export async function GET(req: NextRequest) {
