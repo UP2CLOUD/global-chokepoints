@@ -5,7 +5,7 @@
 # Setup checklist (one-time):
 #   1. Install wrangler:   npm install -g wrangler
 #   2. Login:              wrangler login
-#   3. Create Pages project: wrangler pages project create strait-of-hormuz-monitor
+#   3. Create Pages project: wrangler pages project create global-chokepoints
 #   4. Create D1 DB:       wrangler d1 create strait-subscriptions
 #      → database_id is already filled in below
 #   5. Run migration:      npm run db:migrate

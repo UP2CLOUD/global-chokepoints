@@ -50,14 +50,14 @@ jobs:
           ALERT_CRON_SECRET: ${{ secrets.ALERT_CRON_SECRET }}
         run: |
           echo "$ALERT_CRON_SECRET" | npx wrangler pages secret put ALERT_CRON_SECRET \
-            --project-name=strait-of-hormuz-monitor
+            --project-name=global-chokepoints
 
       - name: Trigger alert-check endpoint
         if: steps.check_secrets.outputs.skip == 'false'
         env:
           ALERT_SECRET: ${{ secrets.ALERT_CRON_SECRET }}
         run: |
-          SITE="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://strait-of-hormuz-monitor.pages.dev' }}"
+          SITE="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://global-chokepoints.pages.dev' }}"
           echo "POST ${SITE}/api/alert-check"
 
           HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
