@@ -31,10 +31,10 @@ export default function StatusBar() {
     const load = async () => {
       try {
         const res = await fetch('/api/health', { cache: 'no-store' });
-        if (!res.ok) throw new Error(String(res.status));
         const data = (await res.json()) as Health;
         if (!cancelled) setHealth(data);
-      } catch {
+      } catch (err) {
+        console.warn('Failed to fetch health status:', err);
         if (!cancelled) setHealth({ overall: 'degraded', probes: [], generatedAt: new Date().toISOString() });
       }
     };
