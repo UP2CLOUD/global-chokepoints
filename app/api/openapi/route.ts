@@ -151,6 +151,12 @@ const spec = {
             schema: { type: 'string', example: 'military,incident' },
           },
           {
+            name: 'before',
+            in: 'query',
+            description: 'Return only events strictly before this ISO 8601 timestamp — use nextCursor from a prior response to page backward',
+            schema: { type: 'string', format: 'date-time', example: '2026-05-30T00:00:00Z' },
+          },
+          {
             name: 'chokepoint',
             in: 'query',
             description: 'Filter events by chokepoint keywords (hormuz, redsea, suez, panama, taiwan)',
@@ -313,6 +319,102 @@ const spec = {
           },
           '400': { description: 'Invalid state filter value' },
           '500': { description: 'Database query error' },
+        },
+      },
+    },
+
+    '/v1/weather': {
+      get: {
+        operationId: 'getWeatherPublic',
+        tags: ['Public v1'],
+        summary: 'Marine weather at the Strait of Hormuz',
+        description:
+          'Returns current marine weather conditions at Bandar Abbas approach (26.5°N 56.4°E): ' +
+          'wind speed/direction, wave height/period, visibility, and navigational risk score. ' +
+          'Sourced from Open-Meteo (no API key required). Cache TTL: 15 min.',
+        security: [{}],
+        responses: {
+          '200': {
+            description: 'Marine weather snapshot',
+            headers: {
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=900' } },
+              'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
+            },
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/WeatherPayload' },
+              },
+            },
+          },
+          '502': { description: 'Upstream Open-Meteo returned an error' },
+          '503': { description: 'Weather data temporarily unavailable' },
+        },
+      },
+    },
+
+    '/v1/news': {
+      get: {
+        operationId: 'getNewsPublic',
+        tags: ['Public v1'],
+        summary: 'GDELT news articles about the Strait',
+        description:
+          'Returns recent news articles mentioning Strait of Hormuz, Iranian navy, oil tankers, ' +
+          'or Persian Gulf from the GDELT v2 Doc API with sentiment scoring. Cache TTL: 5 min.',
+        security: [{}],
+        parameters: [
+          {
+            name: 'limit',
+            in: 'query',
+            description: 'Maximum articles to return (1–50)',
+            schema: { type: 'integer', minimum: 1, maximum: 50, default: 20 },
+          },
+          {
+            name: 'sentiment',
+            in: 'query',
+            description: 'Filter articles by sentiment',
+            schema: { type: 'string', enum: ['positive', 'negative', 'neutral'] },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'News articles',
+            headers: {
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300' } },
+              'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
+            },
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    count:           { type: 'integer' },
+                    total:           { type: 'integer' },
+                    limit:           { type: 'integer' },
+                    sentimentFilter: { type: 'string', nullable: true },
+                    source:          { type: 'string', example: 'GDELT' },
+                    news: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/NewsItem' },
+                    },
+                    license: { type: 'string' },
+                  },
+                },
+                example: {
+                  count: 5,
+                  total: 20,
+                  limit: 5,
+                  source: 'GDELT',
+                  news: [
+                    { id: 'gdelt_abc123', title: 'Iran navy conducts exercises near Hormuz', source: 'Reuters', publishedAt: '2026-06-01T09:00:00Z', url: 'https://reuters.com/example', sentiment: 'negative', relevance: 0.92 },
+                  ],
+                  license: 'CC-BY-4.0 (attribution required: "Global Chokepoints Alerts")',
+                },
+              },
+            },
+          },
+          '400': { description: 'Invalid sentiment filter value' },
+          '502': { description: 'Upstream news API returned an error' },
+          '503': { description: 'News data temporarily unavailable' },
         },
       },
     },
@@ -717,8 +819,22 @@ const spec = {
       EventsResponse: {
         type: 'object',
         properties: {
-          events:      { type: 'array', items: { $ref: '#/components/schemas/TimelineEvent' } },
-          count:       { type: 'integer' },
+          events:     { type: 'array', items: { $ref: '#/components/schemas/TimelineEvent' } },
+          count:      { type: 'integer' },
+          nextCursor: {
+            type: 'string', format: 'date-time', nullable: true,
+            description: 'Pass as ?before= to fetch the next (older) page. Null when no further events exist.',
+          },
+          filters: {
+            type: 'object',
+            properties: {
+              since:      { type: 'string', format: 'date-time', nullable: true },
+              before:     { type: 'string', format: 'date-time', nullable: true },
+              severity:   { type: 'string', nullable: true },
+              category:   { type: 'string', nullable: true },
+              chokepoint: { type: 'string', nullable: true },
+            },
+          },
           generatedAt: { type: 'string', format: 'date-time' },
           docs:        { type: 'string' },
           license:     { type: 'string' },
