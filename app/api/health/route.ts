@@ -12,6 +12,7 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400',
 };
 
 // Keys of probes that must be reachable for the system to be considered up
@@ -113,9 +114,8 @@ export async function GET() {
     probeKV(),
   ]);
 
-  const criticalDown = upstreamResults
-    .filter(r => CRITICAL_KEYS.has(r.key))
-    .every(r => r.status === 'down');
+  const criticalResults = upstreamResults.filter(r => CRITICAL_KEYS.has(r.key));
+  const criticalDown = criticalResults.length > 0 && criticalResults.every(r => r.status === 'down');
 
   const anyDown      = upstreamResults.some(r => r.status === 'down');
   const anyDegraded  = upstreamResults.some(r => r.status === 'degraded');

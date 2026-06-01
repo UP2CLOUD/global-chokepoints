@@ -29,13 +29,17 @@ export default function StatusBar() {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
+      let res: Response | null = null;
       try {
-        const res = await fetch('/api/health', { cache: 'no-store' });
-        if (!res.ok) throw new Error(String(res.status));
+        res = await fetch('/api/health', { cache: 'no-store' });
         const data = (await res.json()) as Health;
         if (!cancelled) setHealth(data);
-      } catch {
-        if (!cancelled) setHealth({ overall: 'degraded', probes: [], generatedAt: new Date().toISOString() });
+      } catch (err) {
+        console.warn('Failed to fetch health status:', err);
+        if (!cancelled) {
+          const overall = res?.status === 503 ? 'down' : 'degraded';
+          setHealth({ overall, probes: [], generatedAt: new Date().toISOString() });
+        }
       }
     };
     load();
