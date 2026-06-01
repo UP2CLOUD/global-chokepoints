@@ -62,6 +62,8 @@ jobs:
 
       - name: Deploy to Cloudflare Pages
         if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+        continue-on-error: true
+        id: cf_deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -72,8 +74,13 @@ jobs:
         if: ${{ secrets.CLOUDFLARE_API_TOKEN == '' }}
         run: echo "::warning::CLOUDFLARE_API_TOKEN not configured — skipping Cloudflare Pages deploy"
 
+      - name: Report deploy outcome
+        if: ${{ steps.cf_deploy.outcome == 'failure' }}
+        run: echo "::warning::Cloudflare Pages deploy failed — verify CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, and that project 'global-chokepoints' exists in your CF account."
+
       - name: Sync secrets to Cloudflare Pages
         if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.ALERT_CRON_SECRET != '' }}
+        continue-on-error: true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
