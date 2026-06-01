@@ -186,6 +186,7 @@ const NAV = [
   { id: 'events',      label: '  GET /v1/events' },
   { id: 'metrics',     label: '  GET /v1/metrics' },
   { id: 'chokepoints', label: '  GET /v1/chokepoints' },
+  { id: 'digest',      label: '  GET /v1/digest' },
   { id: 'weather',     label: '  GET /v1/weather' },
   { id: 'news',        label: '  GET /v1/news' },
   { id: 'feeds',          label: 'Data Feed Routes' },
@@ -598,6 +599,49 @@ chokepoints.forEach(cp => {
 
 // Filter to only high-risk chokepoints
 const hotspots = chokepoints.filter(cp => cp.riskIndex >= 70);`}
+            />
+          </div>
+
+          {/* v1/digest */}
+          <div id="digest" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/v1/digest"
+              summary="Single-fetch snapshot for embed widgets"
+              badge={<SeverityPill level="info" label="60 s cache" />}
+              description="Convenience endpoint that fans out to /v1/status, /v1/events, and /v1/metrics in parallel and returns a combined payload. Use this when you need current conditions in a single HTTP request — ideal for embed widgets, bots, and lightweight integrations."
+              params={[
+                { name: 'events', in: 'query', type: 'integer', desc: 'Number of recent events to include in the response (1–20, default 5)' },
+              ]}
+              responseFields={[
+                { name: 'state',           type: 'enum',        desc: 'OPEN | PARTIALLY_CLOSED | CLOSED' },
+                { name: 'tensionLevel',    type: 'enum',        desc: 'NORMAL | ELEVATED | CRITICAL' },
+                { name: 'tensionIndex',    type: 'integer',     desc: '0–100 composite threat score' },
+                { name: 'confidence',      type: 'number',      desc: 'Algorithm confidence (0–1)' },
+                { name: 'reason',          type: 'string',      desc: 'Human-readable reason string' },
+                { name: 'reasonUrl',       type: 'string|null', desc: 'URL of driving source article' },
+                { name: 'asOf',            type: 'ISO 8601',    desc: 'Status computation timestamp' },
+                { name: 'events',          type: 'Event[]',     desc: 'Most recent events (up to ?events= count)' },
+                { name: 'eventCount',      type: 'integer',     desc: 'Total events returned' },
+                { name: 'brent',           type: 'object|null', desc: '{ price, change, changePercent } — Brent crude' },
+                { name: 'markets',         type: 'object|null', desc: 'Full ticker objects for brent, wti, natgas' },
+                { name: 'weather',         type: 'object|null', desc: '{ temperatureC, wind, sea, navRisk, navRiskLabel }' },
+                { name: 'eventDelta',      type: 'object|null', desc: '{ last24h, prev24h, delta } — 24-hour event counts' },
+                { name: 'generatedAt',     type: 'ISO 8601',    desc: 'Response generation timestamp' },
+              ]}
+              curlExample={`# Default: status + 5 recent events + markets
+curl ${SITE}/v1/digest
+
+# Include up to 10 events
+curl "${SITE}/v1/digest?events=10"`}
+              jsExample={`// Single request for a full embed
+const data = await fetch('${SITE}/v1/digest').then(r => r.json());
+
+console.log(data.state);                     // "OPEN"
+console.log(data.tensionIndex);              // 42
+console.log(data.brent?.price);             // 78.45
+console.log(data.events[0]?.title);         // latest event headline
+console.log(data.weather?.navRiskLabel);    // "CALM"`}
             />
           </div>
 
