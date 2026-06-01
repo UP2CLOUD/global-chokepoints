@@ -8,6 +8,15 @@ import { NextResponse } from 'next/server';
 import { getD1 } from '@/app/lib/db';
 import { getKV } from '@/app/lib/kv';
 
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+// Keys of probes that must be reachable for the system to be considered up
+const CRITICAL_KEYS = new Set(['brent', 'cnn', 'bbc']);
+
 export const revalidate = 30;
 export const dynamic = 'force-dynamic';
 
@@ -93,6 +102,10 @@ async function probeKV(): Promise<{ available: boolean; latencyMs: number; error
   }
 }
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS });
+}
+
 export async function GET() {
   const [upstreamResults, d1, kv] = await Promise.all([
     Promise.all(PROBES.map(probeUpstream)),
@@ -100,11 +113,16 @@ export async function GET() {
     probeKV(),
   ]);
 
-  const overall: Status = upstreamResults.some(r => r.status === 'down')
-    ? 'degraded'
-    : upstreamResults.some(r => r.status === 'degraded')
-      ? 'degraded'
-      : 'ok';
+  const criticalDown = upstreamResults
+    .filter(r => CRITICAL_KEYS.has(r.key))
+    .every(r => r.status === 'down');
+
+  const anyDown      = upstreamResults.some(r => r.status === 'down');
+  const anyDegraded  = upstreamResults.some(r => r.status === 'degraded');
+
+  // 'down' only when ALL critical feeds fail simultaneously
+  const overall: Status = criticalDown ? 'down' : anyDown || anyDegraded ? 'degraded' : 'ok';
+  const httpStatus = overall === 'down' ? 503 : 200;
 
   return NextResponse.json(
     {
@@ -113,6 +131,12 @@ export async function GET() {
       bindings: { d1, kv },
       generatedAt: new Date().toISOString(),
     },
-    { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' } }
+    {
+      status: httpStatus,
+      headers: {
+        ...CORS,
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+      },
+    }
   );
 }
