@@ -1,6 +1,7 @@
 // ============================================================
 // /v1/events — Public stream of timeline events
 // Supports ?chokepoint= for per-CP filtering (hormuz|redsea|suez|panama|taiwan)
+// Supports ?before= for cursor-based backward pagination
 // ============================================================
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
@@ -12,6 +13,7 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400',
 };
 
 const CP_KEYWORDS: Record<string, string[]> = {
@@ -33,8 +35,10 @@ export async function GET(req: NextRequest) {
   const u = new URL(req.url);
   const limit      = Math.min(100, Math.max(1, parseInt(u.searchParams.get('limit') ?? '30', 10)));
   const since      = u.searchParams.get('since');
+  const before     = u.searchParams.get('before');
   const chokepoint = u.searchParams.get('chokepoint');
-  const sinceMs    = since ? +new Date(since) : 0;
+  const sinceMs    = since  ? +new Date(since)  : 0;
+  const beforeMs   = before ? +new Date(before) : 0;
 
   // ?severity=high,critical  — comma-separated; unknown values ignored
   const severityRaw  = u.searchParams.get('severity');
@@ -54,7 +58,13 @@ export async function GET(req: NextRequest) {
   const json = res.ok ? await res.json() : { events: [] };
   let events: any[] = Array.isArray(json.events) ? json.events : [];
 
-  if (sinceMs)     events = events.filter((e) => +new Date(e.date) >= sinceMs);
+  // Pre-parse timestamps once to avoid O(N log N) Date instantiations in sort/filter
+  let stamped = events.map(e => ({ e, time: +new Date(e.date) }));
+  stamped.sort((a, b) => b.time - a.time);
+  if (sinceMs)  stamped = stamped.filter(x => x.time >= sinceMs);
+  if (beforeMs) stamped = stamped.filter(x => x.time < beforeMs);
+  events = stamped.map(x => x.e);
+
   if (severitySet?.size) events = events.filter(e => severitySet.has(e.severity));
   if (categorySet?.size) events = events.filter(e => categorySet.has(e.category));
 
@@ -67,17 +77,23 @@ export async function GET(req: NextRequest) {
     });
   }
 
+  const total = events.length;
   events = events.slice(0, limit);
+
+  // nextCursor is the oldest event's date — pass as ?before= to fetch the next page
+  const nextCursor = total > limit ? events[events.length - 1]?.date ?? null : null;
 
   return NextResponse.json(
     {
       events,
       count:       events.length,
+      nextCursor,
       filters: {
         chokepoint:  chokepoint ?? null,
         severity:    severityRaw ?? null,
         category:    categoryRaw ?? null,
         since:       since ?? null,
+        before:      before ?? null,
       },
       generatedAt: new Date().toISOString(),
       docs:        `${origin}/docs`,
