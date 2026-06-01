@@ -192,7 +192,7 @@ const NAV = [
   { id: 'feeds',          label: 'Data Feed Routes' },
   { id: 'webhooks',       label: 'Webhooks' },
   { id: 'badge',          label: '  GET /api/badge' },
-  { id: 'status-feed',    label: '  GET /status-feed.xml' },
+  { id: 'status-feed',    label: '  GET /feed.xml' },
   { id: 'subscribe',      label: 'Subscriptions' },
   { id: 'types',          label: 'Types reference' },
   { id: 'openapi',        label: 'OpenAPI spec' },
@@ -339,9 +339,9 @@ export default function DocsPage() {
               </thead>
               <tbody>
                 {[
-                  ['/v1/*',   'Public intelligence API',         'Optional key', 'Allow-all'],
-                  ['/api/*',  'Internal dashboard data feeds',   'None',         'Same-origin'],
-                  ['/feed.xml', 'RSS 2.0 event feed',            'None',         'Allow-all'],
+                  ['/v1/*',     'Public intelligence API (JSON)',  'Optional key', 'Allow-all'],
+                  ['/api/*',    'Internal dashboard data feeds',  'None',         'Same-origin'],
+                  ['/feed.xml', 'RSS 2.0 timeline events feed',   'None',         'Allow-all'],
                 ].map(([prefix, purpose, auth, cors]) => (
                   <tr key={prefix} className="border-t border-divider">
                     <td className="px-3 py-2 font-mono text-accent-hi">{prefix}</td>
@@ -852,15 +852,21 @@ curl "${SITE}/api/badge?cp=redsea" -o redsea-badge.svg
           <div id="status-feed" className="scroll-mt-20">
             <EndpointCard
               method="GET"
-              path="/status-feed.xml"
-              summary="RSS/Atom status change feed"
+              path="/feed.xml"
+              summary="RSS 2.0 timeline event feed"
               badge={<SeverityPill level="info" label="5 min cache" />}
-              description="An RSS 2.0 / Atom feed that publishes one entry per strait status change. Subscribe in any feed reader to receive push-style alerts when the state transitions between OPEN, PARTIALLY_CLOSED, and CLOSED."
-              curlExample={`# Fetch latest entries
-curl ${SITE}/status-feed.xml
+              description="An RSS 2.0 feed of the latest Strait of Hormuz timeline events classified from CNN, BBC, Al Jazeera, Reuters, and Google News. The channel description reflects the current strait status and tension index. Subscribe in any feed reader for real-time geopolitical alerts."
+              params={[
+                { name: 'limit', in: 'query', type: 'integer', desc: 'Maximum events to include (1–50, default 20)' },
+              ]}
+              curlExample={`# Fetch latest 20 events
+curl ${SITE}/feed.xml
 
-# Subscribe in curl-based polling
-curl -s ${SITE}/status-feed.xml | grep -oP '(?<=<title>)[^<]+'`}
+# Fetch up to 50 events
+curl "${SITE}/feed.xml?limit=50"
+
+# Extract headlines with xmllint
+curl -s "${SITE}/feed.xml" | xmllint --xpath "//item/title/text()" -`}
             />
           </div>
 
