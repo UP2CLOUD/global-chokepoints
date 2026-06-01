@@ -187,6 +187,7 @@ const NAV = [
   { id: 'metrics',     label: '  GET /v1/metrics' },
   { id: 'chokepoints', label: '  GET /v1/chokepoints' },
   { id: 'weather',     label: '  GET /v1/weather' },
+  { id: 'news',        label: '  GET /v1/news' },
   { id: 'feeds',          label: 'Data Feed Routes' },
   { id: 'webhooks',       label: 'Webhooks' },
   { id: 'badge',          label: '  GET /api/badge' },
@@ -636,6 +637,47 @@ console.log(\`Waves: \${data.sea.waveHeightM}m · Risk: \${data.navRiskLabel}\`)
 if (data.navRisk >= 50) {
   alert(\`High nav risk (\${data.navRiskLabel}): verify UKMTO advisories\`);
 }`}
+            />
+          </div>
+
+          {/* v1/news */}
+          <div id="news" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/v1/news"
+              summary="GDELT news articles about the Strait"
+              badge={<SeverityPill level="info" label="5 min cache" />}
+              description="Returns recent news articles mentioning Strait of Hormuz, Iranian navy, oil tankers, or Persian Gulf, sourced from the GDELT v2 Doc API. Each article includes a basic sentiment classification (positive / negative / neutral) and a relevance score."
+              params={[
+                { name: 'limit',     in: 'query', type: 'integer', desc: 'Max articles to return (1–50, default 20)' },
+                { name: 'sentiment', in: 'query', type: 'enum',    desc: 'Filter by sentiment: positive | negative | neutral' },
+              ]}
+              responseFields={[
+                { name: 'news[].id',          type: 'string',  desc: 'Article identifier (URL hash)' },
+                { name: 'news[].title',        type: 'string',  desc: 'Article headline' },
+                { name: 'news[].source',       type: 'string',  desc: 'Publisher name (e.g. "Reuters")' },
+                { name: 'news[].publishedAt',  type: 'ISO 8601',desc: 'Publication timestamp' },
+                { name: 'news[].url',          type: 'string',  desc: 'Original article URL' },
+                { name: 'news[].sentiment',    type: 'enum',    desc: 'positive | negative | neutral — basic keyword analysis' },
+                { name: 'news[].relevance',    type: 'number',  desc: '0–1 relevance score from GDELT' },
+                { name: 'count',               type: 'integer', desc: 'Articles returned in this response' },
+                { name: 'total',               type: 'integer', desc: 'Total articles before sentiment filtering' },
+                { name: 'source',              type: 'string',  desc: 'Always "GDELT"' },
+              ]}
+              curlExample={`# Latest 20 articles
+curl ${SITE}/v1/news
+
+# Only negative-sentiment articles
+curl "${SITE}/v1/news?sentiment=negative&limit=10"`}
+              jsExample={`const { news } = await fetch('${SITE}/v1/news').then(r => r.json());
+
+news.forEach(article => {
+  console.log(\`[\${article.sentiment}] \${article.title}\`);
+  console.log(\`  → \${article.url}\`);
+});
+
+// Filter high-relevance negative articles client-side
+const alerts = news.filter(a => a.sentiment === 'negative' && a.relevance > 0.8);`}
             />
           </div>
 
