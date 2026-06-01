@@ -323,6 +323,96 @@ const spec = {
       },
     },
 
+    '/v1/digest': {
+      get: {
+        operationId: 'getDigest',
+        tags: ['Public v1'],
+        summary: 'Single-fetch snapshot — status, events, and markets',
+        description:
+          'Convenience endpoint that fans out to /v1/status, /v1/events, and /v1/metrics in parallel ' +
+          'and returns a combined payload. Designed for embed widgets that cannot afford multiple requests. ' +
+          'Cache TTL: 60 s.',
+        security: [{}],
+        parameters: [
+          {
+            name: 'events',
+            in: 'query',
+            description: 'Number of recent events to include (1–20, default 5)',
+            schema: { type: 'integer', minimum: 1, maximum: 20, default: 5 },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Combined digest payload',
+            headers: {
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60' } },
+              'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
+            },
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    state:        { type: 'string', enum: ['OPEN', 'PARTIALLY_CLOSED', 'CLOSED'] },
+                    tensionLevel: { type: 'string', enum: ['NORMAL', 'ELEVATED', 'CRITICAL'] },
+                    tensionIndex: { type: 'integer', minimum: 0, maximum: 100 },
+                    confidence:   { type: 'number', minimum: 0, maximum: 1 },
+                    reason:       { type: 'string' },
+                    reasonUrl:    { type: 'string', format: 'uri', nullable: true },
+                    asOf:         { type: 'string', format: 'date-time' },
+                    events:       { type: 'array', items: { $ref: '#/components/schemas/TimelineEvent' } },
+                    eventCount:   { type: 'integer' },
+                    brent: {
+                      nullable: true,
+                      type: 'object',
+                      properties: {
+                        price:         { type: 'number' },
+                        change:        { type: 'number' },
+                        changePercent: { type: 'number' },
+                      },
+                    },
+                    markets: {
+                      nullable: true,
+                      type: 'object',
+                      properties: {
+                        brent:  { $ref: '#/components/schemas/Ticker' },
+                        wti:    { $ref: '#/components/schemas/Ticker' },
+                        natgas: { $ref: '#/components/schemas/Ticker' },
+                      },
+                    },
+                    weather: {
+                      nullable: true,
+                      type: 'object',
+                      properties: {
+                        temperatureC:  { type: 'number' },
+                        wind:          { type: 'object', properties: { speedKn: { type: 'number' }, direction: { type: 'string' } } },
+                        sea:           { type: 'object', properties: { waveHeightM: { type: 'number' } } },
+                        navRisk:       { type: 'number', minimum: 0, maximum: 100 },
+                        navRiskLabel:  { type: 'string', enum: ['CALM', 'MODERATE', 'ROUGH', 'SEVERE'] },
+                      },
+                    },
+                    eventDelta:  {
+                      nullable: true,
+                      type: 'object',
+                      properties: {
+                        last24h: { type: 'integer' },
+                        prev24h: { type: 'integer' },
+                        delta:   { type: 'integer' },
+                      },
+                    },
+                    generatedAt: { type: 'string', format: 'date-time' },
+                    sources:     { type: 'array', items: { type: 'string' } },
+                    license:     { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+          '503': { description: 'Status data temporarily unavailable' },
+        },
+      },
+    },
+
     '/v1/weather': {
       get: {
         operationId: 'getWeatherPublic',
