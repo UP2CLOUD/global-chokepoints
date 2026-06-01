@@ -58,11 +58,13 @@ export async function GET(req: NextRequest) {
   const json = res.ok ? await res.json() : { events: [] };
   let events: any[] = Array.isArray(json.events) ? json.events : [];
 
-  // Sort newest-first so ?before cursor picks up older pages correctly
-  events = events.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  // Pre-parse timestamps once to avoid O(N log N) Date instantiations in sort/filter
+  let stamped = events.map(e => ({ e, time: +new Date(e.date) }));
+  stamped.sort((a, b) => b.time - a.time);
+  if (sinceMs)  stamped = stamped.filter(x => x.time >= sinceMs);
+  if (beforeMs) stamped = stamped.filter(x => x.time < beforeMs);
+  events = stamped.map(x => x.e);
 
-  if (sinceMs)          events = events.filter((e) => +new Date(e.date) >= sinceMs);
-  if (beforeMs)         events = events.filter((e) => +new Date(e.date) < beforeMs);
   if (severitySet?.size) events = events.filter(e => severitySet.has(e.severity));
   if (categorySet?.size) events = events.filter(e => categorySet.has(e.category));
 
