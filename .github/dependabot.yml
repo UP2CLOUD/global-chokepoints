@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # Keep GitHub Actions pinned to exact commit SHAs and up to date.
+  # Dependabot opens weekly PRs that replace tag refs with commit SHAs.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  # Keep npm dependencies up to date.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      production-deps:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+          - "minor"
