@@ -197,10 +197,23 @@ function hash(s: string): string {
   return Math.abs(h).toString(36);
 }
 
+// Strip common publisher suffixes from titles before dedup comparison.
+// The same Reuters story can appear as "Iran seizes tanker - Reuters" in
+// one feed and "Iran seizes tanker | CNN" in another.
+function normalizeTitle(title: string): string {
+  return title
+    .replace(/\s*[-|–]\s*(Reuters|BBC|CNN|Al Jazeera|Guardian|Bloomberg|WSJ|NYT|FT|AP|AFP)\s*$/i, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 72);
+}
+
 async function fetchFeed(
   name: string,
   url: string
-): Promise<TimelineEvent[]> {
+): Promise<{ events: TimelineEvent[]; ok: boolean }> {
   try {
     const res = await fetch(url, {
       headers: {
@@ -208,16 +221,15 @@ async function fetchFeed(
           'Mozilla/5.0 (compatible; GlobalChokepointsAlerts/1.0; +https://global-chokepoints.pages.dev)',
         Accept: 'application/rss+xml, application/xml, text/xml, */*',
       },
-      // Per-feed cache window (slightly shorter than route revalidate)
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { events: [], ok: false };
     const xml = await res.text();
-    return parseFeed(xml, name);
+    return { events: parseFeed(xml, name), ok: true };
   } catch (err) {
     console.warn(`[timeline] ${name} failed:`, err);
-    return [];
+    return { events: [], ok: false };
   }
 }
 
@@ -225,7 +237,7 @@ export async function GET() {
   const kv = getKV();
   if (kv) {
     try {
-      const cached = await kv.get(KV_TIMELINE_KEY, 'json') as { events: TimelineEvent[]; sources: string[]; generatedAt: string; fetchMs: number } | null;
+      const cached = await kv.get(KV_TIMELINE_KEY, 'json') as { events: TimelineEvent[]; sources: string[]; feedsOk: number; feedsFailed: number; generatedAt: string; fetchMs: number } | null;
       if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } });
     } catch { /* fall through */ }
   }
@@ -235,16 +247,30 @@ export async function GET() {
     FEEDS.map((f) => fetchFeed(f.name, f.url))
   );
 
-  // Flatten + dedupe by url (or title fallback)
-  const seen = new Set<string>();
-  const merged: TimelineEvent[] = [];
-  for (const list of results) {
-    for (const ev of list) {
-      const key = ev.url !== '#' ? ev.url : ev.title.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      merged.push(ev);
+  const feedsOk     = results.filter(r => r.ok).length;
+  const feedsFailed = results.length - feedsOk;
+
+  // Pass 1: dedupe by canonical URL
+  const seenUrl = new Set<string>();
+  const pass1: TimelineEvent[] = [];
+  for (const { events } of results) {
+    for (const ev of events) {
+      const key = ev.url !== '#' ? ev.url : `__title__${ev.title.toLowerCase()}`;
+      if (seenUrl.has(key)) continue;
+      seenUrl.add(key);
+      pass1.push(ev);
     }
+  }
+
+  // Pass 2: dedupe by normalized title — catches the same story syndicated
+  // across multiple Google News feeds with slightly different URLs
+  const seenTitle = new Set<string>();
+  const merged: TimelineEvent[] = [];
+  for (const ev of pass1) {
+    const titleKey = normalizeTitle(ev.title);
+    if (seenTitle.has(titleKey)) continue;
+    seenTitle.add(titleKey);
+    merged.push(ev);
   }
 
   // Sort newest first, cap at 50 to cover multiple chokepoints
@@ -254,6 +280,8 @@ export async function GET() {
   const payload = {
     events,
     sources: FEEDS.map((f) => f.name),
+    feedsOk,
+    feedsFailed,
     generatedAt: new Date().toISOString(),
     fetchMs: Date.now() - startedAt,
   };
