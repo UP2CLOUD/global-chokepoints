@@ -57,6 +57,16 @@ const PROBES: Probe[] = [
   { key: 'weather', label: 'Weather (Open-Meteo)',
     url: 'https://api.open-meteo.com/v1/forecast?latitude=26.5&longitude=56.4&current=temperature_2m',
     expectedRefreshMs: 15 * 60_000 },
+  { key: 'stooq', label: 'Markets (Stooq)',
+    url: 'https://stooq.com/q/d/l/?s=BZ.F&i=d',
+    expectedRefreshMs: 5 * 60_000,
+    degradedThresholdMs: 4000,
+    timeoutMs: 6000 },
+  { key: 'portwatch', label: 'Data (IMF PortWatch)',
+    url: 'https://portwatch.imf.org/datasets/portwatch-data/api/explore/v2.1/catalog/datasets/port_statistics_public_v2/records?limit=1',
+    expectedRefreshMs: 6 * 60 * 60_000,
+    degradedThresholdMs: 6000,
+    timeoutMs: 10000 },
 ];
 
 async function probeUpstream(p: Probe): Promise<{ key: string; label: string; status: Status; latencyMs: number; httpStatus: number | null }> {

@@ -757,12 +757,44 @@ const spec = {
       },
     },
 
+    '/api/ping': {
+      get: {
+        operationId: 'ping',
+        tags: ['Data feeds'],
+        summary: 'Fast liveness check — no upstream fetches',
+        description:
+          'Returns `{"ok":true}` in under 5 ms with no external network calls. ' +
+          'Use this URL for uptime monitors (UptimeRobot, Pingdom, etc.) instead of ' +
+          '/api/health which probes 8 external services and takes 2–5 s. ' +
+          'Also responds to HEAD requests for minimal-overhead checks.',
+        security: [{}],
+        responses: {
+          '200': {
+            description: 'Service is alive',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok:      { type: 'boolean', example: true },
+                    ts:      { type: 'string', format: 'date-time' },
+                    service: { type: 'string', example: 'global-chokepoints-alerts' },
+                  },
+                },
+                example: { ok: true, ts: '2026-06-04T12:00:00.000Z', service: 'global-chokepoints-alerts' },
+              },
+            },
+          },
+        },
+      },
+    },
+
     '/api/health': {
       get: {
         operationId: 'getHealth',
         tags: ['Data feeds'],
         summary: 'Upstream feed health probes',
-        description: 'Probes Yahoo Finance, GDELT, CNN/BBC/Al Jazeera RSS, and Open-Meteo. Cache TTL: 30 s.',
+        description: 'Probes Yahoo Finance, Stooq, GDELT, CNN/BBC/Al Jazeera RSS, Open-Meteo, and IMF PortWatch. Returns per-probe latency and D1/KV binding status. Cache TTL: 30 s.',
         responses: {
           '200': {
             description: 'Health probe results',
