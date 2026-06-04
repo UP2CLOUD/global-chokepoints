@@ -529,6 +529,34 @@ const spec = {
       },
     },
 
+    '/status-feed.xml': {
+      get: {
+        operationId: 'getStatusFeed',
+        tags: ['Public v1'],
+        summary: 'RSS 2.0 status-change feed',
+        description:
+          'Returns an RSS 2.0 feed of recorded strait status transitions. ' +
+          'Each item represents a state change recorded by the alert-check cron ' +
+          '(e.g. OPEN → PARTIALLY_CLOSED), with the transition reason as the description. ' +
+          'Sourced from D1 status_history table. Cache TTL: 5 min.',
+        security: [{}],
+        responses: {
+          '200': {
+            description: 'RSS 2.0 XML status-change feed',
+            headers: {
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300' } },
+              'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
+            },
+            content: {
+              'application/rss+xml': {
+                schema: { type: 'string', format: 'xml' },
+              },
+            },
+          },
+        },
+      },
+    },
+
     '/feed.xml': {
       get: {
         operationId: 'getFeed',

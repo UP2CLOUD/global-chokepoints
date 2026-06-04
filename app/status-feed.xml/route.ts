@@ -1,8 +1,20 @@
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 import { NextResponse } from 'next/server';
 import { getD1 } from '@/app/lib/db';
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400',
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS });
+}
 
 type HistoryRow = {
   id: string;
@@ -65,8 +77,9 @@ ${entries}
 
   return new NextResponse(xml, {
     headers: {
+      ...CORS,
       'Content-Type': 'application/rss+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
     },
   });
 }

@@ -42,7 +42,12 @@ export const metadata: Metadata = {
   authors: [{ name: 'Global Chokepoints Alerts' }],
   alternates: {
     canonical: '/',
-    types: { 'application/rss+xml': '/feed.xml' },
+    types: {
+      'application/rss+xml': [
+        { url: '/feed.xml',        title: 'Global Chokepoints — Events Feed' },
+        { url: '/status-feed.xml', title: 'Global Chokepoints — Status Changes Feed' },
+      ],
+    },
   },
   openGraph: {
     title: 'Global Chokepoints Alerts — Real-Time Maritime Intelligence',
