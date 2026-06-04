@@ -193,6 +193,7 @@ const NAV = [
   { id: 'webhooks',       label: 'Webhooks' },
   { id: 'badge',          label: '  GET /api/badge' },
   { id: 'status-feed',    label: '  GET /feed.xml' },
+  { id: 'status-changes-feed', label: '  GET /status-feed.xml' },
   { id: 'subscribe',      label: 'Subscriptions' },
   { id: 'types',          label: 'Types reference' },
   { id: 'openapi',        label: 'OpenAPI spec' },
@@ -253,7 +254,10 @@ export default function DocsPage() {
                 Methodology ↗
               </a>
               <a href="/feed.xml" className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors py-0.5 px-2">
-                RSS feed ↗
+                Events RSS ↗
+              </a>
+              <a href="/status-feed.xml" className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors py-0.5 px-2">
+                Status RSS ↗
               </a>
             </div>
           </div>
@@ -870,6 +874,22 @@ curl -s "${SITE}/feed.xml" | xmllint --xpath "//item/title/text()" -`}
             />
           </div>
 
+          {/* Status-changes feed */}
+          <div id="status-changes-feed" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/status-feed.xml"
+              summary="RSS 2.0 status-change feed"
+              badge={<SeverityPill level="info" label="5 min cache" />}
+              description="An RSS 2.0 feed that publishes one entry per strait status transition recorded by the alert-check cron (e.g. OPEN → PARTIALLY_CLOSED). Each item includes the transition reason. Subscribe to be notified whenever the operational state changes — useful for automated alerting pipelines."
+              curlExample={`# Fetch latest status transitions
+curl ${SITE}/status-feed.xml
+
+# Extract transition titles
+curl -s "${SITE}/status-feed.xml" | xmllint --xpath "//item/title/text()" -`}
+            />
+          </div>
+
           {/* Subscriptions */}
           <Section id="subscribe" title="Subscriptions">
             <p>
@@ -980,7 +1000,8 @@ postman import openapi.json`}</Pre>
               <span suppressHydrationWarning>© {new Date().getFullYear()} Global Chokepoints Alerts</span>
               <Link href="/" className="hover:text-accent transition-colors">Dashboard</Link>
               <Link href="/methodology" className="hover:text-accent transition-colors">Methodology</Link>
-              <a href="/feed.xml" className="hover:text-accent transition-colors">RSS</a>
+              <a href="/feed.xml" className="hover:text-accent transition-colors">Events RSS</a>
+              <a href="/status-feed.xml" className="hover:text-accent transition-colors">Status RSS</a>
               <a href="/api/openapi" className="hover:text-accent transition-colors">openapi.json</a>
             </div>
           </footer>

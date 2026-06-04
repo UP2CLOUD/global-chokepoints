@@ -13,5 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/keys`,               lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/embed/configure`,    lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${base}/webhooks`,           lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${base}/feed.xml`,           lastModified: now, changeFrequency: 'always',  priority: 0.6 },
+    { url: `${base}/status-feed.xml`,    lastModified: now, changeFrequency: 'always',  priority: 0.5 },
   ];
 }
