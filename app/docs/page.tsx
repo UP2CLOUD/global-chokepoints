@@ -191,6 +191,7 @@ const NAV = [
   { id: 'news',        label: '  GET /v1/news' },
   { id: 'feeds',          label: 'Data Feed Routes' },
   { id: 'webhooks',       label: 'Webhooks' },
+  { id: 'ping',           label: '  GET /api/ping' },
   { id: 'badge',          label: '  GET /api/badge' },
   { id: 'status-feed',    label: '  GET /feed.xml' },
   { id: 'status-changes-feed', label: '  GET /status-feed.xml' },
@@ -750,12 +751,13 @@ const alerts = news.filter(a => a.sentiment === 'negative' && a.relevance > 0.8)
                 {[
                   ['/api/brent',     'Yahoo Finance → Stooq CSV → EIA → module cache → KV', '5 min'],
                   ['/api/markets',   'EIA (Brent/WTI) + FRED (Henry Hub) → Yahoo Finance',  '5 min'],
-                  ['/api/timeline',  '7 RSS feeds (CNN, BBC, Al Jazeera, Google News) → KV', '60 s'],
+                  ['/api/timeline',  '9 RSS feeds (CNN, BBC, Al Jazeera, Google News) → KV', '60 s'],
                   ['/api/news',      'GDELT v2 Doc API → KV fallback',                       '5 min'],
                   ['/api/weather',   'Open-Meteo Forecast + Marine → KV',                   '15 min'],
                   ['/api/vessels',   'data/vessels.json (AIS sidecar) → KV fallback',        '2 min'],
                   ['/api/portwatch', 'IMF PortWatch → KV',                                   '6 h'],
-                  ['/api/health',    'Parallel probes (Yahoo, GDELT, RSS, Open-Meteo)',       '30 s'],
+                  ['/api/ping',      'No upstream fetches — instant liveness check',          'no-cache'],
+                  ['/api/health',    'Parallel probes (Yahoo, Stooq, GDELT, RSS, Open-Meteo, IMF PortWatch)', '30 s'],
                 ].map(([route, sources, ttl]) => (
                   <tr key={route as string} className="border-t border-divider">
                     <td className="px-3 py-2 font-mono text-accent-hi">{route}</td>
@@ -825,6 +827,29 @@ const alerts = news.filter(a => a.sentiment === 'negative' && a.relevance > 0.8)
               />
             </div>
           </Section>
+
+          {/* Ping */}
+          <div id="ping" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/api/ping"
+              summary="Fast liveness check for uptime monitors"
+              badge={<SeverityPill level="neutral" label="no cache" />}
+              description="Returns {&quot;ok&quot;:true} in under 5 ms with zero upstream network fetches. Use this URL for uptime monitors (UptimeRobot, Pingdom, Better Uptime, etc.) — not /api/health, which probes 8 external services and can take 2–5 s. Also responds to HEAD requests for the lightest possible check."
+              responseFields={[
+                { name: 'ok',      type: 'boolean',  desc: 'Always true when the edge function is reachable' },
+                { name: 'ts',      type: 'ISO 8601', desc: 'Current UTC timestamp at the edge worker' },
+                { name: 'service', type: 'string',   desc: 'Always "global-chokepoints-alerts"' },
+              ]}
+              curlExample={`# GET check (recommended for uptime monitors)
+curl ${SITE}/api/ping
+# → {"ok":true,"ts":"2026-06-04T12:00:00.000Z","service":"global-chokepoints-alerts"}
+
+# HEAD check — no body, absolute minimum bandwidth
+curl -I ${SITE}/api/ping
+# → HTTP/2 200`}
+            />
+          </div>
 
           {/* Badge */}
           <div id="badge" className="scroll-mt-20">
