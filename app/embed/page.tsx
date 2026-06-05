@@ -53,15 +53,22 @@ function EmbedContent() {
       await loadData();
       if (!cancelled) setLoading(false);
     })();
-    return () => { cancelled = true; };
+    const id = setInterval(loadData, 90_000);
+    return () => { cancelled = true; clearInterval(id); };
   }, [loadData]);
 
-  useEffect(() => {
+  const loadChokepoints = useCallback(() => {
     fetch('/v1/chokepoints', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.chokepoints) setCpData(d.chokepoints); })
-      .catch(() => {});
+      .catch(err => console.warn('[embed] chokepoints fetch failed:', err));
   }, []);
+
+  useEffect(() => {
+    loadChokepoints();
+    const id = setInterval(loadChokepoints, 90_000);
+    return () => clearInterval(id);
+  }, [loadChokepoints]);
 
   if (loading || !data) return <LoadingScreen />;
 
