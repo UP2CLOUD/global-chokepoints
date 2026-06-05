@@ -172,6 +172,7 @@ const spec = {
               },
             },
           },
+          '400': { description: 'Invalid parameter — ?since or ?before is not a valid ISO 8601 timestamp' },
         },
       },
     },
@@ -234,10 +235,10 @@ const spec = {
       get: {
         operationId: 'getHistory',
         tags: ['Public v1'],
-        summary: 'Paginated log of strait status changes',
+        summary: 'Paginated log of chokepoint status changes',
         description:
           'Returns a reverse-chronological list of recorded state transitions written by the alert-check cron ' +
-          'whenever the strait status changes. Supports filtering by state and ISO timestamp. Cache TTL: 60 s.',
+          'whenever the chokepoint status changes. Supports filtering by state and ISO timestamp. Cache TTL: 60 s.',
         security: [{}],
         parameters: [
           {
@@ -262,7 +263,7 @@ const spec = {
             name: 'state',
             in: 'query',
             schema: { type: 'string', enum: ['OPEN', 'CLOSED', 'PARTIALLY_CLOSED', 'DISRUPTED'] },
-            description: 'Filter to a specific strait state.',
+            description: 'Filter to a specific chokepoint state.',
           },
         ],
         responses: {
@@ -317,7 +318,7 @@ const spec = {
               },
             },
           },
-          '400': { description: 'Invalid state filter value' },
+          '400': { description: 'Invalid parameter — ?state is not a recognised state, or ?since/?before is not a valid ISO 8601 timestamp' },
           '500': { description: 'Database query error' },
         },
       },
@@ -408,7 +409,10 @@ const spec = {
               },
             },
           },
-          '503': { description: 'Status data temporarily unavailable' },
+          '503': {
+            description: 'Status data temporarily unavailable',
+            headers: { 'Retry-After': { schema: { type: 'integer', example: 30 }, description: 'Seconds to wait before retrying' } },
+          },
         },
       },
     },
@@ -505,7 +509,10 @@ const spec = {
           },
           '400': { description: 'Invalid sentiment filter value' },
           '502': { description: 'Upstream news API returned an error' },
-          '503': { description: 'News data temporarily unavailable' },
+          '503': {
+            description: 'News data temporarily unavailable',
+            headers: { 'Retry-After': { schema: { type: 'integer', example: 30 }, description: 'Seconds to wait before retrying' } },
+          },
         },
       },
     },
