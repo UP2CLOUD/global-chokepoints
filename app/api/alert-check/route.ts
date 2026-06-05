@@ -1,5 +1,5 @@
 // ============================================================
-// POST /api/alert-check  — strait status change detector & mailer
+// POST /api/alert-check  — chokepoint status change detector & mailer
 //
 // Called by:
 //   • Cloudflare Cron Trigger  (every 10 min, wrangler.toml)
