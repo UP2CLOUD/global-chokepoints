@@ -446,10 +446,11 @@ const spec = {
       get: {
         operationId: 'getNewsPublic',
         tags: ['Public v1'],
-        summary: 'GDELT news articles about the Strait',
+        summary: 'GDELT news articles about global chokepoints',
         description:
-          'Returns recent news articles mentioning Strait of Hormuz, Iranian navy, oil tankers, ' +
-          'or Persian Gulf from the GDELT v2 Doc API with sentiment scoring. Cache TTL: 5 min.',
+          'Returns recent news articles covering all five tracked chokepoints — Strait of Hormuz, ' +
+          'Red Sea / Houthi / Bab-el-Mandeb, Suez Canal, Panama Canal, and Taiwan Strait — ' +
+          'from the GDELT v2 Doc API with sentiment scoring. Cache TTL: 5 min.',
         security: [{}],
         parameters: [
           {
@@ -626,10 +627,13 @@ const spec = {
         operationId: 'getMarkets',
         tags: ['Data feeds'],
         summary: 'Brent, WTI, and Henry Hub tickers',
-        description: 'Fallback chain per commodity: EIA/FRED primary → Yahoo Finance secondary. Cache TTL: 5 min.',
+        description: 'Fallback chain per commodity: EIA/FRED primary → Yahoo Finance secondary. Cache TTL: 5 min. Response includes X-Cache: MISS | STALE.',
         responses: {
           '200': {
             description: 'Commodity tickers',
+            headers: {
+              'X-Cache': { schema: { type: 'string', enum: ['MISS', 'STALE'] }, description: 'MISS = live upstream fetch; STALE = at least one symbol served from cache' },
+            },
             content: {
               'application/json': {
                 schema: {
@@ -659,9 +663,13 @@ const spec = {
         operationId: 'getTimeline',
         tags: ['Data feeds'],
         summary: 'Raw RSS event timeline (60 s cache)',
+        description: 'Aggregates events from 7 RSS feeds. Response includes X-Cache: HIT | MISS.',
         responses: {
           '200': {
             description: 'Timeline with source metadata',
+            headers: {
+              'X-Cache': { schema: { type: 'string', enum: ['HIT', 'MISS'] }, description: 'HIT = served from KV cache; MISS = live upstream fetch' },
+            },
             content: {
               'application/json': {
                 schema: {
@@ -685,10 +693,13 @@ const spec = {
         operationId: 'getNews',
         tags: ['Data feeds'],
         summary: 'GDELT news articles',
-        description: 'Returns Hormuz/Iran-relevant articles from the GDELT v2 Doc API with sentiment scoring. Cache TTL: 5 min.',
+        description: 'Returns articles covering all five chokepoints (Hormuz, Red Sea, Suez, Panama, Taiwan Strait) from the GDELT v2 Doc API with sentiment scoring. Cache TTL: 5 min. Response includes X-Cache: HIT | MISS | STALE.',
         responses: {
           '200': {
             description: 'News articles',
+            headers: {
+              'X-Cache': { schema: { type: 'string', enum: ['HIT', 'MISS', 'STALE'] }, description: 'HIT = KV cache hit; MISS = live GDELT fetch; STALE = fallback from module/KV cache' },
+            },
             content: {
               'application/json': {
                 schema: {
@@ -714,10 +725,13 @@ const spec = {
         operationId: 'getWeather',
         tags: ['Data feeds'],
         summary: 'Marine weather at 26.5°N 56.4°E (Bandar Abbas approach)',
-        description: 'Open-Meteo Forecast + Marine APIs. No API key required. Cache TTL: 15 min.',
+        description: 'Open-Meteo Forecast + Marine APIs. No API key required. Cache TTL: 15 min. Response includes X-Cache: HIT | MISS.',
         responses: {
           '200': {
             description: 'Weather and navigational risk',
+            headers: {
+              'X-Cache': { schema: { type: 'string', enum: ['HIT', 'MISS'] }, description: 'HIT = served from KV cache; MISS = live upstream fetch' },
+            },
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/WeatherPayload' } },
             },
@@ -752,10 +766,13 @@ const spec = {
           'Daily vessel transit counts for Hormuz, Red Sea (Bab-el-Mandeb), Suez Canal, and Panama Canal ' +
           'from IMF PortWatch. Data has a 2–3 day lag; updates weekly on Tuesdays. Cache TTL: 6 h. ' +
           'Root-level `days`/`todayTotal`/etc. are Hormuz (backward-compatible); ' +
-          'per-chokepoint data is in the `chokepoints` map.',
+          'per-chokepoint data is in the `chokepoints` map. Response includes X-Cache: HIT | MISS.',
         responses: {
           '200': {
             description: 'Transit counts',
+            headers: {
+              'X-Cache': { schema: { type: 'string', enum: ['HIT', 'MISS'] }, description: 'HIT = served from KV cache; MISS = live upstream fetch' },
+            },
             content: {
               'application/json': {
                 schema: {
@@ -922,7 +939,7 @@ const spec = {
       post: {
         operationId: 'subscribe',
         tags: ['Subscriptions'],
-        summary: 'Subscribe to strait status alerts',
+        summary: 'Subscribe to chokepoint status alerts',
         description: 'Inserts an unconfirmed subscription in D1 and sends a confirmation email via Resend. Idempotent for unconfirmed addresses.',
         requestBody: {
           required: true,
