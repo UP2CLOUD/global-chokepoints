@@ -83,6 +83,12 @@ export async function middleware(request: NextRequest) {
         const rlKey = `rl:${cached.id}:${today}`;
         const count = Number(await kv.get(rlKey) ?? '0');
 
+        // Unix timestamp of midnight UTC (when the daily window resets)
+        const midnightUTC = (() => {
+          const d = new Date(); d.setUTCDate(d.getUTCDate() + 1); d.setUTCHours(0, 0, 0, 0);
+          return Math.floor(d.getTime() / 1000);
+        })();
+
         if (count >= cached.rateLimit) {
           return NextResponse.json(
             { error: 'Rate limit exceeded', limit: cached.rateLimit, resetAt: 'midnight UTC' },
@@ -92,6 +98,7 @@ export async function middleware(request: NextRequest) {
                 'Content-Type': 'application/json',
                 'X-RateLimit-Limit': String(cached.rateLimit),
                 'X-RateLimit-Remaining': '0',
+                'X-RateLimit-Reset': String(midnightUTC),
                 ...(requestId ? { 'X-Request-ID': requestId } : {}),
               },
             },
@@ -102,6 +109,7 @@ export async function middleware(request: NextRequest) {
         const res = NextResponse.next();
         res.headers.set('X-RateLimit-Limit', String(cached.rateLimit));
         res.headers.set('X-RateLimit-Remaining', String(cached.rateLimit - count - 1));
+        res.headers.set('X-RateLimit-Reset', String(midnightUTC));
         return addSecurityHeaders(res, requestId);
       }
       // KV unavailable (local dev) — fall through

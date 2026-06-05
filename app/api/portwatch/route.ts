@@ -122,7 +122,7 @@ export async function GET() {
   if (isFresh && cached) {
     return NextResponse.json(
       { ok: true, source: 'IMF PortWatch', cached: true, ...cached },
-      { headers: { 'Cache-Control': 'no-store' } }
+      { headers: { 'Cache-Control': 'no-store', 'X-Cache': 'HIT' } }
     );
   }
 
@@ -150,6 +150,6 @@ export async function GET() {
 
   return NextResponse.json(
     { ok: true, source: 'IMF PortWatch', cached: false, ...payload },
-    { headers: { 'Cache-Control': 'no-store' } }
+    { headers: { 'Cache-Control': 'no-store', 'X-Cache': 'MISS' } }
   );
 }
