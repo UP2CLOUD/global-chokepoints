@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
         }
       }
     }
-  } catch { /* use defaults */ }
+  } catch (err) { console.warn('[api/badge] upstream fetch failed, using defaults:', (err as Error).message); }
 
   return new NextResponse(makeBadge(label, status, risk), {
     headers: {

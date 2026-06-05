@@ -1,5 +1,5 @@
 // ============================================================
-// /v1/status — Public, stable API for the headline strait state.
+// /v1/status — Public, stable API for the headline chokepoint state.
 // CORS allow-all; cache 30s; partner embeds friendly.
 // ============================================================
 export const runtime = 'edge';

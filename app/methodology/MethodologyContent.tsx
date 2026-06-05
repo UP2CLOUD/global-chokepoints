@@ -67,7 +67,7 @@ const SOURCES = [
   },
   {
     name: 'AISStream.io',
-    use: 'Real-time AIS vessel positions in the strait (when key configured)',
+    use: 'Real-time AIS vessel positions in the Strait of Hormuz (when AIS key configured)',
     cadence: 'Real-time WebSocket',
     license: 'Free tier; MMSI-level vessel positions.',
   },

@@ -141,7 +141,7 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
       className="relative overflow-hidden border border-divider panel-tactical"
       role="status"
       aria-live="polite"
-      aria-label={loading ? 'Loading strait status…' : `${t.hero.question} — ${answerWord}`}
+      aria-label={loading ? 'Loading chokepoint status…' : `${t.hero.question} — ${answerWord}`}
     >
       <div className="scan-bar" aria-hidden />
       {/* ── Header strip ─────────────────────────────────────── */}
