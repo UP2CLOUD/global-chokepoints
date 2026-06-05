@@ -51,7 +51,7 @@ export default function MarketsRail() {
     let alive = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/markets', { cache: 'no-store' });
+        const res = await fetch('/api/markets', { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
         if (!res.ok) throw new Error(String(res.status));
         const j = (await res.json()) as MarketsResponse;
         if (alive) { setData(j); setLoading(false); }

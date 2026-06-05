@@ -40,7 +40,7 @@ export default function WeatherPanel() {
     let alive = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/weather', { cache: 'no-store' });
+        const res = await fetch('/api/weather', { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
         if (!res.ok) throw new Error(String(res.status));
         const j = (await res.json()) as Weather;
         if (alive) { setData(j); setDown(false); }

@@ -45,7 +45,7 @@ export interface BrentPayload {
 
 export async function fetchBrent(): Promise<BrentPayload | null> {
   try {
-    const res = await fetch('/api/brent', { cache: 'no-store' });
+    const res = await fetch('/api/brent', { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return (await res.json()) as BrentPayload;
   } catch (err) {
@@ -56,7 +56,7 @@ export async function fetchBrent(): Promise<BrentPayload | null> {
 
 export async function fetchNews(): Promise<NewsItem[] | null> {
   try {
-    const res = await fetch('/api/news', { cache: 'no-store' });
+    const res = await fetch('/api/news', { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     return Array.isArray(json.news) && json.news.length > 0 ? json.news : null;
@@ -68,7 +68,7 @@ export async function fetchNews(): Promise<NewsItem[] | null> {
 
 export async function fetchTimeline(): Promise<TimelineEvent[] | null> {
   try {
-    const res = await fetch('/api/timeline', { cache: 'no-store' });
+    const res = await fetch('/api/timeline', { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     return Array.isArray(json.events) && json.events.length > 0
