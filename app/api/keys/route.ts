@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
       .bind(id, hash, label, rateLimit)
       .run();
   } catch (err) {
-    return NextResponse.json({ error: 'Failed to create key', detail: String(err) }, { status: 500 });
+    console.error('[api/keys] Failed to create key:', err);
+    return NextResponse.json({ error: 'Failed to create key' }, { status: 500 });
   }
 
   const kv = getKV();
@@ -48,14 +49,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const db = getD1();
-  if (!db) return NextResponse.json({ keys: [] });
+  if (!db) return NextResponse.json({ keys: [] }, { headers: { 'Cache-Control': 'no-store' } });
   try {
     const { results } = await db
       .prepare('SELECT id, label, rate_limit, created_at, last_used_at FROM api_keys ORDER BY created_at DESC')
       .all<{ id: string; label: string; rate_limit: number; created_at: number; last_used_at: number | null }>();
-    return NextResponse.json({ keys: results ?? [] });
+    return NextResponse.json({ keys: results ?? [] }, { headers: { 'Cache-Control': 'no-store' } });
   } catch {
-    return NextResponse.json({ keys: [] });
+    return NextResponse.json({ keys: [] }, { headers: { 'Cache-Control': 'no-store' } });
   }
 }
 
