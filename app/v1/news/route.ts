@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: 'News data temporarily unavailable' },
-      { status: 503, headers: CORS },
+      { status: 503, headers: { ...CORS, 'Retry-After': '30' } },
     );
   }
 
