@@ -50,7 +50,7 @@ export async function fetchEiaSpot(
     `&offset=0&length=${length}`;
 
   const res = await fetch(url, {
-    headers: { Accept: 'application/json', 'User-Agent': 'IsStraitHormuzOpen/1.0' },
+    headers: { Accept: 'application/json', 'User-Agent': 'GlobalChokepointsAlerts/1.0' },
     next: { revalidate: 300 },
     signal: AbortSignal.timeout(8000),
   });
@@ -133,7 +133,7 @@ export async function fetchFredNatGas(length = 14): Promise<FredResult | null> {
     `&observation_start=2020-01-01`;
 
   const res = await fetch(url, {
-    headers: { Accept: 'application/json', 'User-Agent': 'IsStraitHormuzOpen/1.0' },
+    headers: { Accept: 'application/json', 'User-Agent': 'GlobalChokepointsAlerts/1.0' },
     next: { revalidate: 3600 },
     signal: AbortSignal.timeout(8000),
   });

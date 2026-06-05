@@ -1,5 +1,5 @@
 // ============================================================
-// /feed.xml — RSS 2.0 feed of Strait of Hormuz timeline events.
+// /feed.xml — RSS 2.0 feed of global maritime chokepoints timeline events.
 // CORS allow-all; cache 5 min; suitable for RSS readers and bots.
 // ============================================================
 export const runtime = 'edge';
@@ -104,10 +104,10 @@ export async function GET(req: NextRequest) {
   xmlns:atom="http://www.w3.org/2005/Atom"
   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
-    <title>Global Chokepoints Alerts — Strait of Hormuz</title>
+    <title>Global Chokepoints Alerts</title>
     <link>${base}/</link>
     <atom:link href="${base}/feed.xml" rel="self" type="application/rss+xml"/>
-    <description>Live geopolitical and maritime events affecting the Strait of Hormuz. Current status: ${esc(stateLabel)} (tension ${Math.round(tensionIndex)}/100). Sourced from CNN, BBC, Al Jazeera, Reuters and others.</description>
+    <description>Live geopolitical and maritime events across global chokepoints (Hormuz, Red Sea, Suez, Panama, Taiwan Strait). Current status: ${esc(stateLabel)} (tension ${Math.round(tensionIndex)}/100). Sourced from CNN, BBC, Al Jazeera, Reuters and others.</description>
     <language>en-us</language>
     <pubDate>${lastPub}</pubDate>
     <lastBuildDate>${now}</lastBuildDate>

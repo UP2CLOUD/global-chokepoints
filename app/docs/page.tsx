@@ -277,7 +277,7 @@ export default function DocsPage() {
               Global Chokepoints Alerts API
             </h1>
             <p className="text-text2 leading-relaxed max-w-2xl">
-              Real-time JSON data on the operational status of the Strait of Hormuz.
+              Real-time JSON data on the operational status of global maritime chokepoints.
               All <Code>/v1</Code> endpoints are public, CORS-open, and licensed under{' '}
               <a href="https://creativecommons.org/licenses/by/4.0/" className="text-accent hover:underline">CC-BY-4.0</a>.
               No API key required for most uses.
@@ -694,9 +694,9 @@ if (data.navRisk >= 50) {
             <EndpointCard
               method="GET"
               path="/v1/news"
-              summary="GDELT news articles about the Strait"
+              summary="GDELT news articles about global chokepoints"
               badge={<SeverityPill level="info" label="5 min cache" />}
-              description="Returns recent news articles mentioning Strait of Hormuz, Iranian navy, oil tankers, or Persian Gulf, sourced from the GDELT v2 Doc API. Each article includes a basic sentiment classification (positive / negative / neutral) and a relevance score."
+              description="Returns recent news articles covering all five chokepoints — Strait of Hormuz, Red Sea / Houthi / Bab-el-Mandeb, Suez Canal, Panama Canal, and Taiwan Strait — sourced from the GDELT v2 Doc API. Each article includes a basic sentiment classification (positive / negative / neutral) and a relevance score."
               params={[
                 { name: 'limit',     in: 'query', type: 'integer', desc: 'Max articles to return (1–50, default 20)' },
                 { name: 'sentiment', in: 'query', type: 'enum',    desc: 'Filter by sentiment: positive | negative | neutral' },
@@ -884,7 +884,7 @@ curl "${SITE}/api/badge?cp=redsea" -o redsea-badge.svg
               path="/feed.xml"
               summary="RSS 2.0 timeline event feed"
               badge={<SeverityPill level="info" label="5 min cache" />}
-              description="An RSS 2.0 feed of the latest Strait of Hormuz timeline events classified from CNN, BBC, Al Jazeera, Reuters, and Google News. The channel description reflects the current strait status and tension index. Subscribe in any feed reader for real-time geopolitical alerts."
+              description="An RSS 2.0 feed of the latest global chokepoints timeline events classified from CNN, BBC, Al Jazeera, Reuters, and Google News. The channel description reflects the current status and tension index. Subscribe in any feed reader for real-time geopolitical alerts."
               params={[
                 { name: 'limit', in: 'query', type: 'integer', desc: 'Maximum events to include (1–50, default 20)' },
               ]}
