@@ -4,6 +4,9 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getD1, randomId, randomToken } from '@/app/lib/db';
 
+const VALID_EVENTS = ['status_change'] as const;
+type WebhookEvent = typeof VALID_EVENTS[number];
+
 export async function POST(req: NextRequest) {
   let body: { url?: string; events?: string } = {};
   try { body = await req.json(); } catch { /* ignore */ }
@@ -18,12 +21,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'url must use HTTPS' }, { status: 400 });
   }
 
+  const requestedEvent = body.events ?? 'status_change';
+  if (!VALID_EVENTS.includes(requestedEvent as WebhookEvent)) {
+    return NextResponse.json(
+      { error: `Invalid event type. Allowed: ${VALID_EVENTS.join(', ')}` },
+      { status: 400 },
+    );
+  }
+
   const db = getD1();
   if (!db) return NextResponse.json({ error: 'D1 not available' }, { status: 503 });
 
   const id     = randomId();
   const secret = randomToken();
-  const events = body.events ?? 'status_change';
+  const events = requestedEvent;
 
   try {
     await db
@@ -31,7 +42,8 @@ export async function POST(req: NextRequest) {
       .bind(id, body.url, secret, events)
       .run();
   } catch (err) {
-    return NextResponse.json({ error: 'Failed to register webhook', detail: String(err) }, { status: 500 });
+    console.error('[api/webhooks] Failed to register webhook:', err);
+    return NextResponse.json({ error: 'Failed to register webhook' }, { status: 500 });
   }
 
   return NextResponse.json({
@@ -49,14 +61,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const db = getD1();
-  if (!db) return NextResponse.json({ webhooks: [] });
+  if (!db) return NextResponse.json({ webhooks: [] }, { headers: { 'Cache-Control': 'no-store' } });
   try {
     const { results } = await db
       .prepare('SELECT id, url, events, confirmed, created_at FROM webhooks ORDER BY created_at DESC')
       .all<{ id: string; url: string; events: string; confirmed: number; created_at: number }>();
-    return NextResponse.json({ webhooks: results ?? [] });
+    return NextResponse.json({ webhooks: results ?? [] }, { headers: { 'Cache-Control': 'no-store' } });
   } catch {
-    return NextResponse.json({ webhooks: [] });
+    return NextResponse.json({ webhooks: [] }, { headers: { 'Cache-Control': 'no-store' } });
   }
 }
 
