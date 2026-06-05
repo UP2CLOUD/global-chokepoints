@@ -51,7 +51,7 @@ const spec = {
     title: 'Global Chokepoints Alerts API',
     version: '1.0.0',
     description:
-      'Real-time public intelligence API for the operational status of the Strait of Hormuz. ' +
+      'Real-time public intelligence API for the operational status of global maritime chokepoints. ' +
       'All `/v1` endpoints are free, CORS-open, and CC-BY-4.0 licensed. ' +
       'Authentication via `x-api-key` header is only enforced when `V1_API_KEY` is set in the deployment environment.',
     license: { name: 'CC-BY-4.0', url: 'https://creativecommons.org/licenses/by/4.0/' },
@@ -535,10 +535,12 @@ const spec = {
         tags: ['Public v1'],
         summary: 'RSS 2.0 status-change feed',
         description:
-          'Returns an RSS 2.0 feed of recorded strait status transitions. ' +
+          'Returns an RSS 2.0 feed of recorded chokepoint status transitions. ' +
           'Each item represents a state change recorded by the alert-check cron ' +
           '(e.g. OPEN → PARTIALLY_CLOSED), with the transition reason as the description. ' +
-          'Sourced from D1 status_history table. Cache TTL: 5 min.',
+          'Sourced from D1 status_history table. ' +
+          'Supports conditional GET via ETag / If-None-Match (returns 304 when unchanged). ' +
+          'Cache TTL: 5 min.',
         security: [{}],
         responses: {
           '200': {
@@ -546,6 +548,7 @@ const spec = {
             headers: {
               'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
+              'ETag': { schema: { type: 'string', example: '"a3f8c2d1e4b5"' }, description: 'Use with If-None-Match for conditional GET (304 Not Modified)' },
             },
             content: {
               'application/rss+xml': {
@@ -563,10 +566,11 @@ const spec = {
         tags: ['Public v1'],
         summary: 'RSS 2.0 event feed',
         description:
-          'Returns an RSS 2.0 feed of the latest Strait of Hormuz timeline events, ' +
-          'sourced from CNN, BBC, Al Jazeera, Reuters, and Google News. ' +
-          'The channel description includes the current strait status and tension index. ' +
+          'Returns an RSS 2.0 feed of the latest global chokepoint timeline events, ' +
+          'sourced from CNN, BBC, Al Jazeera, Reuters, and Google News (9 feeds). ' +
+          'The channel description includes the current status and tension index. ' +
           'Each item contains the event title, description, category, severity, and source article link. ' +
+          'Supports conditional GET via ETag / If-None-Match (returns 304 when unchanged). ' +
           'Cache TTL: 5 min.',
         security: [{}],
         parameters: [
@@ -583,6 +587,7 @@ const spec = {
             headers: {
               'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
+              'ETag': { schema: { type: 'string', example: '"a3f8c2d1e4b5"' }, description: 'Use with If-None-Match for conditional GET (304 Not Modified)' },
             },
             content: {
               'application/rss+xml': {
@@ -600,10 +605,13 @@ const spec = {
         operationId: 'getBrent',
         tags: ['Data feeds'],
         summary: 'Brent crude price + 7-day history',
-        description: 'Fallback chain: Yahoo Finance → Stooq CSV → EIA → module cache → KV. Never returns 502 while stale data exists.',
+        description: 'Fallback chain: Yahoo Finance → Stooq CSV → EIA → module cache → KV. Never returns 502 while stale data exists. Response includes X-Cache: HIT | MISS | STALE.',
         responses: {
           '200': {
             description: 'Brent payload',
+            headers: {
+              'X-Cache': { schema: { type: 'string', enum: ['HIT', 'MISS', 'STALE'] }, description: 'HIT = served from KV cache; MISS = live upstream fetch; STALE = stale fallback' },
+            },
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/BrentPayload' } },
             },

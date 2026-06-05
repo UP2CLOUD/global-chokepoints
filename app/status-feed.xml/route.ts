@@ -26,7 +26,7 @@ type HistoryRow = {
 
 function stateLabel(s: string) {
   if (s === 'OPEN')   return 'OPEN — Traffic Flowing Normally';
-  if (s === 'CLOSED') return 'CLOSED — Strait Blocked';
+  if (s === 'CLOSED') return 'CLOSED — Traffic Blocked';
   return 'DISRUPTED — Traffic Partially Disrupted';
 }
 
