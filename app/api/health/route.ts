@@ -41,7 +41,7 @@ const PROBES: Probe[] = [
   // response isn't misreported as degraded. Must include mode=ArtList or GDELT returns
   // a non-standard response format that could appear as an error.
   { key: 'gdelt', label: 'News (GDELT)',
-    url: 'https://api.gdeltproject.org/api/v2/doc/doc?query=hormuz&mode=ArtList&maxrecords=1&format=json',
+    url: 'https://api.gdeltproject.org/api/v2/doc/doc?query=maritime+chokepoint&mode=ArtList&maxrecords=1&format=json',
     expectedRefreshMs: 5 * 60_000,
     degradedThresholdMs: 7000,
     timeoutMs: 10000 },
