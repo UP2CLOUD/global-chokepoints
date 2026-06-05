@@ -268,7 +268,7 @@ export async function GET() {
       generatedAt: new Date().toISOString(),
     },
     { headers: {
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=7200',
       'X-Cache': hasStale ? 'STALE' : 'MISS',
     }}
   );

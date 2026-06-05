@@ -145,7 +145,7 @@ export async function GET() {
       status: httpStatus,
       headers: {
         ...CORS,
-        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60, stale-if-error=3600',
       },
     }
   );
