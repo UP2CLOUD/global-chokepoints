@@ -6,7 +6,7 @@ import { SITE_URL } from '@/app/lib/constants';
 export const metadata: Metadata = {
   title: 'API Docs — Global Chokepoints Alerts',
   description:
-    'Full reference for the Global Chokepoints Alerts public API: strait status, event timeline, markets, weather, and vessel data. CC-BY-4.0.',
+    'Full reference for the Global Chokepoints Alerts public API: chokepoint status, event timeline, markets, weather, and vessel data. CC-BY-4.0.',
 };
 
 // ── Colour helpers ─────────────────────────────────────────────────────────────
@@ -394,7 +394,7 @@ curl -X POST -H "Authorization: Bearer YOUR_KEY" ${SITE}/v1/...`}</Pre>
             <EndpointCard
               method="GET"
               path="/v1/status"
-              summary="Current strait status"
+              summary="Current chokepoint status"
               badge={<SeverityPill level="info" label="30 s cache" />}
               description="The primary endpoint. Returns the computed operational state (OPEN / PARTIALLY_CLOSED / CLOSED), a 0–100 threat score, confidence value, and a human-readable reason string."
               responseFields={[
@@ -426,7 +426,7 @@ console.log(data.reason);       // "Maritime traffic operational. ..."`}
               path="/v1/history"
               summary="Paginated status-change history"
               badge={<SeverityPill level="info" label="60 s cache" />}
-              description="Returns the log of recorded strait state transitions written by the alert-check cron whenever the status changes. Useful for charting tension trends or building audit trails. All timestamps are Unix-derived ISO 8601."
+              description="Returns the log of recorded chokepoint state transitions written by the alert-check cron whenever the status changes. Useful for charting tension trends or building audit trails. All timestamps are Unix-derived ISO 8601."
               params={[
                 { name: 'limit',  in: 'query', type: 'integer',  desc: 'Max records to return (1–200, default 50)' },
                 { name: 'since',  in: 'query', type: 'ISO 8601', desc: 'Return only transitions recorded after this timestamp (exclusive)' },
@@ -772,7 +772,7 @@ const alerts = news.filter(a => a.sentiment === 'negative' && a.relevance > 0.8)
           {/* Webhooks */}
           <Section id="webhooks" title="Webhooks &amp; Utilities">
             <p>
-              Register HTTP webhooks to receive a <Code>POST</Code> payload whenever the strait state changes.
+              Register HTTP webhooks to receive a <Code>POST</Code> payload whenever the chokepoint state changes.
               The <Code>POST /api/keys</Code> endpoint issues API keys for rate-limited <Code>/v1/*</Code> access.
               A static SVG badge and an RSS status-change feed are also available for embed and monitoring use-cases.
             </p>
@@ -906,7 +906,7 @@ curl -s "${SITE}/feed.xml" | xmllint --xpath "//item/title/text()" -`}
               path="/status-feed.xml"
               summary="RSS 2.0 status-change feed"
               badge={<SeverityPill level="info" label="5 min cache" />}
-              description="An RSS 2.0 feed that publishes one entry per strait status transition recorded by the alert-check cron (e.g. OPEN → PARTIALLY_CLOSED). Each item includes the transition reason. Subscribe to be notified whenever the operational state changes — useful for automated alerting pipelines."
+              description="An RSS 2.0 feed that publishes one entry per chokepoint status transition recorded by the alert-check cron (e.g. OPEN → PARTIALLY_CLOSED). Each item includes the transition reason. Subscribe to be notified whenever the operational state changes — useful for automated alerting pipelines."
               curlExample={`# Fetch latest status transitions
 curl ${SITE}/status-feed.xml
 
@@ -918,7 +918,7 @@ curl -s "${SITE}/status-feed.xml" | xmllint --xpath "//item/title/text()" -`}
           {/* Subscriptions */}
           <Section id="subscribe" title="Subscriptions">
             <p>
-              Users can subscribe to receive an email when the strait state changes (e.g. OPEN → PARTIALLY_CLOSED).
+              Users can subscribe to receive an email when the chokepoint state changes (e.g. OPEN → PARTIALLY_CLOSED).
               The alert system uses Cloudflare D1 for storage and Resend for transactional email.
             </p>
             <div className="space-y-3 mt-2">
