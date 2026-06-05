@@ -56,7 +56,7 @@ export default function WebhooksPage() {
         </div>
         <h1 className="text-[22px] font-bold text-text mb-2">Register a Webhook</h1>
         <p className="text-[12px] text-text3 leading-relaxed mb-8 max-w-prose">
-          Receive HMAC-SHA256-signed HTTP POST notifications whenever the strait status changes.
+          Receive HMAC-SHA256-signed HTTP POST notifications whenever the chokepoint state changes.
           Your endpoint must use <span className="text-text">HTTPS</span> and return 2xx within 10 seconds.
         </p>
 

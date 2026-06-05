@@ -81,7 +81,7 @@ export async function fetchTimeline(): Promise<TimelineEvent[] | null> {
 }
 
 // ============================================================
-// Derive strait status from real signals (timeline + Brent move)
+// Derive chokepoint status from real signals (timeline + Brent move)
 // ============================================================
 const CLOSURE_PATTERNS = [
   /\bclosed\b/i,
