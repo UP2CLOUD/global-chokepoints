@@ -39,6 +39,8 @@ export async function GET(req: NextRequest) {
   const chokepoint = u.searchParams.get('chokepoint');
   const sinceMs    = since  ? +new Date(since)  : 0;
   const beforeMs   = before ? +new Date(before) : 0;
+  if (since  && isNaN(sinceMs))  return NextResponse.json({ error: 'Invalid since: must be an ISO 8601 timestamp'  }, { status: 400, headers: CORS });
+  if (before && isNaN(beforeMs)) return NextResponse.json({ error: 'Invalid before: must be an ISO 8601 timestamp' }, { status: 400, headers: CORS });
 
   // ?severity=high,critical  — comma-separated; unknown values ignored
   const severityRaw  = u.searchParams.get('severity');

@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   if (!status) {
     return NextResponse.json(
       { error: 'Status data temporarily unavailable' },
-      { status: 503, headers: CORS },
+      { status: 503, headers: { ...CORS, 'Retry-After': '30' } },
     );
   }
 

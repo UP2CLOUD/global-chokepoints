@@ -1,7 +1,7 @@
 // ============================================================
 // /v1/history — Paginated status-change history from D1.
 // Returns the log of recorded state transitions written by
-// /api/alert-check whenever the strait status changes.
+// /api/alert-check whenever the chokepoint status changes.
 // Cache TTL: 60 s. CORS: allow-all. License: CC-BY-4.0.
 // ============================================================
 export const runtime = 'edge';
@@ -33,11 +33,17 @@ export async function GET(req: NextRequest) {
   // ?since — return only records AFTER this ISO timestamp (exclusive)
   const sinceParam = u.searchParams.get('since');
   const sinceMs    = sinceParam ? +new Date(sinceParam) : NaN;
+  if (sinceParam && isNaN(sinceMs)) {
+    return NextResponse.json({ error: 'Invalid since: must be an ISO 8601 timestamp' }, { status: 400, headers: CORS });
+  }
   const sinceUnix  = !isNaN(sinceMs) ? Math.floor(sinceMs / 1000) : null;
 
   // ?before — return only records BEFORE this ISO timestamp (cursor for backward pagination)
   const beforeParam = u.searchParams.get('before');
   const beforeMs    = beforeParam ? +new Date(beforeParam) : NaN;
+  if (beforeParam && isNaN(beforeMs)) {
+    return NextResponse.json({ error: 'Invalid before: must be an ISO 8601 timestamp' }, { status: 400, headers: CORS });
+  }
   const beforeUnix  = !isNaN(beforeMs) ? Math.floor(beforeMs / 1000) : null;
 
   // Optional state filter (OPEN | CLOSED | PARTIALLY_CLOSED | DISRUPTED)
