@@ -73,7 +73,7 @@ const spec = {
       get: {
         operationId: 'getStatus',
         tags: ['Public v1'],
-        summary: 'Current strait status',
+        summary: 'Current chokepoint status',
         description:
           'Returns the computed operational state, tension level (0–100 threat score), ' +
           'confidence, and the driving reason string. Refreshed every 30 s at the edge.',
@@ -88,7 +88,7 @@ const spec = {
         ],
         responses: {
           '200': {
-            description: 'Strait status',
+            description: 'Chokepoint status',
             headers: {
               'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=30' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
