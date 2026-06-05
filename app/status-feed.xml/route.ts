@@ -2,7 +2,7 @@ export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 export const revalidate = 300;
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getD1 } from '@/app/lib/db';
 
 const CORS = {
@@ -34,7 +34,13 @@ function esc(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-export async function GET() {
+async function etag(content: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(content));
+  const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+  return `"${hex}"`;
+}
+
+export async function GET(req: NextRequest) {
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
   let items: HistoryRow[] = [];
 
@@ -75,11 +81,17 @@ ${entries}
   </channel>
 </rss>`;
 
+  const tag = await etag(xml);
+  if (req.headers.get('if-none-match') === tag) {
+    return new NextResponse(null, { status: 304, headers: { ...CORS, ETag: tag } });
+  }
+
   return new NextResponse(xml, {
     headers: {
       ...CORS,
       'Content-Type': 'application/rss+xml; charset=utf-8',
       'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+      ETag: tag,
     },
   });
 }
