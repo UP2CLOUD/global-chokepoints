@@ -90,7 +90,7 @@ const spec = {
           '200': {
             description: 'Chokepoint status',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=30' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=30, stale-while-revalidate=60, stale-if-error=3600' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
@@ -190,7 +190,7 @@ const spec = {
           '200': {
             description: 'Chokepoint snapshot',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
@@ -270,7 +270,7 @@ const spec = {
           '200': {
             description: 'Status history records',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
@@ -346,7 +346,7 @@ const spec = {
           '200': {
             description: 'Combined digest payload',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
@@ -431,7 +431,7 @@ const spec = {
           '200': {
             description: 'Marine weather snapshot',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=900' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=900, stale-while-revalidate=1800, stale-if-error=86400' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
@@ -474,7 +474,7 @@ const spec = {
           '200': {
             description: 'News articles',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=86400' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
@@ -554,7 +554,7 @@ const spec = {
           '200': {
             description: 'RSS 2.0 XML status-change feed',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=86400' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
               'ETag': { schema: { type: 'string', example: '"a3f8c2d1e4b5"' }, description: 'Use with If-None-Match for conditional GET (304 Not Modified)' },
             },
@@ -593,7 +593,7 @@ const spec = {
           '200': {
             description: 'RSS 2.0 XML feed',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=86400' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
               'ETag': { schema: { type: 'string', example: '"a3f8c2d1e4b5"' }, description: 'Use with If-None-Match for conditional GET (304 Not Modified)' },
             },
