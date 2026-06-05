@@ -150,7 +150,7 @@ const ok = (payload: Payload, staleOverride?: boolean, xCache: XCache = 'MISS') 
   NextResponse.json(
     staleOverride ? { ...payload, stale: true } : payload,
     { headers: {
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=7200',
       'X-Cache': xCache,
     }}
   );
@@ -221,7 +221,7 @@ export async function GET() {
       updateKV(result);
       return NextResponse.json(result, {
         headers: {
-          'Cache-Control': isStale ? 'public, s-maxage=60, stale-while-revalidate=120' : 'public, s-maxage=300, stale-while-revalidate=600',
+          'Cache-Control': isStale ? 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=7200' : 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=7200',
           'X-Cache': 'MISS',
         },
       });

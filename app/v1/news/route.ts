@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
     {
       headers: {
         ...CORS,
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=86400',
       },
     },
   );

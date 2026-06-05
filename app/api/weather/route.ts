@@ -77,7 +77,7 @@ export async function GET() {
   if (kv) {
     try {
       const cached = await kv.get(KV_WEATHER_KEY, 'json');
-      if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800', 'X-Cache': 'HIT' } });
+      if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800, stale-if-error=86400', 'X-Cache': 'HIT' } });
     } catch { /* fall through to live fetch */ }
   }
 
@@ -127,7 +127,7 @@ export async function GET() {
 
     if (kv) kv.put(KV_WEATHER_KEY, JSON.stringify(payload), { expirationTtl: KV_WEATHER_TTL }).catch(() => {});
 
-    return NextResponse.json(payload, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800', 'X-Cache': 'MISS' } });
+    return NextResponse.json(payload, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800, stale-if-error=86400', 'X-Cache': 'MISS' } });
   } catch (err) {
     console.error('[api/weather] failed:', err);
     return NextResponse.json(

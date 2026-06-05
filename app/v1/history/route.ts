@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
       {
         headers: {
           ...CORS,
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600',
         },
       }
     );
