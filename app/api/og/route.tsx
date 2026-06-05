@@ -50,7 +50,8 @@ async function fetchLiveData(baseUrl: string): Promise<{ state: string; brent: s
     }
 
     return { state, brent, tension };
-  } catch {
+  } catch (err) {
+    console.warn('[api/og] live data fetch failed, using defaults:', (err as Error).message);
     return { state: 'OPEN', brent: '—', tension: '—' };
   }
 }

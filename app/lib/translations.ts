@@ -367,7 +367,7 @@ export const translations = {
     hoursAgo: 'h ago',
     daysAgo: 'd ago',
     notFound: {
-      message: 'This route does not exist. The strait is still being monitored.',
+      message: 'This route does not exist. Global chokepoints are still being monitored.',
       liveStatus: 'Live Status',
     },
     error: {
@@ -382,7 +382,7 @@ export const translations = {
       notNow: 'Not now',
     },
     alert: {
-      criticalTitle: 'STRAIT CLOSED',
+      criticalTitle: 'HORMUZ CLOSED',
       criticalBody: 'The Strait of Hormuz is currently closed to maritime traffic. Significant disruption to global oil supply expected.',
       warningTitle: 'TRANSIT DISRUPTED',
       warningBody: 'The Strait of Hormuz is experiencing disruptions. Elevated risk to maritime transit and oil supply.',
