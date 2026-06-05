@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
 
   const result = await sendEmail({
     to: email,
-    subject: 'Confirm your Strait of Hormuz alerts',
+    subject: 'Confirm your Global Chokepoints alerts',
     html: confirmationEmailHtml(confirmUrl),
   });
 

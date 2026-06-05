@@ -53,7 +53,7 @@ function baseTemplate(title: string, body: string) {
 export function confirmationEmailHtml(confirmUrl: string) {
   const body = `
     <p style="margin:0 0 16px;font-size:14px;color:#94A3B8;line-height:1.7;">
-      You requested email alerts for the Strait of Hormuz status monitor.
+      You requested email alerts for the Global Chokepoints status monitor.
       Click the button below to confirm your subscription.
     </p>
     <a href="${confirmUrl}"
@@ -84,10 +84,10 @@ export function alertEmailHtml(opts: {
   const statusWord = isOpen ? 'OPEN ✓' : isDisrupted ? 'DISRUPTED ⚠' : 'CLOSED ✗';
   const prevWord = opts.previousStatus === 'OPEN' ? 'Open' : opts.previousStatus === 'PARTIALLY_CLOSED' ? 'Disrupted' : 'Closed';
   const title = isOpen
-    ? 'Strait of Hormuz — Traffic Restored'
+    ? 'Global Chokepoints — Traffic Restored'
     : isDisrupted
-    ? 'Strait of Hormuz — Disruption Alert'
-    : 'Strait of Hormuz — Closure Alert';
+    ? 'Global Chokepoints — Disruption Alert'
+    : 'Global Chokepoints — Closure Alert';
 
   const officialSourcesBlock = isOpen ? `
     <div style="margin:20px 0;padding:16px;background:#0B1A14;border:1px solid #10B98140;border-radius:6px;">
