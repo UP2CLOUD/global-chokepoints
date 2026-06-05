@@ -90,7 +90,7 @@ ${entries}
     headers: {
       ...CORS,
       'Content-Type': 'application/rss+xml; charset=utf-8',
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=86400',
       ETag: tag,
     },
   });
