@@ -25,13 +25,13 @@ const SOURCES = [
   },
   {
     name: 'IMF PortWatch',
-    use: 'Daily vessel transit counts at Strait of Hormuz (chokepoint6) by type',
+    use: 'Daily vessel transit counts across Hormuz, Red Sea, Suez, and Panama by vessel type',
     cadence: '6 h (data updates weekly)',
-    license: 'IMF Open Data. Chokepoint ID: chokepoint6.',
+    license: 'IMF Open Data. Chokepoint IDs: chokepoint6 (Hormuz), chokepoint2 (Red Sea), chokepoint3 (Suez), chokepoint5 (Panama).',
   },
   {
     name: 'GDELT v2 Doc API',
-    use: 'Global news article discovery — Hormuz/Iran/shipping keywords',
+    use: 'Global news article discovery — all five chokepoints + maritime/shipping keywords',
     cadence: '5 min',
     license: 'Free; attribution requested.',
   },
@@ -233,7 +233,7 @@ elif threat_score ≥ 40 or state != OPEN   → ELEVATED
 else                                        → NORMAL
 
 # State override — timeline events required to escalate
-# (pure Brent spike without events never closes the strait)
+# (pure Brent spike without events never escalates state)
 if state == OPEN and last24 not empty and threat_score > 85:
     state = DISRUPTED`}</CodeBlock>
 
@@ -310,7 +310,7 @@ confidence = min(0.99,
             A read-only JSON API is available for embeds and partner integrations.
             CORS is allow-all; responses are cached at the edge.
           </p>
-          <CodeBlock>{`GET /v1/status              # strait state, tension level, confidence, reason
+          <CodeBlock>{`GET /v1/status              # chokepoint state, tension level, confidence, reason
 GET /v1/events?limit=30     # latest aggregated timeline events
 GET /v1/events?since=ISO    # incremental fetch since ISO timestamp
 GET /v1/metrics             # markets (Brent/WTI/NG), weather, event counts
