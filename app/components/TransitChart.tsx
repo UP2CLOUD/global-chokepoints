@@ -187,7 +187,7 @@ export default function TransitChart() {
   useEffect(() => {
     const load = async () => {
       try {
-        const r = await fetch('/api/portwatch', { cache: 'no-store' });
+        const r = await fetch('/api/portwatch', { cache: 'no-store', signal: AbortSignal.timeout(15_000) });
         if (r.ok) {
           const j = await r.json() as TransitData;
           if (j.ok) setData(j);
@@ -352,7 +352,7 @@ export function TransitMetricTile() {
   useEffect(() => {
     const load = async () => {
       try {
-        const r = await fetch('/api/portwatch', { cache: 'no-store' });
+        const r = await fetch('/api/portwatch', { cache: 'no-store', signal: AbortSignal.timeout(15_000) });
         if (r.ok) {
           const j = await r.json() as TransitData;
           if (j.ok) setData(j);

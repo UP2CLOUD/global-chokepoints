@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     console.error('[subscribe] Email send failed but subscription saved for:', email);
     return NextResponse.json({
       ok: true,
-      message: 'Subscription recorded, but we could not send the confirmation email. We will retry shortly.',
+      message: 'Subscription saved, but the confirmation email could not be sent — please try again shortly.',
     });
   }
 
