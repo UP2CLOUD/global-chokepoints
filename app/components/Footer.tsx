@@ -7,7 +7,7 @@ import SupportButton from './SupportButton';
 
 export default function Footer() {
   const { t } = useLang();
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'contact@ishormuzopen.example';
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'contact@globalchokepoints.example';
 
   return (
     <footer className="border-t border-divider pt-4 pb-5 mt-0">

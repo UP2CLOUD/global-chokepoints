@@ -126,9 +126,7 @@ export default function NewsFeed({ news, loading = false }: Props) {
 
         {!loading && items.length === 0 && (
           <div className="py-10 text-center text-[11px] font-mono text-text3">
-            {activeFilter === 'all'
-              ? t.news.noArticles
-              : `No ${FILTER_LABELS[activeFilter]} articles in feed`}
+            {t.news.noArticles}
           </div>
         )}
 
