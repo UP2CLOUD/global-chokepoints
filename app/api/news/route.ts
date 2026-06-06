@@ -122,7 +122,7 @@ export async function GET() {
         if (Date.now() - parsed.ts < 5 * 60 * 1000) {
           return NextResponse.json(
             { news: parsed.news, source: 'GDELT', count: parsed.news.length, cached: true },
-            { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600', 'X-Cache': 'HIT' } }
+            { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=86400', 'X-Cache': 'HIT' } }
           );
         }
       }
@@ -148,7 +148,7 @@ export async function GET() {
 
     return NextResponse.json(
       { news, source: 'GDELT', count: news.length },
-      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600', 'X-Cache': 'MISS' } }
+      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=86400', 'X-Cache': 'MISS' } }
     );
   } catch (err) {
     console.error('[api/news] all GDELT attempts failed:', err);
@@ -158,7 +158,7 @@ export async function GET() {
       console.warn('[api/news] serving stale GDELT cache');
       return NextResponse.json(
         { news: gdeltCache.news, source: 'GDELT (cached)', count: gdeltCache.news.length, stale: true },
-        { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120', 'X-Cache': 'STALE' } }
+        { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'STALE' } }
       );
     }
 
@@ -171,7 +171,7 @@ export async function GET() {
           const parsed = cached as { ts: number; news: any[] };
           return NextResponse.json(
             { news: parsed.news, source: 'GDELT (KV fallback)', count: parsed.news.length, stale: true },
-            { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120', 'X-Cache': 'STALE' } }
+            { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'STALE' } }
           );
         }
       } catch {}
@@ -181,7 +181,7 @@ export async function GET() {
     // The frontend gracefully handles empty news arrays.
     return NextResponse.json(
       { error: String(err), news: [], source: 'GDELT (Failed)' },
-      { status: 200, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30' } }
+      { status: 200, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, stale-if-error=3600' } }
     );
   }
 }

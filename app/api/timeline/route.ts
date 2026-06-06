@@ -57,14 +57,6 @@ const FEEDS: { name: string; url: string }[] = [
   },
 ];
 
-// Keyword filter — only keep articles mentioning the region/topic.
-const _KEYWORDS = [
-  'hormuz', 'iran', 'iranian', 'persian gulf', 'gulf of oman',
-  'oil tanker', 'crude tanker', 'opec', 'brent', 'tehran',
-  'revolutionary guard', 'irgc', 'houthi', 'red sea', 'strait',
-  'ship', 'vessel', 'maritime', 'naval', 'navy',
-];
-
 const NEGATIVE_WORDS = [
   'attack', 'seizure', 'seized', 'sanctions', 'tension', 'conflict',
   'war', 'drone', 'strike', 'closure', 'blocked', 'threat', 'missile',
