@@ -190,12 +190,13 @@ export async function POST(req: NextRequest) {
   });
 
   let webhooksSent = 0;
+  let webhooksFailed = 0;
   try {
     const { results: hooks } = await db
       .prepare("SELECT id, url, secret FROM webhooks WHERE confirmed = 1 AND (events = 'status_change' OR events LIKE '%status_change%')")
       .all<{ id: string; url: string; secret: string }>();
 
-    await Promise.allSettled((hooks ?? []).map(async hook => {
+    const hookResults = await Promise.allSettled((hooks ?? []).map(async hook => {
       const sig = await hmacSha256hex(hook.secret, webhookPayload);
       const res = await fetch(hook.url, {
         method: 'POST',
@@ -207,9 +208,23 @@ export async function POST(req: NextRequest) {
         body: webhookPayload,
         signal: AbortSignal.timeout(10_000),
       });
-      if (res.ok) webhooksSent++;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return hook.id;
     }));
-  } catch { /* webhooks table may not exist yet */ }
+
+    for (let i = 0; i < hookResults.length; i++) {
+      const r = hookResults[i];
+      if (r.status === 'fulfilled') {
+        webhooksSent++;
+      } else {
+        webhooksFailed++;
+        const hook = (hooks ?? [])[i];
+        console.warn(`[alert-check] webhook ${hook?.id} delivery failed:`, r.reason);
+      }
+    }
+  } catch (err) {
+    console.error('[alert-check] webhooks query failed:', err);
+  }
 
   return NextResponse.json({
     ok: true,
@@ -220,6 +235,7 @@ export async function POST(req: NextRequest) {
     sent,
     failed,
     webhooksSent,
+    webhooksFailed,
   });
 }
 
