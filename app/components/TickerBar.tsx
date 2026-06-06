@@ -33,7 +33,7 @@ export default function TickerBar({ status, metrics }: Props) {
   const [cpLive, setCpLive] = useState<Record<string, CPStatus>>({});
 
   useEffect(() => {
-    fetch('/v1/chokepoints', { cache: 'no-store' })
+    fetch('/v1/chokepoints', { cache: 'no-store', signal: AbortSignal.timeout(10_000) })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!d?.chokepoints) return;
