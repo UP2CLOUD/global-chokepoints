@@ -32,7 +32,7 @@ export default function TransitMetricCard({ loading: parentLoading = false, dela
     let mounted = true;
     const load = async () => {
       try {
-        const r = await fetch('/api/portwatch', { cache: 'no-store' });
+        const r = await fetch('/api/portwatch', { cache: 'no-store', signal: AbortSignal.timeout(15_000) });
         if (r.ok) {
           const j = await r.json() as PortWatchResp;
           if (mounted && j.ok) setData(j);

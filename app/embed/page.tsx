@@ -58,7 +58,7 @@ function EmbedContent() {
   }, [loadData]);
 
   const loadChokepoints = useCallback(() => {
-    fetch('/v1/chokepoints', { cache: 'no-store' })
+    fetch('/v1/chokepoints', { cache: 'no-store', signal: AbortSignal.timeout(10_000) })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.chokepoints) setCpData(d.chokepoints); })
       .catch(err => console.warn('[embed] chokepoints fetch failed:', err));

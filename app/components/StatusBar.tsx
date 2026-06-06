@@ -31,7 +31,7 @@ export default function StatusBar() {
     const load = async () => {
       let res: Response | null = null;
       try {
-        res = await fetch('/api/health', { cache: 'no-store' });
+        res = await fetch('/api/health', { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
         const data = (await res.json()) as Health;
         if (!cancelled) setHealth(data);
       } catch (err) {

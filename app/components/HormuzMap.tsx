@@ -177,7 +177,7 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
 
   // Fetch PortWatch latest day for Hormuz + Red Sea
   useEffect(() => {
-    fetch('/api/portwatch', { cache: 'no-store' })
+    fetch('/api/portwatch', { cache: 'no-store', signal: AbortSignal.timeout(15_000) })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.days?.length) setPwDay(d.days.at(-1));
@@ -188,7 +188,7 @@ export default function HormuzMap({ status, vessels = [] }: Props) {
 
   // Fetch live chokepoint risk indices for the mini-panel
   useEffect(() => {
-    fetch('/v1/chokepoints', { cache: 'no-store' })
+    fetch('/v1/chokepoints', { cache: 'no-store', signal: AbortSignal.timeout(10_000) })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!d?.chokepoints) return;

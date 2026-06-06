@@ -105,7 +105,7 @@ export default function VesselMap() {
     let alive = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/vessels', { cache: 'no-store' });
+        const res = await fetch('/api/vessels', { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
         if (!res.ok) return;
         const j = (await res.json()) as AisResponse;
         if (alive) {

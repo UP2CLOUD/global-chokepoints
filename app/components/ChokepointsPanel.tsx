@@ -122,7 +122,7 @@ export default function ChokepointsPanel({ timeline = [] }: Props) {
   const [pwData, setPwData] = useState<Record<string, ChokepointStats> | null>(null);
 
   useEffect(() => {
-    fetch('/api/portwatch', { cache: 'no-store' })
+    fetch('/api/portwatch', { cache: 'no-store', signal: AbortSignal.timeout(15_000) })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.chokepoints) setPwData(d.chokepoints); })
       .catch(() => {});
