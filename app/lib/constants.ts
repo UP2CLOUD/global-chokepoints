@@ -109,7 +109,7 @@ export const SITE_URL =
 
 /** Contact email surfaced in docs/methodology/OpenAPI spec */
 export const CONTACT_EMAIL =
-  process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'contact@ishormuzopen.example';
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'contact@globalchokepoints.example';
 
 /**
  * Static ISO date used to seed UI state before live data arrives.
