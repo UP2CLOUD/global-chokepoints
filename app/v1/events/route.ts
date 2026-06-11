@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
 
   const origin = u.origin;
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
-  const res = await fetch(`${base}/api/timeline`);
+  const res = await fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(10_000) });
   const json = res.ok ? await res.json() : { events: [] };
   let events: any[] = Array.isArray(json.events) ? json.events : [];
 
