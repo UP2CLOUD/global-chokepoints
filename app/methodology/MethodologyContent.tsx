@@ -208,34 +208,49 @@ CLOSURE_PATTERNS = /closed|closure|shut down|blocked|blockade|suspended|halt/
 PARTIAL_PATTERNS = /diverted|rerouted|delayed|evacuated|traffic disrupt/
 
 if any recent event matches CLOSURE_PATTERNS → state = CLOSED
-elif any recent event matches PARTIAL_PATTERNS → state = DISRUPTED
+elif any recent event matches PARTIAL_PATTERNS → state = PARTIALLY_CLOSED
 else → state = OPEN`}</CodeBlock>
 
           <SubHeading>{m.s3step2}</SubHeading>
-          <CodeBlock>{`# Timeline Severity Score (last 24 h)
+          <CodeBlock>{`# Timeline Severity Score (last 24 h)  — weight 40%
 weight = { low: 1, medium: 2, high: 4, critical: 7 }
 raw_timeline = sum(weight[e.severity] for e in last24)
 timeline_score = min(100, raw_timeline × (100 / 35))   # normalised 0–100
 
-# Market Volatility Score
-# Brent spike > 2% starts triggering; 5% spike → score 100
+# Market Volatility Score  — weight 30%
+# Brent daily change > 2% starts triggering; ≥ 5% → score 100
 if brent_change_pct > 2:
     market_score = min(100, (brent_change_pct - 2) × 33.3)
 else:
     market_score = 0
 
-# Final 50/50 blend
-threat_score = round(timeline_score × 0.5 + market_score × 0.5)
+# Absolute Price-Level Score  — weight 30%
+# High absolute Brent price signals sustained supply-chain stress
+# (independent of day-over-day change)
+price_level_score = 0
+if   brent_price >= 120: price_level_score = 100
+elif brent_price >= 110: price_level_score = 80
+elif brent_price >= 100: price_level_score = 65
+elif brent_price >= 90:  price_level_score = 45
+elif brent_price >= 80:  price_level_score = 25
+elif brent_price >= 70:  price_level_score = 10
+
+# Final 40 / 30 / 30 blend
+threat_score = round(
+    timeline_score  × 0.40 +
+    market_score    × 0.30 +
+    price_level_score × 0.30
+)
 
 # Tension level thresholds
-if threat_score ≥ 80 or state == CLOSED   → CRITICAL
-elif threat_score ≥ 40 or state != OPEN   → ELEVATED
-else                                        → NORMAL
+if threat_score ≥ 80 or state == CLOSED            → CRITICAL
+elif threat_score ≥ 40 or state == PARTIALLY_CLOSED → ELEVATED
+else                                                 → NORMAL
 
 # State override — timeline events required to escalate
 # (pure Brent spike without events never escalates state)
 if state == OPEN and last24 not empty and threat_score > 85:
-    state = DISRUPTED`}</CodeBlock>
+    state = PARTIALLY_CLOSED`}</CodeBlock>
 
           <SubHeading>{m.s3step3}</SubHeading>
           <CodeBlock>{`sources    = unique source names contributing to last24 events
