@@ -26,9 +26,10 @@ export async function GET(req: NextRequest) {
   // Subrequests must use the canonical public URL — req.url origin inside CF Pages
   // is an internal address that can't reach sibling functions.
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
+  const UA = { 'User-Agent': 'GlobalChokepointsAlerts/v1' };
   const [timelineRes, brentRes] = await Promise.all([
-    fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(10_000) }),
-    fetch(`${base}/api/brent`,    { signal: AbortSignal.timeout(10_000) }),
+    fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(10_000), headers: UA }),
+    fetch(`${base}/api/brent`,    { signal: AbortSignal.timeout(10_000), headers: UA }),
   ]);
 
   const timeline = timelineRes.ok ? (await timelineRes.json()).events ?? [] : [];

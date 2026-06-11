@@ -22,10 +22,11 @@ export async function GET(req: NextRequest) {
   const origin = new URL(req.url).origin;
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
 
+  const UA = { 'User-Agent': 'GlobalChokepointsAlerts/v1' };
   const [markets, weather, timeline] = await Promise.all([
-    fetch(`${base}/api/markets`, { signal: AbortSignal.timeout(10_000) }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(`${base}/api/weather`, { signal: AbortSignal.timeout(10_000) }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(10_000) }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${base}/api/markets`, { signal: AbortSignal.timeout(10_000), headers: UA }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${base}/api/weather`, { signal: AbortSignal.timeout(10_000), headers: UA }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(10_000), headers: UA }).then(r => r.ok ? r.json() : null).catch(() => null),
   ]);
 
   const events: any[] = timeline?.events ?? [];

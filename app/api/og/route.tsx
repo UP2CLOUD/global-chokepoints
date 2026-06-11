@@ -32,9 +32,10 @@ function answerFor(state: string, t: typeof translations.en): {
 
 async function fetchLiveData(baseUrl: string): Promise<{ state: string; brent: string; tension: string }> {
   try {
+    const UA = { 'User-Agent': 'GlobalChokepointsAlerts/og' };
     const [statusRes, metricsRes] = await Promise.allSettled([
-      fetch(`${baseUrl}/v1/status`, { signal: AbortSignal.timeout(3000) }),
-      fetch(`${baseUrl}/v1/metrics`, { signal: AbortSignal.timeout(3000) }),
+      fetch(`${baseUrl}/v1/status`, { signal: AbortSignal.timeout(3000), headers: UA }),
+      fetch(`${baseUrl}/v1/metrics`, { signal: AbortSignal.timeout(3000), headers: UA }),
     ]);
 
     let state = 'OPEN', brent = '—', tension = '—';
