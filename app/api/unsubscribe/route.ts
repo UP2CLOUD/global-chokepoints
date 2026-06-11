@@ -25,17 +25,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${siteUrl()}?unsubscribed=1`);
   }
 
-  const row = await db
-    .prepare('SELECT id FROM subscriptions WHERE unsubscribe_token = ?')
-    .bind(token)
-    .first<{ id: string }>();
+  try {
+    const row = await db
+      .prepare('SELECT id FROM subscriptions WHERE unsubscribe_token = ?')
+      .bind(token)
+      .first<{ id: string }>();
 
-  if (row) {
-    await db
-      .prepare('DELETE FROM subscriptions WHERE id = ?')
-      .bind(row.id)
-      .run();
+    if (row) {
+      await db
+        .prepare('DELETE FROM subscriptions WHERE id = ?')
+        .bind(row.id)
+        .run();
+    }
+
+    return NextResponse.redirect(`${siteUrl()}?unsubscribed=1`);
+  } catch (err) {
+    console.error('[unsubscribe] D1 error:', err);
+    return NextResponse.redirect(`${siteUrl()}?unsubscribed=error`);
   }
-
-  return NextResponse.redirect(`${siteUrl()}?unsubscribed=1`);
 }

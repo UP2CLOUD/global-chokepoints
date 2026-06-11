@@ -26,26 +26,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${siteUrl()}?subscribed=1`);
   }
 
-  const row = await db
-    .prepare('SELECT id, confirmed FROM subscriptions WHERE confirm_token = ?')
-    .bind(token)
-    .first<{ id: string; confirmed: number }>();
+  try {
+    const row = await db
+      .prepare('SELECT id, confirmed FROM subscriptions WHERE confirm_token = ?')
+      .bind(token)
+      .first<{ id: string; confirmed: number }>();
 
-  if (!row) {
-    return NextResponse.redirect(`${siteUrl()}?subscribed=invalid`);
-  }
+    if (!row) {
+      return NextResponse.redirect(`${siteUrl()}?subscribed=invalid`);
+    }
 
-  if (row.confirmed === 1) {
-    // Already confirmed — still redirect to success
+    if (row.confirmed === 1) {
+      // Already confirmed — still redirect to success
+      return NextResponse.redirect(`${siteUrl()}?subscribed=1`);
+    }
+
+    await db
+      .prepare(
+        'UPDATE subscriptions SET confirmed = 1, confirmed_at = unixepoch() WHERE id = ?'
+      )
+      .bind(row.id)
+      .run();
+
     return NextResponse.redirect(`${siteUrl()}?subscribed=1`);
+  } catch (err) {
+    console.error('[confirm] D1 error:', err);
+    return NextResponse.redirect(`${siteUrl()}?subscribed=error`);
   }
-
-  await db
-    .prepare(
-      'UPDATE subscriptions SET confirmed = 1, confirmed_at = unixepoch() WHERE id = ?'
-    )
-    .bind(row.id)
-    .run();
-
-  return NextResponse.redirect(`${siteUrl()}?subscribed=1`);
 }
