@@ -78,7 +78,7 @@ export async function GET() {
     try {
       const cached = await kv.get(KV_WEATHER_KEY, 'json');
       if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800, stale-if-error=86400', 'X-Cache': 'HIT' } });
-    } catch { /* fall through to live fetch */ }
+    } catch (err) { console.warn('[weather] KV read failed, fetching live:', err); }
   }
 
   try {

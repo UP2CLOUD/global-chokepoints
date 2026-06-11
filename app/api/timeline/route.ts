@@ -231,7 +231,7 @@ export async function GET() {
     try {
       const cached = await kv.get(KV_TIMELINE_KEY, 'json') as { events: TimelineEvent[]; sources: string[]; feedsOk: number; feedsFailed: number; generatedAt: string; fetchMs: number } | null;
       if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'HIT' } });
-    } catch { /* fall through */ }
+    } catch (err) { console.warn('[timeline] KV read failed, fetching live:', err); }
   }
 
   const startedAt = Date.now();
