@@ -90,7 +90,7 @@ const spec = {
           '200': {
             description: 'Chokepoint status',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=30, stale-while-revalidate=60, stale-if-error=3600' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=30, stale-while-revalidate=60, stale-if-error=86400' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
@@ -190,7 +190,7 @@ const spec = {
           '200': {
             description: 'Chokepoint snapshot',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
@@ -270,7 +270,7 @@ const spec = {
           '200': {
             description: 'Status history records',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
@@ -346,7 +346,7 @@ const spec = {
           '200': {
             description: 'Combined digest payload',
             headers: {
-              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600' } },
+              'Cache-Control': { schema: { type: 'string', example: 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400' } },
               'Access-Control-Allow-Origin': { schema: { type: 'string', example: '*' } },
             },
             content: {
