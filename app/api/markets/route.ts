@@ -237,7 +237,7 @@ export async function GET() {
           out[s.key] = {
             price: 0, change: 0, changePercent: 0, history: [], asOf: '',
             label: s.label, symbol: s.symbol, unit: s.unit,
-            error: String(err),
+            error: 'Price data temporarily unavailable',
           };
         }
       }

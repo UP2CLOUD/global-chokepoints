@@ -180,7 +180,7 @@ export async function GET() {
     // 502 so CDN stale-if-error serves a prior cached response instead of this error.
     // fetchNews() catches non-2xx and returns null; dashboard degrades gracefully.
     return NextResponse.json(
-      { error: String(err), news: [], source: 'GDELT (Failed)' },
+      { error: 'News feed temporarily unavailable', news: [], source: 'GDELT (Failed)' },
       { status: 502, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, stale-if-error=3600' } }
     );
   }
