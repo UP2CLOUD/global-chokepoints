@@ -27,8 +27,8 @@ export async function GET(req: NextRequest) {
   // is an internal address that can't reach sibling functions.
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
   const [timelineRes, brentRes] = await Promise.all([
-    fetch(`${base}/api/timeline`),
-    fetch(`${base}/api/brent`),
+    fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(10_000) }),
+    fetch(`${base}/api/brent`,    { signal: AbortSignal.timeout(10_000) }),
   ]);
 
   const timeline = timelineRes.ok ? (await timelineRes.json()).events ?? [] : [];
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
           reason: r.reason,
           timestamp: new Date(r.created_at * 1000).toISOString(),
         }));
-      } catch { /* table may not exist yet */ }
+      } catch (err) { console.warn('[v1/status] history query failed:', err); }
     }
   }
 
