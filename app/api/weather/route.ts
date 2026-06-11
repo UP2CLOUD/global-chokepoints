@@ -83,8 +83,8 @@ export async function GET() {
 
   try {
     const [fRes, mRes] = await Promise.all([
-      fetch(FORECAST_URL, { next: { revalidate: 900 }, signal: AbortSignal.timeout(8000) }),
-      fetch(MARINE_URL, { next: { revalidate: 900 }, signal: AbortSignal.timeout(8000) }),
+      fetch(FORECAST_URL, { next: { revalidate: 900 }, signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'GlobalChokepointsAlerts/1.0' } }),
+      fetch(MARINE_URL, { next: { revalidate: 900 }, signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'GlobalChokepointsAlerts/1.0' } }),
     ]);
 
     if (!fRes.ok) throw new Error(`forecast HTTP ${fRes.status}`);

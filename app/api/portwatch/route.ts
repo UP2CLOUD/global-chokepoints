@@ -76,7 +76,7 @@ async function fetchCP(portid: string): Promise<PortWatchDay[]> {
   });
   const res = await fetch(`${PORTWATCH_URL}?${params}`, {
     signal: AbortSignal.timeout(10_000),
-    headers: { Accept: 'application/json' },
+    headers: { Accept: 'application/json', 'User-Agent': 'GlobalChokepointsAlerts/1.0' },
   });
   if (!res.ok) throw new Error(`PortWatch HTTP ${res.status} for ${portid}`);
   const json = await res.json() as { features?: { attributes: Record<string, unknown> }[] };
