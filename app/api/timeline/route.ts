@@ -278,7 +278,7 @@ export async function GET() {
     fetchMs: Date.now() - startedAt,
   };
 
-  if (kv) kv.put(KV_TIMELINE_KEY, JSON.stringify(payload), { expirationTtl: KV_TIMELINE_TTL }).catch(() => {});
+  if (kv) kv.put(KV_TIMELINE_KEY, JSON.stringify(payload), { expirationTtl: KV_TIMELINE_TTL }).catch(e => console.warn('[api/timeline] KV write failed:', e));
 
   return NextResponse.json(payload, {
     headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'MISS' },
