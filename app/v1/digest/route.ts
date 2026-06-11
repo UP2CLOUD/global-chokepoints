@@ -28,10 +28,11 @@ export async function GET(req: NextRequest) {
   const eventCount = Math.min(20, Math.max(1, parseInt(req.nextUrl.searchParams.get('events') ?? '5', 10) || 5));
 
   // Fan out to internal APIs in parallel — each has its own cache layer
+  const UA = { 'User-Agent': 'GlobalChokepointsAlerts/v1' };
   const [statusRes, eventsRes, metricsRes] = await Promise.allSettled([
-    fetch(`${base}/v1/status`,                        { signal: AbortSignal.timeout(8_000) }),
-    fetch(`${base}/v1/events?limit=${eventCount}`,    { signal: AbortSignal.timeout(8_000) }),
-    fetch(`${base}/v1/metrics`,                       { signal: AbortSignal.timeout(8_000) }),
+    fetch(`${base}/v1/status`,                        { signal: AbortSignal.timeout(8_000), headers: UA }),
+    fetch(`${base}/v1/events?limit=${eventCount}`,    { signal: AbortSignal.timeout(8_000), headers: UA }),
+    fetch(`${base}/v1/metrics`,                       { signal: AbortSignal.timeout(8_000), headers: UA }),
   ]);
 
   const status  = statusRes.status  === 'fulfilled' && statusRes.value.ok  ? await statusRes.value.json()  : null;
@@ -87,7 +88,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(payload, {
     headers: {
       ...CORS,
-      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600',
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400',
     },
   });
 }

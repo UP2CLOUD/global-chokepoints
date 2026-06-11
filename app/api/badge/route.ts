@@ -69,9 +69,10 @@ export async function GET(req: NextRequest) {
   let risk   = 0;
 
   try {
+    const UA = { 'User-Agent': 'GlobalChokepointsAlerts/badge' };
     if (!cp || cp === 'hormuz') {
       // Hormuz: use live /v1/status for precise tension index
-      const res = await fetch(`${base}/v1/status`, { signal: AbortSignal.timeout(4000) });
+      const res = await fetch(`${base}/v1/status`, { signal: AbortSignal.timeout(4000), headers: UA });
       if (res.ok) {
         const j = await res.json() as { state?: string; tensionIndex?: number };
         if (j.state)        status = j.state;
@@ -80,7 +81,7 @@ export async function GET(req: NextRequest) {
     } else {
       // Other chokepoints: fetch from /v1/chokepoints
       label = CP_LABELS[cp];
-      const res = await fetch(`${base}/v1/chokepoints`, { signal: AbortSignal.timeout(5000) });
+      const res = await fetch(`${base}/v1/chokepoints`, { signal: AbortSignal.timeout(5000), headers: UA });
       if (res.ok) {
         const j = await res.json() as { chokepoints?: { key: string; status: string; riskIndex: number }[] };
         const found = j.chokepoints?.find(c => c.key === cp);
@@ -95,7 +96,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(makeBadge(label, status, risk), {
     headers: {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'no-cache, max-age=0',
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600',
       'Access-Control-Allow-Origin': '*',
     },
   });

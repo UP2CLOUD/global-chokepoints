@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   let news: any[] = [];
   let source = 'GDELT';
   try {
-    const upstream = await fetch(`${base}/api/news`, { signal: AbortSignal.timeout(12_000) });
+    const upstream = await fetch(`${base}/api/news`, { signal: AbortSignal.timeout(12_000), headers: { 'User-Agent': 'GlobalChokepointsAlerts/v1' } });
     if (!upstream.ok) {
       return NextResponse.json(
         { error: `Upstream HTTP ${upstream.status}` },
