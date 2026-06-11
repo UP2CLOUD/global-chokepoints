@@ -46,6 +46,6 @@ export async function GET(req: NextRequest) {
       docs: `${origin}/methodology`,
       license: 'CC-BY-4.0',
     },
-    { headers: { ...CORS, 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600' } }
+    { headers: { ...CORS, 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400' } }
   );
 }
