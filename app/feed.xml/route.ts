@@ -63,10 +63,11 @@ export async function GET(req: NextRequest) {
   let state = 'OPEN';
   let tensionIndex = 0;
 
+  const UA = { 'User-Agent': 'GlobalChokepointsAlerts/feed' };
   try {
     const [timelineRes, statusRes] = await Promise.all([
-      fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(5000) }),
-      fetch(`${base}/v1/status`, { signal: AbortSignal.timeout(5000) }),
+      fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(5000), headers: UA }),
+      fetch(`${base}/v1/status`,    { signal: AbortSignal.timeout(5000), headers: UA }),
     ]);
     if (timelineRes.ok) {
       const j = await timelineRes.json() as { events?: TimelineEvent[] };
@@ -77,7 +78,7 @@ export async function GET(req: NextRequest) {
       if (j.state) state = j.state;
       if (j.tensionIndex != null) tensionIndex = j.tensionIndex;
     }
-  } catch { /* feed remains empty on failure */ }
+  } catch (err) { console.warn('[feed.xml] upstream fetch failed, serving empty feed:', err); }
 
   const stateLabel = state.replace(/_/g, ' ');
   const now = new Date().toUTCString();
