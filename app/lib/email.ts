@@ -175,3 +175,46 @@ export async function sendEmail(opts: {
 
   return { ok: true };
 }
+
+// Send up to 100 emails in a single Resend batch request.
+// Returns { sent, failed } counts.
+export async function sendEmailBatch(
+  messages: { to: string; subject: string; html: string }[]
+): Promise<{ sent: number; failed: number }> {
+  if (messages.length === 0) return { sent: 0, failed: 0 };
+
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    console.warn('[email] RESEND_API_KEY not set — batch not sent');
+    return { sent: 0, failed: messages.length };
+  }
+
+  const from = fromAddress();
+  const payload = messages.map(m => ({ from, to: [m.to], subject: m.subject, html: m.html }));
+
+  try {
+    const res = await fetch('https://api.resend.com/emails/batch', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'GlobalChokepointsAlerts/1.0',
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(20_000),
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.error(`[email] Resend batch error ${res.status}:`, body);
+      return { sent: 0, failed: messages.length };
+    }
+
+    const data = await res.json() as { data?: unknown[] };
+    const sent = Array.isArray(data.data) ? data.data.length : messages.length;
+    return { sent, failed: messages.length - sent };
+  } catch (err) {
+    console.error('[email] Resend batch failed:', err);
+    return { sent: 0, failed: messages.length };
+  }
+}
