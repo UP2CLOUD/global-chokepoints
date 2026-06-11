@@ -37,7 +37,8 @@ function EmbedContent() {
       const status = deriveStatus(
         realData.timeline ?? [],
         realData.metrics?.brentChangePercent ?? null,
-        lang
+        lang,
+        realData.metrics?.brentPrice ?? null
       );
       const seed = getMockData(lang);
       const merged: DashboardData = { ...seed, ...realData, status };
