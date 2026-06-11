@@ -62,7 +62,10 @@ function toISODate(raw: unknown): string {
   return s.slice(0, 10);
 }
 
+const ALLOWED_PORTIDS: Set<string> = new Set(PORTWATCH_CP_CONFIG.map(c => c.portid));
+
 async function fetchCP(portid: string): Promise<PortWatchDay[]> {
+  if (!ALLOWED_PORTIDS.has(portid)) throw new Error(`Unknown portid: ${portid}`);
   const since = new Date(Date.now() - DAYS * 86400_000).toISOString().slice(0, 10);
   const params = new URLSearchParams({
     where: `portid = '${portid}' AND date >= DATE '${since}'`,
