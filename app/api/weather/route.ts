@@ -125,7 +125,7 @@ export async function GET() {
       generatedAt: new Date().toISOString(),
     };
 
-    if (kv) kv.put(KV_WEATHER_KEY, JSON.stringify(payload), { expirationTtl: KV_WEATHER_TTL }).catch(() => {});
+    if (kv) kv.put(KV_WEATHER_KEY, JSON.stringify(payload), { expirationTtl: KV_WEATHER_TTL }).catch(e => console.warn('[api/weather] KV write failed:', e));
 
     return NextResponse.json(payload, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800, stale-if-error=86400', 'X-Cache': 'MISS' } });
   } catch (err) {

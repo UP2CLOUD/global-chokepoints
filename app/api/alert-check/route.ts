@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
       .prepare('INSERT INTO status_history (id, state, previous_state, tension, confidence, reason) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(randomId(), currentStatus, lastStatus, Math.round(status.tensionIndex ?? 0), status.confidence, status.reason)
       .run();
-  } catch { /* table may not exist yet */ }
+  } catch (err) { console.warn('[alert-check] status_history insert failed (table may not exist yet):', err); }
 
   if (subscribers.length === 0) {
     return NextResponse.json({ ok: true, changed: true, subscribers: 0, status: currentStatus });
