@@ -43,10 +43,11 @@ export async function GET(req: NextRequest) {
   let hormuzLiveTension: number | null = null;
   let hormuzLiveStatus: string | null  = null;
 
+  const UA = { 'User-Agent': 'GlobalChokepointsAlerts/v1' };
   const [pwResult, statusResult] = await Promise.allSettled([
-    fetch(`${base}/api/portwatch`, { signal: AbortSignal.timeout(8_000) })
+    fetch(`${base}/api/portwatch`, { signal: AbortSignal.timeout(8_000), headers: UA })
       .then(r => r.ok ? r.json() as Promise<{ chokepoints?: Record<string, PwStats> }> : null),
-    fetch(`${base}/v1/status`, { signal: AbortSignal.timeout(4_000) })
+    fetch(`${base}/v1/status`, { signal: AbortSignal.timeout(4_000), headers: UA })
       .then(r => r.ok ? r.json() as Promise<{ tensionIndex?: number; state?: string }> : null),
   ]);
 
@@ -101,7 +102,7 @@ export async function GET(req: NextRequest) {
     {
       headers: {
         ...CORS,
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=3600',
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400',
       },
     },
   );
