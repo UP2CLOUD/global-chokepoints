@@ -156,6 +156,7 @@ export async function sendEmail(opts: {
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
+      'User-Agent': 'GlobalChokepointsAlerts/1.0',
     },
     body: JSON.stringify({
       from: fromAddress(),
