@@ -888,6 +888,61 @@ const spec = {
     },
 
     '/api/webhooks': {
+      get: {
+        operationId: 'listWebhooks',
+        summary: 'List registered webhooks',
+        description: 'Returns all registered webhook endpoints. Admin-gated: requires the `x-alert-secret` header.',
+        tags: ['Webhooks'],
+        security: [{ AdminSecret: [] }],
+        parameters: [
+          { name: 'x-alert-secret', in: 'header', required: true, schema: { type: 'string' }, description: 'Admin secret matching ALERT_CRON_SECRET' },
+        ],
+        responses: {
+          '200': {
+            description: 'List of webhooks',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    webhooks: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id:         { type: 'string' },
+                          url:        { type: 'string', format: 'uri' },
+                          events:     { type: 'string' },
+                          confirmed:  { type: 'integer' },
+                          created_at: { type: 'integer', description: 'Unix timestamp' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+      delete: {
+        operationId: 'deleteWebhook',
+        summary: 'Delete a webhook',
+        description: 'Removes a registered webhook by ID. Admin-gated: requires the `x-alert-secret` header.',
+        tags: ['Webhooks'],
+        security: [{ AdminSecret: [] }],
+        parameters: [
+          { name: 'x-alert-secret', in: 'header', required: true, schema: { type: 'string' }, description: 'Admin secret matching ALERT_CRON_SECRET' },
+          { name: 'id', in: 'query', required: true, schema: { type: 'string' }, description: 'Webhook ID to delete' },
+        ],
+        responses: {
+          '200': { description: 'Webhook deleted', content: { 'application/json': { schema: { type: 'object', properties: { ok: { type: 'boolean' } } } } } },
+          '400': { description: 'id query parameter required' },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '503': { description: 'D1 database not available' },
+        },
+      },
       post: {
         operationId: 'registerWebhook',
         summary: 'Register a webhook',
@@ -928,6 +983,61 @@ const spec = {
     },
 
     '/api/keys': {
+      get: {
+        operationId: 'listApiKeys',
+        summary: 'List API keys',
+        description: 'Returns all issued gca_* API keys (hashes are not returned). Admin-gated: requires the `x-alert-secret` header.',
+        tags: ['API Keys'],
+        security: [{ AdminSecret: [] }],
+        parameters: [
+          { name: 'x-alert-secret', in: 'header', required: true, schema: { type: 'string' }, description: 'Admin secret matching ALERT_CRON_SECRET' },
+        ],
+        responses: {
+          '200': {
+            description: 'List of API keys',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    keys: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id:           { type: 'string' },
+                          label:        { type: 'string' },
+                          rate_limit:   { type: 'integer' },
+                          created_at:   { type: 'integer', description: 'Unix timestamp' },
+                          last_used_at: { type: 'integer', nullable: true, description: 'Unix timestamp' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+      delete: {
+        operationId: 'deleteApiKey',
+        summary: 'Revoke an API key',
+        description: 'Deletes a gca_* API key by ID and invalidates its KV cache entry. Admin-gated: requires the `x-alert-secret` header.',
+        tags: ['API Keys'],
+        security: [{ AdminSecret: [] }],
+        parameters: [
+          { name: 'x-alert-secret', in: 'header', required: true, schema: { type: 'string' }, description: 'Admin secret matching ALERT_CRON_SECRET' },
+          { name: 'id', in: 'query', required: true, schema: { type: 'string' }, description: 'API key ID to revoke' },
+        ],
+        responses: {
+          '200': { description: 'Key revoked', content: { 'application/json': { schema: { type: 'object', properties: { ok: { type: 'boolean' } } } } } },
+          '400': { description: 'id query parameter required' },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '503': { description: 'D1 database not available' },
+        },
+      },
       post: {
         operationId: 'issueApiKey',
         summary: 'Issue an API key',
@@ -959,6 +1069,40 @@ const spec = {
         responses: {
           '201': { description: 'Key issued. The key field is shown once — store it securely.' },
           '401': { $ref: '#/components/responses/Unauthorized' },
+          '503': { description: 'D1 database not available' },
+        },
+      },
+    },
+
+    '/api/webhooks/{id}/test': {
+      post: {
+        operationId: 'testWebhook',
+        summary: 'Send a test webhook delivery',
+        description: 'Sends a signed test `status_change` payload to the registered webhook URL. Authenticated via the webhook\'s own secret (`x-webhook-secret` header).',
+        tags: ['Webhooks'],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Webhook ID' },
+          { name: 'x-webhook-secret', in: 'header', required: true, schema: { type: 'string' }, description: 'The secret returned when the webhook was registered' },
+        ],
+        responses: {
+          '200': {
+            description: 'Delivery result',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    ok:       { type: 'boolean' },
+                    status:   { type: 'integer', description: 'HTTP status returned by the endpoint' },
+                    response: { type: 'string', description: 'First 200 chars of the response body' },
+                  },
+                },
+              },
+            },
+          },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '404': { description: 'Webhook not found' },
+          '502': { description: 'Delivery failed (target endpoint error or timeout)' },
           '503': { description: 'D1 database not available' },
         },
       },
