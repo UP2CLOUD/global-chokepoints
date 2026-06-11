@@ -75,6 +75,17 @@ const SOURCES = [
 
 const CHANGELOG = [
   {
+    v: '0.7.0',
+    date: '2026-06-11',
+    notes:
+      'API hardening pass: replaced String(err) leakage with safe messages across all public routes, ' +
+      'added User-Agent and AbortSignal.timeout to every external and internal fetch. ' +
+      'Batch email dispatch via Resend /emails/batch. ' +
+      'OpenAPI spec updated with all admin-gated operations. ' +
+      'Fixed embed widget brentPrice missing from deriveStatus call. ' +
+      'Corrected methodology docs: PARTIALLY_CLOSED state name, 40/30/30 threat score weights, price-level signal.',
+  },
+  {
     v: '0.6.0',
     date: '2026-05-27',
     notes:
