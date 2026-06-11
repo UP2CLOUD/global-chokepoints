@@ -144,7 +144,7 @@ export async function GET() {
   const payload: MultiPayload = { ...hormuz, fetchedAt: nowMs, chokepoints };
 
   if (kv) {
-    try { await kv.put(KV_CACHE_KEY, JSON.stringify(payload), { expirationTtl: CACHE_TTL_SEC * 2 }); } catch { /* KV write failed */ }
+    try { await kv.put(KV_CACHE_KEY, JSON.stringify(payload), { expirationTtl: CACHE_TTL_SEC * 2 }); } catch (e) { console.warn('[api/portwatch] KV write failed:', e); }
   }
   moduleCache = payload;
 
