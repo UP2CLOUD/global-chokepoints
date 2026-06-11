@@ -177,9 +177,9 @@ export async function GET() {
     }
   }
 
-  const updateKV = (payload: Payload) => {
+  const updateKV = async (payload: Payload) => {
     if (kv) {
-      kv.put('BRENT_PAYLOAD', JSON.stringify({ ts: Date.now(), payload })).catch(e => 
+      await kv.put('BRENT_PAYLOAD', JSON.stringify({ ts: Date.now(), payload })).catch(e =>
         console.warn('[api/brent] KV write failed:', e)
       );
     }
@@ -188,7 +188,7 @@ export async function GET() {
   // 1) Yahoo Finance — real-time, minimal headers to avoid 429 in Edge Runtime
   try {
     const data = await fetchYahoo();
-    updateKV(data);
+    await updateKV(data);
     return ok(data);
   } catch (err) {
     console.warn('[api/brent] Yahoo failed, trying Stooq:', (err as Error).message);
@@ -197,7 +197,7 @@ export async function GET() {
   // 2) Stooq — free CSV, separate rate-limit pool from Yahoo
   try {
     const data = await fetchStooq();
-    updateKV(data);
+    await updateKV(data);
     return ok(data);
   } catch (err) {
     console.warn('[api/brent] Stooq failed, trying EIA:', (err as Error).message);
@@ -218,7 +218,7 @@ export async function GET() {
         stale: isStale || undefined,
       };
       priceCache = { ts: Date.now(), payload: result };
-      updateKV(result);
+      await updateKV(result);
       return NextResponse.json(result, {
         headers: {
           'Cache-Control': isStale ? 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=7200' : 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=7200',
