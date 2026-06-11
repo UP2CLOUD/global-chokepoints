@@ -7,6 +7,11 @@ import { getKV } from '@/app/lib/kv';
 import { sha256hex } from '@/app/lib/crypto';
 
 export async function POST(req: NextRequest) {
+  const cron = process.env.ALERT_CRON_SECRET;
+  if (!cron || req.headers.get('x-alert-secret') !== cron) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   let body: { label?: string; rateLimit?: number } = {};
   try { body = await req.json(); } catch { /* ignore */ }
 
@@ -79,6 +84,7 @@ export async function DELETE(req: NextRequest) {
     if (kv && row?.key_hash) await kv.delete(`apikey:${row.key_hash}`);
     return NextResponse.json({ ok: true });
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    console.error('[api/keys] DELETE failed:', err);
+    return NextResponse.json({ error: 'Failed to delete key' }, { status: 500 });
   }
 }

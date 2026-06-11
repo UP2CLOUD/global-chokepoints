@@ -7,18 +7,39 @@ import { getD1, randomId, randomToken } from '@/app/lib/db';
 const VALID_EVENTS = ['status_change'] as const;
 type WebhookEvent = typeof VALID_EVENTS[number];
 
+// Block private/loopback hostnames to prevent SSRF.
+function isPrivateHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  if (h === 'localhost' || h === '::1' || h === '0.0.0.0') return true;
+  // IPv4 loopback / private ranges / link-local
+  if (/^127\./.test(h) || /^10\./.test(h) || /^192\.168\./.test(h)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(h)) return true;
+  if (/^169\.254\./.test(h)) return true; // link-local / AWS metadata
+  if (h === 'metadata.google.internal') return true;
+  return false;
+}
+
 export async function POST(req: NextRequest) {
+  const cron = process.env.ALERT_CRON_SECRET;
+  if (!cron || req.headers.get('x-alert-secret') !== cron) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   let body: { url?: string; events?: string } = {};
   try { body = await req.json(); } catch { /* ignore */ }
 
   if (!body.url) {
     return NextResponse.json({ error: 'url is required' }, { status: 400 });
   }
-  try { new URL(body.url); } catch {
+  let parsed: URL;
+  try { parsed = new URL(body.url); } catch {
     return NextResponse.json({ error: 'url must be a valid URL' }, { status: 400 });
   }
-  if (!body.url.startsWith('https://')) {
+  if (parsed.protocol !== 'https:') {
     return NextResponse.json({ error: 'url must use HTTPS' }, { status: 400 });
+  }
+  if (isPrivateHost(parsed.hostname)) {
+    return NextResponse.json({ error: 'url must not target private or loopback addresses' }, { status: 400 });
   }
 
   const requestedEvent = body.events ?? 'status_change';
@@ -85,6 +106,7 @@ export async function DELETE(req: NextRequest) {
     await db.prepare('DELETE FROM webhooks WHERE id = ?').bind(id).run();
     return NextResponse.json({ ok: true });
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    console.error('[api/webhooks] DELETE failed:', err);
+    return NextResponse.json({ error: 'Failed to delete webhook' }, { status: 500 });
   }
 }
