@@ -41,6 +41,11 @@ export async function DELETE(
   if (result === null) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (result === 'unauthorized') return NextResponse.json({ error: 'x-webhook-secret required' }, { status: 401 });
   const db = getD1()!;
-  await db.prepare('DELETE FROM webhooks WHERE id = ?').bind(id).run();
-  return NextResponse.json({ ok: true });
+  try {
+    await db.prepare('DELETE FROM webhooks WHERE id = ?').bind(id).run();
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('[webhooks/[id]] DELETE failed:', err);
+    return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
+  }
 }
