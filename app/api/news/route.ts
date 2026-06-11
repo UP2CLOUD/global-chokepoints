@@ -174,14 +174,14 @@ export async function GET() {
             { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'STALE' } }
           );
         }
-      } catch {}
+      } catch (kvErr) { console.warn('[api/news] KV fallback read failed:', kvErr); }
     }
 
-    // Return 200 OK so the browser doesn't log scary red network errors.
-    // The frontend gracefully handles empty news arrays.
+    // 502 so CDN stale-if-error serves a prior cached response instead of this error.
+    // fetchNews() catches non-2xx and returns null; dashboard degrades gracefully.
     return NextResponse.json(
       { error: String(err), news: [], source: 'GDELT (Failed)' },
-      { status: 200, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, stale-if-error=3600' } }
+      { status: 502, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, stale-if-error=3600' } }
     );
   }
 }

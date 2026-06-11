@@ -250,7 +250,7 @@ export async function GET() {
     try {
       const entry: MarketsKVEntry = { markets: out, savedAt: Date.now() };
       await kv.put(KV_MARKETS_KEY, JSON.stringify(entry), { expirationTtl: KV_MARKETS_TTL * 2 });
-    } catch { /* KV write failed */ }
+    } catch (err) { console.warn('[api/markets] KV write failed:', err); }
   }
 
   // Aggregate source label for the rail header
