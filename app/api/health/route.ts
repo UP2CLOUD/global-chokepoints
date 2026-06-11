@@ -96,8 +96,8 @@ async function probeD1(): Promise<{ available: boolean; latencyMs: number; error
   try {
     await db.prepare('SELECT 1').first();
     return { available: true, latencyMs: Date.now() - start };
-  } catch (e) {
-    return { available: false, latencyMs: Date.now() - start, error: String(e) };
+  } catch {
+    return { available: false, latencyMs: Date.now() - start, error: 'D1 query failed' };
   }
 }
 
@@ -108,8 +108,8 @@ async function probeKV(): Promise<{ available: boolean; latencyMs: number; error
   try {
     await kv.get('health:ping');
     return { available: true, latencyMs: Date.now() - start };
-  } catch (e) {
-    return { available: false, latencyMs: Date.now() - start, error: String(e) };
+  } catch {
+    return { available: false, latencyMs: Date.now() - start, error: 'KV read failed' };
   }
 }
 
