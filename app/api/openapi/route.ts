@@ -66,7 +66,7 @@ const spec = {
     { name: 'Data feeds', description: 'Internal feed routes polled by the dashboard' },
     { name: 'Subscriptions', description: 'Email alert opt-in / opt-out' },
     { name: 'Webhooks', description: 'Register HTTPS endpoints for status change push notifications' },
-    { name: 'API Keys', description: 'Self-serve gca_* key issuance' },
+    { name: 'API Keys', description: 'Admin-gated gca_* key issuance (requires x-alert-secret header)' },
   ],
   paths: {
     '/v1/status': {
@@ -891,8 +891,18 @@ const spec = {
       post: {
         operationId: 'registerWebhook',
         summary: 'Register a webhook',
-        description: 'Register an HTTPS endpoint to receive HMAC-SHA256-signed status change notifications.',
+        description: 'Register an HTTPS endpoint to receive HMAC-SHA256-signed status change notifications. Requires the `x-alert-secret` admin header.',
         tags: ['Webhooks'],
+        security: [{ AdminSecret: [] }],
+        parameters: [
+          {
+            name: 'x-alert-secret',
+            in: 'header',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Admin secret matching the `ALERT_CRON_SECRET` environment variable',
+          },
+        ],
         requestBody: {
           required: true,
           content: {
@@ -901,8 +911,8 @@ const spec = {
                 type: 'object',
                 required: ['url'],
                 properties: {
-                  url:    { type: 'string', format: 'uri', description: 'HTTPS endpoint URL' },
-                  events: { type: 'string', default: 'status_change', description: 'Comma-separated event types' },
+                  url:    { type: 'string', format: 'uri', description: 'HTTPS endpoint URL (must be https://, no private/loopback addresses)' },
+                  events: { type: 'string', default: 'status_change', description: 'Event type to subscribe to (currently only status_change)' },
                 },
               },
             },
@@ -911,6 +921,7 @@ const spec = {
         responses: {
           '201': { description: 'Webhook registered. Store the returned secret — it is used to verify HMAC-SHA256 signatures.' },
           '400': { description: 'Invalid URL or missing required fields' },
+          '401': { $ref: '#/components/responses/Unauthorized' },
           '503': { description: 'D1 database not available' },
         },
       },
@@ -920,15 +931,25 @@ const spec = {
       post: {
         operationId: 'issueApiKey',
         summary: 'Issue an API key',
-        description: 'Issue a self-serve gca_* API key with configurable daily rate limit. Key is shown once.',
+        description: 'Issue a gca_* API key with configurable daily rate limit. Admin-gated: requires the `x-alert-secret` header. Key is shown once.',
         tags: ['API Keys'],
+        security: [{ AdminSecret: [] }],
+        parameters: [
+          {
+            name: 'x-alert-secret',
+            in: 'header',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Admin secret matching the `ALERT_CRON_SECRET` environment variable',
+          },
+        ],
         requestBody: {
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  label:     { type: 'string', maxLength: 80 },
+                  label:     { type: 'string', maxLength: 80, description: 'Human-readable label for the key' },
                   rateLimit: { type: 'integer', minimum: 100, maximum: 10000, default: 1000, description: 'Daily request quota' },
                 },
               },
@@ -937,6 +958,7 @@ const spec = {
         },
         responses: {
           '201': { description: 'Key issued. The key field is shown once — store it securely.' },
+          '401': { $ref: '#/components/responses/Unauthorized' },
           '503': { description: 'D1 database not available' },
         },
       },
@@ -1192,6 +1214,12 @@ const spec = {
         type: 'http',
         scheme: 'bearer',
         description: 'Alternative to x-api-key: `Authorization: Bearer <key>`',
+      },
+      AdminSecret: {
+        type: 'apiKey',
+        in: 'header',
+        name: 'x-alert-secret',
+        description: 'Admin-only secret matching the `ALERT_CRON_SECRET` Cloudflare Pages secret. Required for webhook registration, API key issuance, and related admin endpoints.',
       },
     },
   },
