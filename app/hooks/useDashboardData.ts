@@ -76,13 +76,17 @@ export function useDashboardData(): DashboardDataState {
   }, []);
 
   const refreshTimeline = useCallback(async () => {
-    const events = await fetchTimeline();
-    if (events && events.length > 0) {
-      setData((prev) => ({
-        ...prev,
-        timeline: events,
-        status: deriveStatus(events, prev.metrics?.brentChangePercent ?? null, lang, prev.metrics?.brentPrice ?? null),
-      }));
+    try {
+      const events = await fetchTimeline();
+      if (events && events.length > 0) {
+        setData((prev) => ({
+          ...prev,
+          timeline: events,
+          status: deriveStatus(events, prev.metrics?.brentChangePercent ?? null, lang, prev.metrics?.brentPrice ?? null),
+        }));
+      }
+    } catch (err) {
+      console.warn('[useDashboardData] Timeline refresh failed:', err);
     }
   }, [lang]);
 
