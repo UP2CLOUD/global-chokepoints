@@ -18,7 +18,7 @@ const CORS = {
   'Access-Control-Max-Age': '86400',
 };
 
-const VALID_STATES = new Set(['OPEN', 'CLOSED', 'PARTIALLY_CLOSED', 'DISRUPTED']);
+const VALID_STATES = new Set(['OPEN', 'CLOSED', 'PARTIALLY_CLOSED']);
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS });
