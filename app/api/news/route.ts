@@ -140,7 +140,7 @@ export async function GET() {
     if (news.length > 0) {
       gdeltCache = { ts: Date.now(), news };
       if (kv) {
-        kv.put('NEWS_PAYLOAD', JSON.stringify({ ts: Date.now(), news })).catch(e => 
+        await kv.put('NEWS_PAYLOAD', JSON.stringify({ ts: Date.now(), news })).catch(e =>
           console.warn('[api/news] KV write failed:', e)
         );
       }
