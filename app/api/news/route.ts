@@ -177,11 +177,11 @@ export async function GET() {
       } catch {}
     }
 
-    // Return 200 OK so the browser doesn't log scary red network errors.
-    // The frontend gracefully handles empty news arrays.
+    // 502 so CDN stale-if-error can serve a previously cached response.
+    // fetchNews() catches non-200 and returns null; the dashboard degrades gracefully.
     return NextResponse.json(
       { error: String(err), news: [], source: 'GDELT (Failed)' },
-      { status: 200, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, stale-if-error=3600' } }
+      { status: 502, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, stale-if-error=3600' } }
     );
   }
 }
