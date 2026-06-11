@@ -131,7 +131,7 @@ export async function GET() {
   } catch (err) {
     console.error('[api/weather] failed:', err);
     return NextResponse.json(
-      { error: String(err), source: 'Open-Meteo' },
+      { error: 'Weather data temporarily unavailable', source: 'Open-Meteo' },
       { status: 502 }
     );
   }

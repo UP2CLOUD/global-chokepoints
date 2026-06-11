@@ -58,7 +58,8 @@ export async function POST(
     responseBody = await res.text().catch(() => '');
     ok = res.ok;
   } catch (err) {
-    return NextResponse.json({ ok: false, error: String(err) }, { status: 502 });
+    console.error('[webhooks/test] delivery failed:', err);
+    return NextResponse.json({ ok: false, error: 'Delivery failed' }, { status: 502 });
   }
 
   return NextResponse.json({ ok, status, response: responseBody.slice(0, 200) });

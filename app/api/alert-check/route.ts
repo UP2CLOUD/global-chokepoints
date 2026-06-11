@@ -56,7 +56,8 @@ async function deriveCurrentStatus(): Promise<{ status: StatusData | null; error
 
     return { status: deriveStatus(timeline, brent?.changePercent ?? null, 'en', brent?.price ?? null) };
   } catch (err) {
-    return { status: null, error: String(err) };
+    console.error('[alert-check] deriveCurrentStatus failed:', err);
+    return { status: null, error: 'Status derivation failed' };
   }
 }
 
