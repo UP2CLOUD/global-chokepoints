@@ -17,7 +17,7 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { getD1, randomId } from '@/app/lib/db';
-import { sendEmail, alertEmailHtml } from '@/app/lib/email';
+import { sendEmailBatch, alertEmailHtml } from '@/app/lib/email';
 import { deriveStatus } from '@/app/lib/api';
 import { REOPEN_CONFIDENCE_THRESHOLD } from '@/app/lib/constants';
 import { hmacSha256hex } from '@/app/lib/crypto';
@@ -153,32 +153,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, changed: true, subscribers: 0, status: currentStatus });
   }
 
-  // ── Send alert emails ────────────────────────────────────
-  let sent = 0;
-  let failed = 0;
+  // ── Send alert emails (batch via Resend) ─────────────────
   const base = siteUrl();
+  const label =
+    currentStatus === 'OPEN'             ? 'OPEN ✓'       :
+    currentStatus === 'PARTIALLY_CLOSED' ? 'DISRUPTED ⚠'  : 'CLOSED ✗';
 
-  for (const sub of subscribers) {
-    const html = alertEmailHtml({
+  const messages = subscribers.map(sub => ({
+    to:      sub.email,
+    subject: `[Global Chokepoints] Status is now ${label}`,
+    html: alertEmailHtml({
       newStatus: currentStatus,
       previousStatus: lastStatus,
       reason:    status.reason,
       reasonUrl: status.reasonUrl,
       unsubscribeUrl: `${base}/api/unsubscribe?token=${sub.unsubscribe_token}`,
-    });
+    }),
+  }));
 
-    const label =
-      currentStatus === 'OPEN'             ? 'OPEN ✓'       :
-      currentStatus === 'PARTIALLY_CLOSED' ? 'DISRUPTED ⚠'  : 'CLOSED ✗';
-
-    const result = await sendEmail({
-      to:      sub.email,
-      subject: `[Global Chokepoints] Status is now ${label}`,
-      html,
-    });
-
-    if (result.ok) sent++; else failed++;
-  }
+  const { sent, failed } = await sendEmailBatch(messages);
 
   // ── Webhook fan-out ──────────────────────────────────────
   const webhookPayload = JSON.stringify({
