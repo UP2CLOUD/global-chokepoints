@@ -15,21 +15,27 @@ export function SubscribeBellButton() {
   const { t } = useLang();
   // null = closed; Phase value = open in that state
   const [activePhase, setActivePhase] = useState<Phase | null>(null);
+  const [activeErrorMsg, setActiveErrorMsg] = useState('');
 
-  // Open in confirmed state when redirected back from /api/confirm
+  // Open in appropriate state when redirected back from /api/confirm
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const p = new URLSearchParams(window.location.search);
-    if (p.get('subscribed') === '1') {
+    const sub = p.get('subscribed');
+    if (sub === '1') {
       setActivePhase('confirmed');
       window.history.replaceState({}, '', window.location.pathname);
+    } else if (sub === 'error' || sub === 'invalid') {
+      setActiveErrorMsg(t.subscribe.unknownError);
+      setActivePhase('error');
+      window.history.replaceState({}, '', window.location.pathname);
     }
-  }, []);
+  }, [t.subscribe.unknownError]);
 
   return (
     <>
       <button
-        onClick={() => setActivePhase('idle')}
+        onClick={() => { setActivePhase('idle'); setActiveErrorMsg(''); }}
         className="flex items-center gap-1.5 text-[11px] font-mono text-text3 hover:text-accent transition-colors duration-180 group"
         aria-label={t.subscribe.bellLabel}
       >
@@ -38,17 +44,17 @@ export function SubscribeBellButton() {
       </button>
 
       {activePhase !== null && (
-        <SubscribeModal initialPhase={activePhase} onClose={() => setActivePhase(null)} />
+        <SubscribeModal initialPhase={activePhase} initialErrorMsg={activeErrorMsg} onClose={() => { setActivePhase(null); setActiveErrorMsg(''); }} />
       )}
     </>
   );
 }
 
-function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => void; initialPhase?: Phase }) {
+function SubscribeModal({ onClose, initialPhase = 'idle', initialErrorMsg = '' }: { onClose: () => void; initialPhase?: Phase; initialErrorMsg?: string }) {
   const { t } = useLang();
   const [email, setEmail] = useState('');
   const [phase, setPhase] = useState<Phase>(initialPhase);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState(initialErrorMsg);
   // When no Turnstile site key is configured (local dev), skip the widget
   const [turnstileToken, setTurnstileToken] = useState(TURNSTILE_SITE_KEY ? '' : 'dev-bypass');
   const inputRef = useRef<HTMLInputElement>(null);
