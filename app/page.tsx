@@ -109,7 +109,7 @@ function DashboardContent() {
       <main className="max-w-[1440px] mx-auto px-4 md:px-8 pb-0">
 
         {/* Status Dispatch */}
-        <section className="py-8 md:py-10 animate-fadeInUp" style={{ animationDelay: '0.05s' }}>
+        <section className="py-8 md:py-10 animate-fadeInUp" style={{ animationDelay: '0.08s' }}>
           <HeroStatus
             status={data.status}
             loading={!dataReady}
@@ -120,7 +120,7 @@ function DashboardContent() {
         <hr className="section-rule" />
 
         {/* Data Strip */}
-        <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
+        <div className="animate-fadeInUp" style={{ animationDelay: '0.22s' }}>
           <MetricsGrid metrics={data.metrics} loading={!dataReady} />
         </div>
 
