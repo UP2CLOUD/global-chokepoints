@@ -151,29 +151,34 @@ export async function sendEmail(opts: {
     return { ok: false, error: 'RESEND_API_KEY not configured' };
   }
 
-  const res = await fetch(RESEND_API, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'User-Agent': 'GlobalChokepointsAlerts/1.0',
-    },
-    body: JSON.stringify({
-      from: fromAddress(),
-      to: [opts.to],
-      subject: opts.subject,
-      html: opts.html,
-    }),
-    signal: AbortSignal.timeout(10_000),
-  });
+  try {
+    const res = await fetch(RESEND_API, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'GlobalChokepointsAlerts/1.0',
+      },
+      body: JSON.stringify({
+        from: fromAddress(),
+        to: [opts.to],
+        subject: opts.subject,
+        html: opts.html,
+      }),
+      signal: AbortSignal.timeout(10_000),
+    });
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    console.error(`[email] Resend error ${res.status}:`, body);
-    return { ok: false, error: `Resend HTTP ${res.status}` };
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.error(`[email] Resend error ${res.status}:`, body);
+      return { ok: false, error: `Resend HTTP ${res.status}` };
+    }
+
+    return { ok: true };
+  } catch (err) {
+    console.error('[email] Resend network error:', err);
+    return { ok: false, error: 'Network error sending email' };
   }
-
-  return { ok: true };
 }
 
 // Send up to 100 emails in a single Resend batch request.
