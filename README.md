@@ -1,6 +1,7 @@
-# IsStraitHormuzOpen?
+# Global Chokepoints Alerts
 
-**Live:** [strait-of-hormuz-monitor.pages.dev](https://strait-of-hormuz-monitor.pages.dev/)
+**Live:** [global-chokepoints.pages.dev](https://global-chokepoints.pages.dev/)
+![Status](https://global-chokepoints.pages.dev/api/badge)
 
 Real-time public intelligence dashboard tracking the operational status of the Strait of Hormuz — maritime traffic, oil markets, geopolitical events, and marine weather.
 
@@ -37,13 +38,69 @@ Threat score blends two equal signals:
 | Framework | Next.js 15 (App Router, Edge Runtime) |
 | Deploy | Cloudflare Pages + Workers |
 | KV cache | Cloudflare KV (Brent, FRED/NG, transits) |
-| DB | Cloudflare D1 (newsletter subscriptions) |
+| DB | Cloudflare D1 (subscriptions, webhooks, API keys, status history) |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS |
 | Charts | Recharts |
 | Map | React-Leaflet + Leaflet |
 | 3D globe | Three.js + React Three Fiber |
 | Animations | GSAP + ScrollTrigger |
+
+## Public API
+
+Three CORS-open endpoints under `/v1/*` (CC-BY-4.0):
+
+| Endpoint | Cache | Description |
+|----------|-------|-------------|
+| `GET /v1/status` | 30 s | Strait state, tension level, confidence score |
+| `GET /v1/status?history=7d` | 30 s | Same + up to 30 days of status history from D1 |
+| `GET /v1/events?limit&since` | 60 s | Classified timeline events |
+| `GET /v1/metrics` | 60 s | Markets, weather, 24 h event delta |
+| `GET /v1/chokepoints` | 60 s | All 5 chokepoint risk indices |
+
+Full reference: [/docs](https://global-chokepoints.pages.dev/docs) · Machine-readable: [/api/openapi](https://global-chokepoints.pages.dev/api/openapi)
+
+### API Keys (optional)
+
+```bash
+# Issue a free key at /keys or via API:
+curl -X POST https://global-chokepoints.pages.dev/api/keys \
+  -H 'Content-Type: application/json' \
+  -d '{"label":"my-app","rateLimit":1000}'
+
+# Use it:
+curl https://global-chokepoints.pages.dev/v1/status \
+  -H 'X-API-Key: gca_your_key'
+```
+
+### Webhooks
+
+```bash
+# Register a webhook:
+curl -X POST https://global-chokepoints.pages.dev/api/webhooks \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://your-server.com/hook"}'
+
+# Test delivery:
+curl -X POST https://global-chokepoints.pages.dev/api/webhooks/{id}/test \
+  -H 'x-webhook-secret: your_secret'
+```
+
+Deliveries are signed with `X-Signature-256: sha256=<hmac-sha256-hex>`.
+
+### Embed widget
+
+```html
+<iframe src="https://global-chokepoints.pages.dev/embed" width="100%" height="440" frameborder="0"></iframe>
+```
+
+Configure at [/embed/configure](https://global-chokepoints.pages.dev/embed/configure).
+
+### Status badge
+
+```markdown
+![Strait Status](https://global-chokepoints.pages.dev/api/badge)
+```
 
 ## Environment Variables
 
@@ -65,7 +122,7 @@ ALERT_CRON_SECRET=                  # GitHub Actions alert check auth
 | Secret | Purpose |
 |--------|---------|
 | `ALERT_CRON_SECRET` | Must match Cloudflare Pages secret exactly |
-| `SITE_URL` | e.g. `https://strait-of-hormuz-monitor.pages.dev` |
+| `SITE_URL` | e.g. `https://global-chokepoints.pages.dev` |
 
 ## Getting Started
 

@@ -47,15 +47,15 @@ export default function GlobalExposurePanel({ state }: Props) {
     <section className="border border-divider bg-bg2 p-5 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-          <Globe2 size={13} className="text-accent" />
+        <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-[0.22em] text-text3">
+          <Globe2 size={11} className="text-accent" />
           {t.exposure.title}
         </div>
-        <span className="text-[10px] font-mono text-text4">{t.exposure.source}</span>
+        <span className="text-[9px] font-mono text-text4">{t.exposure.source}</span>
       </div>
 
       {/* Global flow callout */}
-      <div className={`mb-5 px-4 py-3 rounded-lg border text-[11px] font-mono ${statusColor} flex flex-wrap items-center gap-2`}>
+      <div className={`mb-5 px-4 py-3 border text-[11px] font-mono ${statusColor} flex flex-wrap items-center gap-2`}>
         <span className="font-bold tracking-wide">{t.exposure.globalFlow}</span>
         <span className="text-text3">—</span>
         <span>{statusLabel}</span>
@@ -77,9 +77,9 @@ export default function GlobalExposurePanel({ state }: Props) {
                 {pct}%
               </span>
             </div>
-            <div className="h-1.5 bg-bg2 rounded-full overflow-hidden border border-divider">
+            <div className="h-[2px] bg-divider overflow-hidden">
               <div
-                className={`h-full rounded-full ${barColor(pct)} transition-all duration-700`}
+                className={`h-full ${barColor(pct)} transition-all duration-700`}
                 style={{ width: `${pct}%` }}
                 role="progressbar"
                 aria-valuenow={pct}

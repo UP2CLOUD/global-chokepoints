@@ -1,5 +1,5 @@
 {
-  "name": "strait-of-hormuz-monitor",
+  "name": "global-chokepoints",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -20,7 +20,7 @@
     "@marsidev/react-turnstile": "^1.5.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
-    "@tanstack/react-query": "^5.32.0",
+    "@tanstack/react-query": "^5.101.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
     "esbuild": "^0.28.0",
@@ -34,7 +34,7 @@
     "recharts": "^2.12.0",
     "tailwind-merge": "^2.3.0",
     "three": "^0.184.0",
-    "zustand": "^4.5.0"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.16",
@@ -46,7 +46,7 @@
     "autoprefixer": "^10.4.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^15.5.18",
-    "postcss": "^8.4.0",
+    "postcss": "^8.5.15",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.4.0",
     "wrangler": "^4.90.1"

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { StatusData } from '@/app/lib/types';
 import { useLang } from './LangContext';
 import { fmtTime, fmt } from '@/app/lib/utils';
-import { ExternalLink, Share2 } from 'lucide-react';
+import { ExternalLink, Share2, Copy } from 'lucide-react';
 import { BLOCKAGE_START_ISO } from '@/app/lib/constants';
 
 interface Props {
@@ -63,7 +63,7 @@ const STATE_TONE = {
 } as const;
 
 export default function HeroStatus({ status, loading = false, brentPrice }: Props) {
-  const { t, locale } = useLang();
+  const { lang, t, locale } = useLang();
 
   const tone =
     loading             ? 'caution'
@@ -108,8 +108,19 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
   }, [loading, tIdx]);
 
   const [showWhy, setShowWhy] = useState(false);
+  const [copied, setCopied]   = useState(false);
   const isDisrupted = !loading && status.state !== 'OPEN';
   const elapsedMs   = useElapsedMs(isDisrupted);
+
+  const copyCardLink = () => {
+    if (typeof navigator === 'undefined') return;
+    const params = new URLSearchParams({ state: status.state, tension: String(tIdx), lang });
+    if (brentPrice != null) params.set('brent', brentPrice.toFixed(2));
+    navigator.clipboard.writeText(`${window.location.origin}/api/og?${params}`).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  };
 
   const shareStatus = () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -127,11 +138,12 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
 
   return (
     <section
-      className="border border-divider"
+      className="relative overflow-hidden border border-divider panel-tactical"
       role="status"
       aria-live="polite"
-      aria-label={loading ? 'Loading strait status…' : `${t.hero.question} — ${answerWord}`}
+      aria-label={loading ? 'Loading chokepoint status…' : `${t.hero.question} — ${answerWord}`}
     >
+      <div className="scan-bar" aria-hidden />
       {/* ── Header strip ─────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 md:px-8 py-3 border-b border-divider bg-bg1">
         <div className="flex items-center gap-3">
@@ -147,9 +159,17 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
         <div className="flex items-center gap-5 text-[9px] font-mono text-text4">
           <span suppressHydrationWarning>{fmtTime(status.lastUpdated, locale)}</span>
           <button
+            onClick={copyCardLink}
+            className="flex items-center gap-1.5 hover:text-text2 transition-colors uppercase tracking-[0.14em]"
+            aria-label={t.hero.copyCard}
+          >
+            <Copy size={10} />
+            <span className="hidden sm:inline">{copied ? t.hero.copied : t.hero.copyCard}</span>
+          </button>
+          <button
             onClick={shareStatus}
             className="flex items-center gap-1.5 hover:text-text2 transition-colors uppercase tracking-[0.14em]"
-            aria-label="Share current status"
+            aria-label={t.hero.share}
           >
             <Share2 size={10} />
             <span className="hidden sm:inline">{t.hero.share}</span>
@@ -206,10 +226,10 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
           {/* Operational CTAs */}
           <div className="mt-5 flex flex-wrap gap-2">
             {[
-              { label: 'Incident Feed',  href: '#intel'        },
-              { label: 'Maritime Map',   href: '#hero'         },
-              { label: 'Chokepoints',    href: '#chokepoints'  },
-              { label: 'API Access',     href: '/docs'         },
+              { label: t.hero.ctaIncidentFeed, href: '#intel'        },
+              { label: t.hero.ctaMaritimeMap,  href: '#hero'         },
+              { label: t.hero.ctaChokepoints,  href: '#chokepoints'  },
+              { label: t.hero.ctaApiAccess,    href: '/docs'         },
             ].map(({ label, href }) => (
               <a
                 key={label}
@@ -241,7 +261,7 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
           {brentPrice != null && (
             <div>
               <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 mb-1.5">
-                Brent Crude · $/bbl
+                {t.hero.brentLabel}
               </div>
               <div className="text-[34px] font-mono font-bold text-text leading-none tabular-nums">
                 ${brentPrice.toFixed(2)}
@@ -272,7 +292,7 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
               />
             </div>
             <div className="mt-1.5 flex justify-between text-[8px] font-mono text-text4 uppercase tracking-[0.14em]">
-              <span>Low</span><span>Elevated</span><span>Critical</span>
+              <span>{t.hero.tensionNormal}</span><span>{t.hero.tensionElevated}</span><span>{t.hero.tensionCritical}</span>
             </div>
           </div>
 
@@ -295,20 +315,20 @@ export default function HeroStatus({ status, loading = false, brentPrice }: Prop
           <div className="pt-3 border-t border-divider/60 grid grid-cols-2 gap-3">
             <div>
               <div className="text-[8px] font-mono uppercase tracking-[0.18em] text-text4 mb-1">
-                DATA FRESHNESS
+                {t.hero.dataFreshness}
               </div>
               <div className="flex items-center gap-1.5">
                 <span className={`w-1 h-1 rounded-full animate-[live-pulse_2s_ease-in-out_infinite] ${loading ? 'bg-text4' : 'bg-ok'}`} aria-hidden />
-                <span className="text-[10px] font-mono text-text">{loading ? 'SYNCING' : 'CURRENT'}</span>
+                <span className="text-[10px] font-mono text-text">{loading ? t.header.statusSyncing : t.hero.dataCurrent}</span>
               </div>
             </div>
             <div>
               <div className="text-[8px] font-mono uppercase tracking-[0.18em] text-text4 mb-1">
-                SYSTEM
+                {t.hero.systemLabel}
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-1 h-1 rounded-full bg-ok" aria-hidden />
-                <span className="text-[10px] font-mono text-ok">OPERATIONAL</span>
+                <span className="text-[10px] font-mono text-ok">{t.footer.operational}</span>
               </div>
             </div>
           </div>

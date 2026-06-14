@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
 }
 
 export async function POST(req: NextRequest) {
@@ -46,11 +46,15 @@ export async function POST(req: NextRequest) {
     try {
       const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'GlobalChokepointsAlerts/1.0',
+        },
         body: JSON.stringify({
           secret: turnstileSecret,
           response: turnstileToken,
         }),
+        signal: AbortSignal.timeout(8_000),
       });
       const verifyData = await verifyRes.json();
       if (!verifyData.success) {
@@ -118,7 +122,7 @@ export async function POST(req: NextRequest) {
 
   const result = await sendEmail({
     to: email,
-    subject: 'Confirm your Strait of Hormuz alerts',
+    subject: 'Confirm your Global Chokepoints alerts',
     html: confirmationEmailHtml(confirmUrl),
   });
 
@@ -127,7 +131,7 @@ export async function POST(req: NextRequest) {
     console.error('[subscribe] Email send failed but subscription saved for:', email);
     return NextResponse.json({
       ok: true,
-      message: 'Subscription recorded, but we could not send the confirmation email. We will retry shortly.',
+      message: 'Subscription saved, but the confirmation email could not be sent — please try again shortly.',
     });
   }
 

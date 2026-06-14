@@ -4,16 +4,16 @@ import CopyButton from './CopyButton';
 import { SITE_URL } from '@/app/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'API Docs — IsStraitHormuzOpen?',
+  title: 'API Docs — Global Chokepoints Alerts',
   description:
-    'Full reference for the IsStraitHormuzOpen? public API: strait status, event timeline, markets, weather, and vessel data. CC-BY-4.0.',
+    'Full reference for the Global Chokepoints Alerts public API: chokepoint status, event timeline, markets, weather, and vessel data. CC-BY-4.0.',
 };
 
 // ── Colour helpers ─────────────────────────────────────────────────────────────
 function MethodBadge({ method }: { method: 'GET' | 'POST' }) {
   return (
     <span
-      className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-widest ${
+      className={`inline-block px-2 py-0.5 text-[10px] font-mono font-bold tracking-widest ${
         method === 'GET'
           ? 'bg-info/15 text-info border border-info/30'
           : 'bg-caution/15 text-caution border border-caution/30'
@@ -32,7 +32,7 @@ function SeverityPill({ level, label }: { level: 'ok' | 'caution' | 'info' | 'ne
     neutral: 'bg-text4/20 text-text2 border-text4/30',
   }[level];
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono border ${cls}`}>
+    <span className={`inline-block px-2 py-0.5 text-[10px] font-mono border ${cls}`}>
       {label}
     </span>
   );
@@ -40,7 +40,7 @@ function SeverityPill({ level, label }: { level: 'ok' | 'caution' | 'info' | 'ne
 
 function Code({ children }: { children: string }) {
   return (
-    <code className="px-1.5 py-0.5 rounded bg-bg1 border border-divider text-[12px] font-mono text-accent-hi">
+    <code className="px-1.5 py-0.5 bg-bg1 border border-divider text-[12px] font-mono text-accent-hi">
       {children}
     </code>
   );
@@ -49,11 +49,11 @@ function Code({ children }: { children: string }) {
 function Pre({ children, lang = 'bash' }: { children: string; lang?: string }) {
   return (
     <div className="relative group">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-bg1/80 border border-divider rounded-t-lg border-b-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-bg1/80 border border-divider border-b-0">
         <span className="text-[10px] font-mono text-text4 uppercase tracking-widest">{lang}</span>
         <CopyButton text={children} />
       </div>
-      <pre className="p-4 bg-[#080B13] border border-divider rounded-b-lg text-[12px] font-mono leading-relaxed overflow-x-auto text-text2 scrollbar-thin">
+      <pre className="p-4 bg-[#080B13] border border-divider text-[12px] font-mono leading-relaxed overflow-x-auto text-text2 scrollbar-thin">
         <code>{children}</code>
       </pre>
     </div>
@@ -95,9 +95,9 @@ function EndpointCard({
   jsExample?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-divider bg-card/60 overflow-hidden">
+    <div className="border border-divider bg-bg2 overflow-hidden">
       {/* Header */}
-      <div className="flex flex-wrap items-center gap-3 px-5 py-4 bg-bg1/60 border-b border-divider">
+      <div className="flex flex-wrap items-center gap-3 px-5 py-4 bg-bg1 border-b border-divider">
         <MethodBadge method={method} />
         <code className="text-[13px] font-mono text-text font-medium">{path}</code>
         {badge}
@@ -111,7 +111,7 @@ function EndpointCard({
         {params && params.length > 0 && (
           <div>
             <h4 className="text-[11px] font-mono uppercase tracking-widest text-text3 mb-2">Parameters</h4>
-            <table className="w-full text-[12px] border border-divider rounded-lg overflow-hidden">
+            <table className="w-full text-[12px] border border-divider overflow-hidden">
               <thead className="bg-bg1/80 text-text3 text-[10px] uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-3 py-2">Name</th>
@@ -143,7 +143,7 @@ function EndpointCard({
         {responseFields && responseFields.length > 0 && (
           <div>
             <h4 className="text-[11px] font-mono uppercase tracking-widest text-text3 mb-2">Response fields</h4>
-            <table className="w-full text-[12px] border border-divider rounded-lg overflow-hidden">
+            <table className="w-full text-[12px] border border-divider overflow-hidden">
               <thead className="bg-bg1/80 text-text3 text-[10px] uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-3 py-2">Field</th>
@@ -178,16 +178,26 @@ function EndpointCard({
 
 // ── Nav items ──────────────────────────────────────────────────────────────────
 const NAV = [
-  { id: 'overview',   label: 'Overview' },
-  { id: 'auth',       label: 'Authentication' },
-  { id: 'public-api', label: 'Public v1 API' },
-  { id: 'status',     label: '  GET /v1/status' },
-  { id: 'events',     label: '  GET /v1/events' },
-  { id: 'metrics',    label: '  GET /v1/metrics' },
-  { id: 'feeds',      label: 'Data Feed Routes' },
-  { id: 'subscribe',  label: 'Subscriptions' },
-  { id: 'types',      label: 'Types reference' },
-  { id: 'openapi',    label: 'OpenAPI spec' },
+  { id: 'overview',       label: 'Overview' },
+  { id: 'auth',           label: 'Authentication' },
+  { id: 'public-api',     label: 'Public v1 API' },
+  { id: 'status',      label: '  GET /v1/status' },
+  { id: 'history',     label: '  GET /v1/history' },
+  { id: 'events',      label: '  GET /v1/events' },
+  { id: 'metrics',     label: '  GET /v1/metrics' },
+  { id: 'chokepoints', label: '  GET /v1/chokepoints' },
+  { id: 'digest',      label: '  GET /v1/digest' },
+  { id: 'weather',     label: '  GET /v1/weather' },
+  { id: 'news',        label: '  GET /v1/news' },
+  { id: 'feeds',          label: 'Data Feed Routes' },
+  { id: 'webhooks',       label: 'Webhooks' },
+  { id: 'ping',           label: '  GET /api/ping' },
+  { id: 'badge',          label: '  GET /api/badge' },
+  { id: 'status-feed',    label: '  GET /feed.xml' },
+  { id: 'status-changes-feed', label: '  GET /status-feed.xml' },
+  { id: 'subscribe',      label: 'Subscriptions' },
+  { id: 'types',          label: 'Types reference' },
+  { id: 'openapi',        label: 'OpenAPI spec' },
 ];
 
 const SITE = SITE_URL;
@@ -207,14 +217,14 @@ export default function DocsPage() {
           <div className="ml-auto flex items-center gap-3">
             <a
               href="/api-reference"
-              className="inline-flex items-center gap-1.5 text-[10px] font-mono text-ok border border-ok/30 bg-ok/5 px-2.5 py-1 rounded hover:border-ok/60 hover:bg-ok/10 transition-all"
+              className="inline-flex items-center gap-1.5 text-[10px] font-mono text-ok border border-ok/30 bg-ok/5 px-2.5 py-1 hover:border-ok/60 hover:bg-ok/10 transition-all"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-ok animate-pulse" />
               Try API →
             </a>
             <a
               href="/api/openapi"
-              className="text-[10px] font-mono text-text3 hover:text-accent border border-divider/60 px-2.5 py-1 rounded hover:border-accent/30 transition-all"
+              className="text-[10px] font-mono text-text3 hover:text-accent border border-divider/60 px-2.5 py-1 hover:border-accent/30 transition-all"
             >
               openapi.json ↗
             </a>
@@ -232,20 +242,23 @@ export default function DocsPage() {
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors duration-120 py-0.5 px-2 rounded hover:bg-bg1/60"
+                className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors duration-120 py-0.5 px-2 hover:bg-bg1/60"
               >
                 {item.label}
               </a>
             ))}
             <div className="pt-4 border-t border-divider/40 mt-4">
-              <a href="/api-reference" className="block text-[12px] font-mono text-ok hover:text-ok/80 transition-colors py-0.5 px-2">
+              <a href="/api-reference" className="block text-[12px] font-mono text-ok hover:text-ok/80 transition-colors py-0.5 px-2 hover:bg-bg1/60">
                 ▶ Try API live ↗
               </a>
               <a href="/methodology" className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors py-0.5 px-2">
                 Methodology ↗
               </a>
               <a href="/feed.xml" className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors py-0.5 px-2">
-                RSS feed ↗
+                Events RSS ↗
+              </a>
+              <a href="/status-feed.xml" className="block text-[12px] font-mono text-text3 hover:text-accent transition-colors py-0.5 px-2">
+                Status RSS ↗
               </a>
             </div>
           </div>
@@ -261,10 +274,10 @@ export default function DocsPage() {
               Public API Reference
             </div>
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mb-3">
-              IsStraitHormuzOpen? API
+              Global Chokepoints Alerts API
             </h1>
             <p className="text-text2 leading-relaxed max-w-2xl">
-              Real-time JSON data on the operational status of the Strait of Hormuz.
+              Real-time JSON data on the operational status of global maritime chokepoints.
               All <Code>/v1</Code> endpoints are public, CORS-open, and licensed under{' '}
               <a href="https://creativecommons.org/licenses/by/4.0/" className="text-accent hover:underline">CC-BY-4.0</a>.
               No API key required for most uses.
@@ -277,7 +290,7 @@ export default function DocsPage() {
             </div>
 
             {/* Interactive playground CTA */}
-            <div className="mt-6 flex items-center gap-4 p-4 rounded-xl border border-ok/20 bg-ok/5">
+            <div className="mt-6 flex items-center gap-4 p-4 border border-ok/20 bg-ok/5">
               <div className="flex-1">
                 <p className="text-[12px] font-mono text-ok uppercase tracking-[0.14em] mb-0.5">Interactive Playground</p>
                 <p className="text-[12px] text-text2">
@@ -286,7 +299,7 @@ export default function DocsPage() {
               </div>
               <a
                 href="/api-reference"
-                className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
+                className="shrink-0 inline-flex items-center gap-2 px-4 py-2 text-[11px] font-mono uppercase tracking-[0.12em]
                   text-bg bg-ok hover:bg-ok/90 transition-all duration-200 font-semibold"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-bg animate-pulse" />
@@ -315,12 +328,12 @@ export default function DocsPage() {
             <h3 className="text-text font-semibold text-sm mt-4 mb-1">Attribution</h3>
             <p>
               When displaying data from <Code>/v1/*</Code> endpoints, include the attribution string
-              from the <Code>license</Code> field: <em>&ldquo;IsStraitHormuzOpen?&rdquo;</em> with a
+              from the <Code>license</Code> field: <em>&ldquo;Global Chokepoints Alerts&rdquo;</em> with a
               link to <Code>{SITE}</Code>.
             </p>
 
             <h3 className="text-text font-semibold text-sm mt-4 mb-1">Route families</h3>
-            <table className="w-full text-[12px] border border-divider rounded-lg overflow-hidden">
+            <table className="w-full text-[12px] border border-divider overflow-hidden">
               <thead className="bg-bg1 text-text3 text-[10px] uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-3 py-2">Prefix</th>
@@ -331,9 +344,9 @@ export default function DocsPage() {
               </thead>
               <tbody>
                 {[
-                  ['/v1/*',   'Public intelligence API',         'Optional key', 'Allow-all'],
-                  ['/api/*',  'Internal dashboard data feeds',   'None',         'Same-origin'],
-                  ['/feed.xml', 'RSS 2.0 event feed',            'None',         'Allow-all'],
+                  ['/v1/*',     'Public intelligence API (JSON)',  'Optional key', 'Allow-all'],
+                  ['/api/*',    'Internal dashboard data feeds',  'None',         'Same-origin'],
+                  ['/feed.xml', 'RSS 2.0 timeline events feed',   'None',         'Allow-all'],
                 ].map(([prefix, purpose, auth, cors]) => (
                   <tr key={prefix} className="border-t border-divider">
                     <td className="px-3 py-2 font-mono text-accent-hi">{prefix}</td>
@@ -381,7 +394,7 @@ curl -X POST -H "Authorization: Bearer YOUR_KEY" ${SITE}/v1/...`}</Pre>
             <EndpointCard
               method="GET"
               path="/v1/status"
-              summary="Current strait status"
+              summary="Current chokepoint status"
               badge={<SeverityPill level="info" label="30 s cache" />}
               description="The primary endpoint. Returns the computed operational state (OPEN / PARTIALLY_CLOSED / CLOSED), a 0–100 threat score, confidence value, and a human-readable reason string."
               responseFields={[
@@ -406,6 +419,60 @@ console.log(data.reason);       // "Maritime traffic operational. ..."`}
             />
           </div>
 
+          {/* v1/history */}
+          <div id="history" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/v1/history"
+              summary="Paginated status-change history"
+              badge={<SeverityPill level="info" label="60 s cache" />}
+              description="Returns the log of recorded chokepoint state transitions written by the alert-check cron whenever the status changes. Useful for charting tension trends or building audit trails. All timestamps are Unix-derived ISO 8601."
+              params={[
+                { name: 'limit',  in: 'query', type: 'integer',  desc: 'Max records to return (1–200, default 50)' },
+                { name: 'since',  in: 'query', type: 'ISO 8601', desc: 'Return only transitions recorded after this timestamp (exclusive)' },
+                { name: 'before', in: 'query', type: 'ISO 8601', desc: 'Return only transitions recorded before this timestamp — pass nextCursor to page backward' },
+                { name: 'state',  in: 'query', type: 'enum',     desc: 'Filter by target state: OPEN | CLOSED | PARTIALLY_CLOSED | DISRUPTED' },
+              ]}
+              responseFields={[
+                { name: 'items[].id',            type: 'string',      desc: 'Unique record identifier (UUID)' },
+                { name: 'items[].state',          type: 'enum',        desc: 'New state: OPEN | PARTIALLY_CLOSED | CLOSED | DISRUPTED' },
+                { name: 'items[].previousState',  type: 'enum|null',   desc: 'Prior state, or null for the first recorded entry' },
+                { name: 'items[].tension',        type: 'number|null', desc: 'Tension index (0–100) at the time of the transition' },
+                { name: 'items[].confidence',     type: 'number|null', desc: 'Model confidence score (0–1, three decimal places)' },
+                { name: 'items[].reason',         type: 'string|null', desc: 'Human-readable reason string generated by deriveStatus()' },
+                { name: 'items[].timestamp',      type: 'ISO 8601',    desc: 'Transition timestamp' },
+                { name: 'count',                  type: 'integer',     desc: 'Number of records in this response' },
+                { name: 'limit',                  type: 'integer',     desc: 'The effective limit applied' },
+                { name: 'nextCursor',             type: 'ISO 8601|null', desc: 'Pass as ?before= to fetch the next (older) page; null when no further records exist' },
+                { name: 'stateFilter',            type: 'enum',        desc: 'Echoed back if ?state was provided' },
+                { name: 'since',                  type: 'ISO 8601',    desc: 'Echoed back if ?since was provided' },
+              ]}
+              curlExample={`# Most recent 20 transitions
+curl "${SITE}/v1/history?limit=20"
+
+# Transitions since a specific time
+curl "${SITE}/v1/history?since=2026-05-01T00:00:00Z"
+
+# Only CLOSED events
+curl "${SITE}/v1/history?state=CLOSED&limit=10"
+
+# Page 2 — pass nextCursor from previous response as ?before=
+curl "${SITE}/v1/history?limit=50&before=2026-04-15T06:30:00Z"`}
+              jsExample={`// Fetch all history pages
+async function fetchAllHistory() {
+  const all = [];
+  let cursor = null;
+  do {
+    const url = \`${SITE}/v1/history?limit=100\${cursor ? \`&before=\${cursor}\` : ''}\`;
+    const { items, nextCursor } = await fetch(url).then(r => r.json());
+    all.push(...items);
+    cursor = nextCursor;
+  } while (cursor);
+  return all;
+}`}
+            />
+          </div>
+
           {/* v1/events */}
           <div id="events" className="scroll-mt-20">
             <EndpointCard
@@ -415,35 +482,60 @@ console.log(data.reason);       // "Maritime traffic operational. ..."`}
               badge={<SeverityPill level="info" label="60 s cache" />}
               description="Classified events aggregated from CNN, BBC, Al Jazeera, Reuters (via Google News), and Google News RSS. Events are filtered by Hormuz/Iran/maritime keywords and scored by severity."
               params={[
-                { name: 'limit', in: 'query', type: 'integer', desc: 'Max events to return (1–100, default 30)' },
-                { name: 'since', in: 'query', type: 'ISO 8601', desc: 'Return only events at or after this timestamp — useful for incremental polling' },
+                { name: 'limit',      in: 'query', type: 'integer',  desc: 'Max events to return (1–100, default 30)' },
+                { name: 'since',      in: 'query', type: 'ISO 8601', desc: 'Return only events at or after this timestamp — useful for incremental polling' },
+                { name: 'before',     in: 'query', type: 'ISO 8601', desc: 'Return only events strictly before this timestamp — pass nextCursor to page backward through history' },
+                { name: 'severity',   in: 'query', type: 'string',   desc: 'Comma-separated severity filter: low | medium | high | critical' },
+                { name: 'category',   in: 'query', type: 'string',   desc: 'Comma-separated category filter: incident | military | diplomatic | economic' },
+                { name: 'chokepoint', in: 'query', type: 'enum',     desc: 'Filter by chokepoint: hormuz | redsea | suez | panama | taiwan' },
               ]}
               responseFields={[
-                { name: 'events[].id',          type: 'string',   desc: 'Unique event identifier (URL-derived hash)' },
-                { name: 'events[].date',         type: 'ISO 8601', desc: 'Event publication timestamp' },
-                { name: 'events[].title',        type: 'string',   desc: 'Headline' },
-                { name: 'events[].description',  type: 'string',   desc: 'Lead paragraph or snippet' },
-                { name: 'events[].category',     type: 'enum',     desc: 'incident | military | diplomatic | economic' },
-                { name: 'events[].severity',     type: 'enum',     desc: 'low | medium | high | critical' },
-                { name: 'events[].source',       type: 'string',   desc: 'Publisher name (e.g. "BBC")' },
-                { name: 'events[].url',          type: 'string',   desc: 'Original article URL' },
-                { name: 'count',                 type: 'integer',  desc: 'Total events returned' },
-                { name: 'generatedAt',           type: 'ISO 8601', desc: 'Response generation time' },
+                { name: 'events[].id',          type: 'string',       desc: 'Unique event identifier (URL-derived hash)' },
+                { name: 'events[].date',         type: 'ISO 8601',     desc: 'Event publication timestamp' },
+                { name: 'events[].title',        type: 'string',       desc: 'Headline' },
+                { name: 'events[].description',  type: 'string',       desc: 'Lead paragraph or snippet' },
+                { name: 'events[].category',     type: 'enum',         desc: 'incident | military | diplomatic | economic' },
+                { name: 'events[].severity',     type: 'enum',         desc: 'low | medium | high | critical' },
+                { name: 'events[].source',       type: 'string',       desc: 'Publisher name (e.g. "BBC")' },
+                { name: 'events[].url',          type: 'string',       desc: 'Original article URL' },
+                { name: 'count',                 type: 'integer',      desc: 'Events returned in this page' },
+                { name: 'nextCursor',            type: 'ISO 8601|null',desc: 'Pass as ?before= to fetch the next (older) page; null when exhausted' },
+                { name: 'filters',               type: 'object',       desc: 'Echoed-back filter values (chokepoint, severity, category, since, before)' },
+                { name: 'generatedAt',           type: 'ISO 8601',     desc: 'Response generation time' },
               ]}
               curlExample={`# Latest 10 events
 curl "${SITE}/v1/events?limit=10"
 
 # Incremental poll — events since last check
-curl "${SITE}/v1/events?since=2026-05-14T06:00:00Z"`}
-              jsExample={`// Incremental polling
-let cursor = new Date(Date.now() - 60_000).toISOString();
+curl "${SITE}/v1/events?since=2026-05-14T06:00:00Z"
 
+# Page backward — pass nextCursor as ?before=
+curl "${SITE}/v1/events?limit=30&before=2026-05-29T14:00:00Z"
+
+# Filter: high-severity military events at Hormuz
+curl "${SITE}/v1/events?severity=high,critical&category=military&chokepoint=hormuz"`}
+              jsExample={`// Incremental polling (forward)
+let cursor = new Date(Date.now() - 60_000).toISOString();
 setInterval(async () => {
-  const url = \`${SITE}/v1/events?limit=20&since=\${cursor}\`;
-  const { events, generatedAt } = await fetch(url).then(r => r.json());
+  const { events, generatedAt } = await fetch(
+    \`${SITE}/v1/events?limit=20&since=\${cursor}\`
+  ).then(r => r.json());
   cursor = generatedAt;
   events.forEach(e => console.log(e.severity, e.title));
-}, 60_000);`}
+}, 60_000);
+
+// Backward pagination (fetch all historical events)
+async function fetchAllEvents() {
+  const all = [];
+  let cursor = null;
+  do {
+    const url = \`${SITE}/v1/events?limit=100\${cursor ? \`&before=\${cursor}\` : ''}\`;
+    const { events, nextCursor } = await fetch(url).then(r => r.json());
+    all.push(...events);
+    cursor = nextCursor;
+  } while (cursor);
+  return all;
+}`}
             />
           </div>
 
@@ -480,6 +572,164 @@ if (weather) {
             />
           </div>
 
+          {/* v1/chokepoints */}
+          <div id="chokepoints" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/v1/chokepoints"
+              summary="All five strategic chokepoints with live risk data"
+              badge={<SeverityPill level="info" label="60 s cache" />}
+              description="Returns risk indices, vessel counts, and trade-flow statistics for all five tracked maritime chokepoints: Hormuz, Red Sea, Suez Canal, Panama Canal, and Taiwan Strait. Hormuz riskIndex and status are derived live from /v1/status; all others use curated static baselines updated from IMF PortWatch."
+              responseFields={[
+                { name: 'chokepoints[].key',          type: 'string',      desc: 'Identifier slug: hormuz | redsea | suez | panama | taiwan' },
+                { name: 'chokepoints[].name',         type: 'string',      desc: 'Full display name' },
+                { name: 'chokepoints[].region',       type: 'string',      desc: 'Geographic sub-region' },
+                { name: 'chokepoints[].codes',        type: 'string',      desc: 'ISO country codes bordering the chokepoint' },
+                { name: 'chokepoints[].status',       type: 'enum',        desc: 'normal | elevated | degraded | critical' },
+                { name: 'chokepoints[].riskIndex',    type: 'integer',     desc: '0–100 composite risk score (live for Hormuz)' },
+                { name: 'chokepoints[].oilMbd',       type: 'number|null', desc: 'Oil flow in million barrels/day (null if not applicable)' },
+                { name: 'chokepoints[].tradePerDayB', type: 'number',      desc: 'Trade value in USD billions per day' },
+                { name: 'chokepoints[].vessels24h',   type: 'integer',     desc: 'Vessel transits in the past 24 hours (IMF PortWatch)' },
+                { name: 'chokepoints[].vsBaseline',   type: 'number',      desc: 'Percent deviation from pre-2026 baseline' },
+                { name: 'chokepoints[].trend',        type: 'enum',        desc: 'up | stable | down (based on vsBaseline ±10%)' },
+                { name: 'count',                      type: 'integer',     desc: 'Always 5' },
+                { name: 'generatedAt',                type: 'ISO 8601',    desc: 'Response generation timestamp' },
+              ]}
+              curlExample={`curl ${SITE}/v1/chokepoints`}
+              jsExample={`const { chokepoints } = await fetch('${SITE}/v1/chokepoints').then(r => r.json());
+
+chokepoints.forEach(cp => {
+  console.log(\`\${cp.name}: \${cp.status} (risk \${cp.riskIndex}, \${cp.vessels24h} vessels)\`);
+});
+
+// Filter to only high-risk chokepoints
+const hotspots = chokepoints.filter(cp => cp.riskIndex >= 70);`}
+            />
+          </div>
+
+          {/* v1/digest */}
+          <div id="digest" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/v1/digest"
+              summary="Single-fetch snapshot for embed widgets"
+              badge={<SeverityPill level="info" label="60 s cache" />}
+              description="Convenience endpoint that fans out to /v1/status, /v1/events, and /v1/metrics in parallel and returns a combined payload. Use this when you need current conditions in a single HTTP request — ideal for embed widgets, bots, and lightweight integrations."
+              params={[
+                { name: 'events', in: 'query', type: 'integer', desc: 'Number of recent events to include in the response (1–20, default 5)' },
+              ]}
+              responseFields={[
+                { name: 'state',           type: 'enum',        desc: 'OPEN | PARTIALLY_CLOSED | CLOSED' },
+                { name: 'tensionLevel',    type: 'enum',        desc: 'NORMAL | ELEVATED | CRITICAL' },
+                { name: 'tensionIndex',    type: 'integer',     desc: '0–100 composite threat score' },
+                { name: 'confidence',      type: 'number',      desc: 'Algorithm confidence (0–1)' },
+                { name: 'reason',          type: 'string',      desc: 'Human-readable reason string' },
+                { name: 'reasonUrl',       type: 'string|null', desc: 'URL of driving source article' },
+                { name: 'asOf',            type: 'ISO 8601',    desc: 'Status computation timestamp' },
+                { name: 'events',          type: 'Event[]',     desc: 'Most recent events (up to ?events= count)' },
+                { name: 'eventCount',      type: 'integer',     desc: 'Total events returned' },
+                { name: 'brent',           type: 'object|null', desc: '{ price, change, changePercent } — Brent crude' },
+                { name: 'markets',         type: 'object|null', desc: 'Full ticker objects for brent, wti, natgas' },
+                { name: 'weather',         type: 'object|null', desc: '{ temperatureC, wind, sea, navRisk, navRiskLabel }' },
+                { name: 'eventDelta',      type: 'object|null', desc: '{ last24h, prev24h, delta } — 24-hour event counts' },
+                { name: 'generatedAt',     type: 'ISO 8601',    desc: 'Response generation timestamp' },
+              ]}
+              curlExample={`# Default: status + 5 recent events + markets
+curl ${SITE}/v1/digest
+
+# Include up to 10 events
+curl "${SITE}/v1/digest?events=10"`}
+              jsExample={`// Single request for a full embed
+const data = await fetch('${SITE}/v1/digest').then(r => r.json());
+
+console.log(data.state);                     // "OPEN"
+console.log(data.tensionIndex);              // 42
+console.log(data.brent?.price);             // 78.45
+console.log(data.events[0]?.title);         // latest event headline
+console.log(data.weather?.navRiskLabel);    // "CALM"`}
+            />
+          </div>
+
+          {/* v1/weather */}
+          <div id="weather" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/v1/weather"
+              summary="Marine conditions at the Strait of Hormuz"
+              badge={<SeverityPill level="info" label="15 min cache" />}
+              description="Real-time wind, temperature, visibility, wave height, and the computed navRisk index (0–100) for the Strait of Hormuz approach (26.5°N 56.4°E, Bandar Abbas). Sourced from Open-Meteo Forecast and Marine APIs — free, no API key required."
+              responseFields={[
+                { name: 'location',        type: 'object',      desc: '{ lat, lon, label } — always 26.5°N 56.4°E (Strait of Hormuz)' },
+                { name: 'temperatureC',    type: 'number',      desc: 'Air temperature in °C' },
+                { name: 'wind.speedKn',    type: 'number',      desc: 'Wind speed in knots' },
+                { name: 'wind.direction',  type: 'string',      desc: '16-point compass direction (N, NNE, NE … NNW)' },
+                { name: 'wind.directionDeg', type: 'number',    desc: 'Wind direction in degrees (0–359)' },
+                { name: 'visibilityM',     type: 'number',      desc: 'Horizontal visibility in metres' },
+                { name: 'weather',         type: 'string',      desc: 'WMO weather description (e.g. "Clear", "Thunderstorm")' },
+                { name: 'weatherCode',     type: 'integer',     desc: 'WMO weather interpretation code' },
+                { name: 'sea.waveHeightM', type: 'number',      desc: 'Significant wave height in metres' },
+                { name: 'sea.wavePeriodS', type: 'number|null', desc: 'Mean wave period in seconds' },
+                { name: 'sea.windWaveM',   type: 'number|null', desc: 'Wind-generated wave height in metres' },
+                { name: 'sea.swellM',      type: 'number|null', desc: 'Swell wave height in metres' },
+                { name: 'navRisk',         type: 'number',      desc: '0–100 composite navigation risk (wind + waves + visibility + weather code)' },
+                { name: 'navRiskLabel',    type: 'enum',        desc: 'CALM | MODERATE | ROUGH | SEVERE' },
+                { name: 'source',          type: 'string',      desc: 'Always "Open-Meteo"' },
+                { name: 'generatedAt',     type: 'ISO 8601',    desc: 'Response timestamp' },
+              ]}
+              curlExample={`curl ${SITE}/v1/weather`}
+              jsExample={`const data = await fetch('${SITE}/v1/weather').then(r => r.json());
+
+console.log(\`Wind: \${data.wind.speedKn}kn \${data.wind.direction}\`);
+console.log(\`Waves: \${data.sea.waveHeightM}m · Risk: \${data.navRiskLabel}\`);
+
+// Warn if navigating in rough conditions
+if (data.navRisk >= 50) {
+  alert(\`High nav risk (\${data.navRiskLabel}): verify UKMTO advisories\`);
+}`}
+            />
+          </div>
+
+          {/* v1/news */}
+          <div id="news" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/v1/news"
+              summary="GDELT news articles about global chokepoints"
+              badge={<SeverityPill level="info" label="5 min cache" />}
+              description="Returns recent news articles covering all five chokepoints — Strait of Hormuz, Red Sea / Houthi / Bab-el-Mandeb, Suez Canal, Panama Canal, and Taiwan Strait — sourced from the GDELT v2 Doc API. Each article includes a basic sentiment classification (positive / negative / neutral) and a relevance score."
+              params={[
+                { name: 'limit',     in: 'query', type: 'integer', desc: 'Max articles to return (1–50, default 20)' },
+                { name: 'sentiment', in: 'query', type: 'enum',    desc: 'Filter by sentiment: positive | negative | neutral' },
+              ]}
+              responseFields={[
+                { name: 'news[].id',          type: 'string',  desc: 'Article identifier (URL hash)' },
+                { name: 'news[].title',        type: 'string',  desc: 'Article headline' },
+                { name: 'news[].source',       type: 'string',  desc: 'Publisher name (e.g. "Reuters")' },
+                { name: 'news[].publishedAt',  type: 'ISO 8601',desc: 'Publication timestamp' },
+                { name: 'news[].url',          type: 'string',  desc: 'Original article URL' },
+                { name: 'news[].sentiment',    type: 'enum',    desc: 'positive | negative | neutral — basic keyword analysis' },
+                { name: 'news[].relevance',    type: 'number',  desc: '0–1 relevance score from GDELT' },
+                { name: 'count',               type: 'integer', desc: 'Articles returned in this response' },
+                { name: 'total',               type: 'integer', desc: 'Total articles before sentiment filtering' },
+                { name: 'source',              type: 'string',  desc: 'Always "GDELT"' },
+              ]}
+              curlExample={`# Latest 20 articles
+curl ${SITE}/v1/news
+
+# Only negative-sentiment articles
+curl "${SITE}/v1/news?sentiment=negative&limit=10"`}
+              jsExample={`const { news } = await fetch('${SITE}/v1/news').then(r => r.json());
+
+news.forEach(article => {
+  console.log(\`[\${article.sentiment}] \${article.title}\`);
+  console.log(\`  → \${article.url}\`);
+});
+
+// Filter high-relevance negative articles client-side
+const alerts = news.filter(a => a.sentiment === 'negative' && a.relevance > 0.8);`}
+            />
+          </div>
+
           {/* Data feed routes */}
           <Section id="feeds" title="Data Feed Routes">
             <p>
@@ -489,7 +739,7 @@ if (weather) {
               data exists.
             </p>
 
-            <table className="w-full text-[12px] border border-divider rounded-lg overflow-hidden mt-2">
+            <table className="w-full text-[12px] border border-divider overflow-hidden mt-2">
               <thead className="bg-bg1 text-text3 text-[10px] uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-3 py-2">Route</th>
@@ -501,12 +751,13 @@ if (weather) {
                 {[
                   ['/api/brent',     'Yahoo Finance → Stooq CSV → EIA → module cache → KV', '5 min'],
                   ['/api/markets',   'EIA (Brent/WTI) + FRED (Henry Hub) → Yahoo Finance',  '5 min'],
-                  ['/api/timeline',  '7 RSS feeds (CNN, BBC, Al Jazeera, Google News) → KV', '60 s'],
+                  ['/api/timeline',  '9 RSS feeds (CNN, BBC, Al Jazeera, Google News) → KV', '60 s'],
                   ['/api/news',      'GDELT v2 Doc API → KV fallback',                       '5 min'],
                   ['/api/weather',   'Open-Meteo Forecast + Marine → KV',                   '15 min'],
                   ['/api/vessels',   'data/vessels.json (AIS sidecar) → KV fallback',        '2 min'],
                   ['/api/portwatch', 'IMF PortWatch → KV',                                   '6 h'],
-                  ['/api/health',    'Parallel probes (Yahoo, GDELT, RSS, Open-Meteo)',       '30 s'],
+                  ['/api/ping',      'No upstream fetches — instant liveness check',          'no-cache'],
+                  ['/api/health',    'Parallel probes (Yahoo, Stooq, GDELT, RSS, Open-Meteo, IMF PortWatch)', '30 s'],
                 ].map(([route, sources, ttl]) => (
                   <tr key={route as string} className="border-t border-divider">
                     <td className="px-3 py-2 font-mono text-accent-hi">{route}</td>
@@ -518,10 +769,156 @@ if (weather) {
             </table>
           </Section>
 
+          {/* Webhooks */}
+          <Section id="webhooks" title="Webhooks &amp; Utilities">
+            <p>
+              Register HTTP webhooks to receive a <Code>POST</Code> payload whenever the chokepoint state changes.
+              The <Code>POST /api/keys</Code> endpoint issues API keys for rate-limited <Code>/v1/*</Code> access.
+              A static SVG badge and an RSS status-change feed are also available for embed and monitoring use-cases.
+            </p>
+            <div className="space-y-3 mt-2">
+              <EndpointCard
+                method="POST"
+                path="/api/webhooks"
+                summary="Register a webhook"
+                description="Creates a new webhook subscription. Returns the webhook id and a secret token — store both; the secret is only shown once and is required to verify or delete the webhook."
+                params={[
+                  { name: 'url',    in: 'body', type: 'string',   required: true,  desc: 'HTTPS URL that will receive POST payloads on state change' },
+                  { name: 'events', in: 'body', type: 'string[]', required: false, desc: 'Event types to subscribe to — defaults to ["status_change"]' },
+                ]}
+                responseFields={[
+                  { name: 'id',     type: 'string', desc: 'Webhook identifier (UUID)' },
+                  { name: 'secret', type: 'string', desc: 'HMAC signing secret — shown once, store securely' },
+                  { name: 'url',    type: 'string', desc: 'Registered callback URL' },
+                  { name: 'events', type: 'string[]', desc: 'Subscribed event types' },
+                ]}
+                curlExample={`curl -X POST ${SITE}/api/webhooks \\
+  -H "Content-Type: application/json" \\
+  -d '{"url": "https://your-server.example.com/hook"}'`}
+              />
+              <div className="text-[12px] text-text3 space-y-1">
+                <p>
+                  <Code>GET /api/webhooks/[id]</Code> — verify webhook registration (requires <Code>x-webhook-secret</Code> header)
+                </p>
+                <p>
+                  <Code>DELETE /api/webhooks/[id]</Code> — unregister webhook (requires <Code>x-webhook-secret</Code> header)
+                </p>
+                <p>
+                  <Code>POST /api/webhooks/[id]/test</Code> — send a test delivery to the registered URL (requires <Code>x-webhook-secret</Code> header)
+                </p>
+              </div>
+              <EndpointCard
+                method="POST"
+                path="/api/keys"
+                summary="Issue API key"
+                description="Issues a gca_* API key for rate-limited access to /v1/* endpoints. Keys are stored as SHA-256 hashes in KV and are validated by the middleware on each request."
+                params={[
+                  { name: 'label',     in: 'body', type: 'string',  required: false, desc: 'Human-readable label for this key' },
+                  { name: 'rateLimit', in: 'body', type: 'integer', required: false, desc: 'Max requests per day (default: 1000)' },
+                ]}
+                responseFields={[
+                  { name: 'key',       type: 'string',  desc: 'gca_* API key — shown once, store securely' },
+                  { name: 'id',        type: 'string',  desc: 'Key identifier' },
+                  { name: 'rateLimit', type: 'integer', desc: 'Daily request allowance' },
+                ]}
+                curlExample={`curl -X POST ${SITE}/api/keys \\
+  -H "Content-Type: application/json" \\
+  -d '{"label": "my-app", "rateLimit": 500}'`}
+              />
+            </div>
+          </Section>
+
+          {/* Ping */}
+          <div id="ping" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/api/ping"
+              summary="Fast liveness check for uptime monitors"
+              badge={<SeverityPill level="neutral" label="no cache" />}
+              description="Returns {&quot;ok&quot;:true} in under 5 ms with zero upstream network fetches. Use this URL for uptime monitors (UptimeRobot, Pingdom, Better Uptime, etc.) — not /api/health, which probes 8 external services and can take 2–5 s. Also responds to HEAD requests for the lightest possible check."
+              responseFields={[
+                { name: 'ok',      type: 'boolean',  desc: 'Always true when the edge function is reachable' },
+                { name: 'ts',      type: 'ISO 8601', desc: 'Current UTC timestamp at the edge worker' },
+                { name: 'service', type: 'string',   desc: 'Always "global-chokepoints-alerts"' },
+              ]}
+              curlExample={`# GET check (recommended for uptime monitors)
+curl ${SITE}/api/ping
+# → {"ok":true,"ts":"2026-06-04T12:00:00.000Z","service":"global-chokepoints-alerts"}
+
+# HEAD check — no body, absolute minimum bandwidth
+curl -I ${SITE}/api/ping
+# → HTTP/2 200`}
+            />
+          </div>
+
+          {/* Badge */}
+          <div id="badge" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/api/badge"
+              summary="SVG status badge"
+              badge={<SeverityPill level="neutral" label="no cache" />}
+              description="Returns a dynamic SVG badge showing the current status and risk index for any of the five tracked chokepoints. Suitable for embedding in READMEs, dashboards, or status pages via an <img> tag."
+              params={[
+                { name: 'cp', in: 'query', type: 'enum', desc: 'Chokepoint slug: hormuz (default) | redsea | suez | panama | taiwan' },
+              ]}
+              curlExample={`# Hormuz (default)
+curl ${SITE}/api/badge -o badge.svg
+
+# Red Sea
+curl "${SITE}/api/badge?cp=redsea" -o redsea-badge.svg
+
+# Markdown embed — all five chokepoints
+![Hormuz](${SITE}/api/badge)
+![Red Sea](${SITE}/api/badge?cp=redsea)
+![Suez](${SITE}/api/badge?cp=suez)
+![Panama](${SITE}/api/badge?cp=panama)
+![Taiwan](${SITE}/api/badge?cp=taiwan)`}
+            />
+          </div>
+
+          {/* Status feed */}
+          <div id="status-feed" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/feed.xml"
+              summary="RSS 2.0 timeline event feed"
+              badge={<SeverityPill level="info" label="5 min cache" />}
+              description="An RSS 2.0 feed of the latest global chokepoints timeline events classified from CNN, BBC, Al Jazeera, Reuters, and Google News. The channel description reflects the current status and tension index. Subscribe in any feed reader for real-time geopolitical alerts."
+              params={[
+                { name: 'limit', in: 'query', type: 'integer', desc: 'Maximum events to include (1–50, default 20)' },
+              ]}
+              curlExample={`# Fetch latest 20 events
+curl ${SITE}/feed.xml
+
+# Fetch up to 50 events
+curl "${SITE}/feed.xml?limit=50"
+
+# Extract headlines with xmllint
+curl -s "${SITE}/feed.xml" | xmllint --xpath "//item/title/text()" -`}
+            />
+          </div>
+
+          {/* Status-changes feed */}
+          <div id="status-changes-feed" className="scroll-mt-20">
+            <EndpointCard
+              method="GET"
+              path="/status-feed.xml"
+              summary="RSS 2.0 status-change feed"
+              badge={<SeverityPill level="info" label="5 min cache" />}
+              description="An RSS 2.0 feed that publishes one entry per chokepoint status transition recorded by the alert-check cron (e.g. OPEN → PARTIALLY_CLOSED). Each item includes the transition reason. Subscribe to be notified whenever the operational state changes — useful for automated alerting pipelines."
+              curlExample={`# Fetch latest status transitions
+curl ${SITE}/status-feed.xml
+
+# Extract transition titles
+curl -s "${SITE}/status-feed.xml" | xmllint --xpath "//item/title/text()" -`}
+            />
+          </div>
+
           {/* Subscriptions */}
           <Section id="subscribe" title="Subscriptions">
             <p>
-              Users can subscribe to receive an email when the strait state changes (e.g. OPEN → PARTIALLY_CLOSED).
+              Users can subscribe to receive an email when the chokepoint state changes (e.g. OPEN → PARTIALLY_CLOSED).
               The alert system uses Cloudflare D1 for storage and Resend for transactional email.
             </p>
             <div className="space-y-3 mt-2">
@@ -605,13 +1002,13 @@ curl ${SITE}/api/openapi -o openapi.json
 
 # Import into Postman (CLI)
 postman import openapi.json`}</Pre>
-            <div className="flex items-center gap-3 mt-3 p-3 rounded-lg border border-divider bg-bg1/40">
+            <div className="flex items-center gap-3 mt-3 p-3 border border-divider bg-bg1/40">
               <div className="flex-1 text-[12px] text-text3">
                 Prefer a visual explorer? The Scalar playground lets you send live requests directly from the browser.
               </div>
               <a
                 href="/api-reference"
-                className="shrink-0 px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-[0.12em]
+                className="shrink-0 px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.12em]
                   text-ok border border-ok/30 hover:border-ok/60 hover:bg-ok/5 transition-all"
               >
                 Open Playground →
@@ -625,10 +1022,11 @@ postman import openapi.json`}</Pre>
           {/* Footer */}
           <footer className="pt-8 border-t border-divider text-[11px] font-mono text-text4">
             <div className="flex flex-wrap gap-4 items-center">
-              <span suppressHydrationWarning>© {new Date().getFullYear()} IsStraitHormuzOpen?</span>
+              <span suppressHydrationWarning>© {new Date().getFullYear()} Global Chokepoints Alerts</span>
               <Link href="/" className="hover:text-accent transition-colors">Dashboard</Link>
               <Link href="/methodology" className="hover:text-accent transition-colors">Methodology</Link>
-              <a href="/feed.xml" className="hover:text-accent transition-colors">RSS</a>
+              <a href="/feed.xml" className="hover:text-accent transition-colors">Events RSS</a>
+              <a href="/status-feed.xml" className="hover:text-accent transition-colors">Status RSS</a>
               <a href="/api/openapi" className="hover:text-accent transition-colors">openapi.json</a>
             </div>
           </footer>

@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono, IBM_Plex_Mono } from 'next/font/google';
 import AdSenseLoader from '@/app/components/AdSenseLoader';
 import { LangProvider } from '@/app/components/LangContext';
+import PWAInit from '@/app/components/PWAInit';
+import SkipLink from '@/app/components/SkipLink';
 import './globals.css';
 
 const inter = Inter({
@@ -28,7 +30,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev'),
   title: 'Global Chokepoints Alerts — Real-Time Maritime Intelligence',
   description:
     'Monitor strategic global maritime chokepoints including Hormuz, Red Sea, Suez, and Panama with live shipping intelligence, disruption tracking, AIS interference monitoring, and oil transit analysis.',
@@ -40,7 +42,12 @@ export const metadata: Metadata = {
   authors: [{ name: 'Global Chokepoints Alerts' }],
   alternates: {
     canonical: '/',
-    types: { 'application/rss+xml': '/feed.xml' },
+    types: {
+      'application/rss+xml': [
+        { url: '/feed.xml',        title: 'Global Chokepoints — Events Feed' },
+        { url: '/status-feed.xml', title: 'Global Chokepoints — Status Changes Feed' },
+      ],
+    },
   },
   openGraph: {
     title: 'Global Chokepoints Alerts — Real-Time Maritime Intelligence',
@@ -72,7 +79,7 @@ const JSON_LD = {
   name: 'Global Chokepoints Alerts',
   alternateName: 'GlobalChokepointsAlerts',
   applicationCategory: 'NewsApplication',
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev',
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev',
   description:
     'Real-time maritime intelligence platform monitoring strategic global chokepoints, shipping disruptions, AIS interference, and oil transit flow.',
   operatingSystem: 'All',
@@ -88,12 +95,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link
-          rel="alternate"
-          type="application/rss+xml"
-          title="Global Chokepoints Alerts — event feed"
-          href="/feed.xml"
-        />
+        <link rel="alternate" type="application/rss+xml" title="Global Chokepoints Alerts — event feed" href="/feed.xml" />
+        <link rel="alternate" type="application/rss+xml" title="Global Chokepoints Alerts — status changes" href="/status-feed.xml" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body
         className={`antialiased ${inter.variable} ${jetbrainsMono.variable} ${ibmPlexMono.variable}`}
@@ -105,7 +113,11 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
         />
-        <LangProvider>{children}</LangProvider>
+        <LangProvider>
+          <SkipLink />
+          {children}
+          <PWAInit />
+        </LangProvider>
       </body>
       {/* AdSense loaded client-side via useEffect to avoid data-nscript hydration error #418 */}
       {process.env.NEXT_PUBLIC_ADS_ENABLED === 'true' && <AdSenseLoader />}

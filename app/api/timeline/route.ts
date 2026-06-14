@@ -40,21 +40,21 @@ const FEEDS: { name: string; url: string }[] = [
   },
   { name: 'Al Jazeera', url: 'https://www.aljazeera.com/xml/rss/all.xml' },
   {
-    name: 'Reuters (via Google News)',
+    name: 'Reuters Hormuz',
     url: 'https://news.google.com/rss/search?q=site:reuters.com+(Hormuz+OR+Iran+OR+%22oil+tanker%22)&hl=en-US&gl=US&ceid=US:en',
   },
   {
-    name: 'Google News',
+    name: 'Reuters Red Sea',
+    url: 'https://news.google.com/rss/search?q=site:reuters.com+(%22Red+Sea%22+OR+Houthi+OR+%22Bab+el-Mandeb%22+OR+%22Suez+Canal%22+OR+%22Panama+Canal%22)&hl=en-US&gl=US&ceid=US:en',
+  },
+  {
+    name: 'Google News Hormuz',
     url: 'https://news.google.com/rss/search?q=%22Strait+of+Hormuz%22+OR+%22Iran+navy%22+OR+%22oil+tanker%22&hl=en-US&gl=US&ceid=US:en',
   },
-];
-
-// Keyword filter — only keep articles mentioning the region/topic.
-const KEYWORDS = [
-  'hormuz', 'iran', 'iranian', 'persian gulf', 'gulf of oman',
-  'oil tanker', 'crude tanker', 'opec', 'brent', 'tehran',
-  'revolutionary guard', 'irgc', 'houthi', 'red sea', 'strait',
-  'ship', 'vessel', 'maritime', 'naval', 'navy',
+  {
+    name: 'Google News Chokepoints',
+    url: 'https://news.google.com/rss/search?q=(%22Red+Sea%22+OR+Houthi+OR+%22Suez+Canal%22+OR+%22Panama+Canal%22+OR+%22Taiwan+Strait%22)+shipping&hl=en-US&gl=US&ceid=US:en',
+  },
 ];
 
 const NEGATIVE_WORDS = [
@@ -103,11 +103,11 @@ function classify(text: string): { category: Category; severity: Severity } {
 
 function isRelevant(title: string, description: string): boolean {
   const haystack = `${title} ${description}`.toLowerCase();
-  // Require at least one strong keyword AND mention of region/maritime context
-  const hasRegion = /\b(hormuz|persian gulf|gulf of oman|iran|iranian|tehran)\b/.test(
+  // Require region/maritime context across all tracked chokepoints
+  const hasRegion = /\b(hormuz|persian gulf|gulf of oman|iran|iranian|tehran|red sea|houthi|bab.?el.?mandeb|gulf of aden|suez|suez canal|panama canal|taiwan strait|pla navy)\b/.test(
     haystack
   );
-  const hasTopic = /\b(oil|tanker|navy|naval|vessel|ship|maritime|strait|missile|drone|sanction)\b/.test(
+  const hasTopic = /\b(oil|tanker|navy|naval|vessel|ship|maritime|strait|missile|drone|sanction|shipping|attack|seized|closure|transit|chokepoint)\b/.test(
     haystack
   );
   return hasRegion && hasTopic;
@@ -189,27 +189,39 @@ function hash(s: string): string {
   return Math.abs(h).toString(36);
 }
 
+// Strip common publisher suffixes from titles before dedup comparison.
+// The same Reuters story can appear as "Iran seizes tanker - Reuters" in
+// one feed and "Iran seizes tanker | CNN" in another.
+function normalizeTitle(title: string): string {
+  return title
+    .replace(/\s*[-|–]\s*(Reuters|BBC|CNN|Al Jazeera|Guardian|Bloomberg|WSJ|NYT|FT|AP|AFP)\s*$/i, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 72);
+}
+
 async function fetchFeed(
   name: string,
   url: string
-): Promise<TimelineEvent[]> {
+): Promise<{ events: TimelineEvent[]; ok: boolean }> {
   try {
     const res = await fetch(url, {
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (compatible; IsHormuzOpenBot/1.0; +https://strait-of-hormuz-monitor.workers.dev)',
+          'Mozilla/5.0 (compatible; GlobalChokepointsAlerts/1.0; +https://global-chokepoints.pages.dev)',
         Accept: 'application/rss+xml, application/xml, text/xml, */*',
       },
-      // Per-feed cache window (slightly shorter than route revalidate)
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { events: [], ok: false };
     const xml = await res.text();
-    return parseFeed(xml, name);
+    return { events: parseFeed(xml, name), ok: true };
   } catch (err) {
     console.warn(`[timeline] ${name} failed:`, err);
-    return [];
+    return { events: [], ok: false };
   }
 }
 
@@ -217,9 +229,9 @@ export async function GET() {
   const kv = getKV();
   if (kv) {
     try {
-      const cached = await kv.get(KV_TIMELINE_KEY, 'json') as { events: TimelineEvent[]; sources: string[]; generatedAt: string; fetchMs: number } | null;
-      if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } });
-    } catch { /* fall through */ }
+      const cached = await kv.get(KV_TIMELINE_KEY, 'json') as { events: TimelineEvent[]; sources: string[]; feedsOk: number; feedsFailed: number; generatedAt: string; fetchMs: number } | null;
+      if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'HIT' } });
+    } catch (err) { console.warn('[timeline] KV read failed, fetching live:', err); }
   }
 
   const startedAt = Date.now();
@@ -227,32 +239,48 @@ export async function GET() {
     FEEDS.map((f) => fetchFeed(f.name, f.url))
   );
 
-  // Flatten + dedupe by url (or title fallback)
-  const seen = new Set<string>();
-  const merged: TimelineEvent[] = [];
-  for (const list of results) {
-    for (const ev of list) {
-      const key = ev.url !== '#' ? ev.url : ev.title.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      merged.push(ev);
+  const feedsOk     = results.filter(r => r.ok).length;
+  const feedsFailed = results.length - feedsOk;
+
+  // Pass 1: dedupe by canonical URL
+  const seenUrl = new Set<string>();
+  const pass1: TimelineEvent[] = [];
+  for (const { events } of results) {
+    for (const ev of events) {
+      const key = ev.url !== '#' ? ev.url : `__title__${ev.title.toLowerCase()}`;
+      if (seenUrl.has(key)) continue;
+      seenUrl.add(key);
+      pass1.push(ev);
     }
   }
 
-  // Sort newest first, cap at 30
+  // Pass 2: dedupe by normalized title — catches the same story syndicated
+  // across multiple Google News feeds with slightly different URLs
+  const seenTitle = new Set<string>();
+  const merged: TimelineEvent[] = [];
+  for (const ev of pass1) {
+    const titleKey = normalizeTitle(ev.title);
+    if (seenTitle.has(titleKey)) continue;
+    seenTitle.add(titleKey);
+    merged.push(ev);
+  }
+
+  // Sort newest first, cap at 50 to cover multiple chokepoints
   merged.sort((a, b) => +new Date(b.date) - +new Date(a.date));
-  const events = merged.slice(0, 30);
+  const events = merged.slice(0, 50);
 
   const payload = {
     events,
     sources: FEEDS.map((f) => f.name),
+    feedsOk,
+    feedsFailed,
     generatedAt: new Date().toISOString(),
     fetchMs: Date.now() - startedAt,
   };
 
-  if (kv) kv.put(KV_TIMELINE_KEY, JSON.stringify(payload), { expirationTtl: KV_TIMELINE_TTL }).catch(() => {});
+  if (kv) await kv.put(KV_TIMELINE_KEY, JSON.stringify(payload), { expirationTtl: KV_TIMELINE_TTL }).catch(e => console.warn('[api/timeline] KV write failed:', e));
 
   return NextResponse.json(payload, {
-    headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
+    headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'MISS' },
   });
 }

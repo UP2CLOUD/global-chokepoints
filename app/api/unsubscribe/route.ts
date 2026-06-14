@@ -10,7 +10,7 @@ import { getD1 } from '@/app/lib/db';
 export const dynamic = 'force-dynamic';
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.workers.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
 }
 
 export async function GET(req: NextRequest) {
@@ -25,17 +25,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${siteUrl()}?unsubscribed=1`);
   }
 
-  const row = await db
-    .prepare('SELECT id FROM subscriptions WHERE unsubscribe_token = ?')
-    .bind(token)
-    .first<{ id: string }>();
+  try {
+    const row = await db
+      .prepare('SELECT id FROM subscriptions WHERE unsubscribe_token = ?')
+      .bind(token)
+      .first<{ id: string }>();
 
-  if (row) {
-    await db
-      .prepare('DELETE FROM subscriptions WHERE id = ?')
-      .bind(row.id)
-      .run();
+    if (row) {
+      await db
+        .prepare('DELETE FROM subscriptions WHERE id = ?')
+        .bind(row.id)
+        .run();
+    }
+
+    return NextResponse.redirect(`${siteUrl()}?unsubscribed=1`);
+  } catch (err) {
+    console.error('[unsubscribe] D1 error:', err);
+    return NextResponse.redirect(`${siteUrl()}?unsubscribed=error`);
   }
-
-  return NextResponse.redirect(`${siteUrl()}?unsubscribed=1`);
 }

@@ -25,13 +25,13 @@ const SOURCES = [
   },
   {
     name: 'IMF PortWatch',
-    use: 'Daily vessel transit counts at Strait of Hormuz (chokepoint6) by type',
+    use: 'Daily vessel transit counts across Hormuz, Red Sea, Suez, and Panama by vessel type',
     cadence: '6 h (data updates weekly)',
-    license: 'IMF Open Data. Chokepoint ID: chokepoint6.',
+    license: 'IMF Open Data. Chokepoint IDs: chokepoint6 (Hormuz), chokepoint2 (Red Sea), chokepoint3 (Suez), chokepoint5 (Panama).',
   },
   {
     name: 'GDELT v2 Doc API',
-    use: 'Global news article discovery — Hormuz/Iran/shipping keywords',
+    use: 'Global news article discovery — all five chokepoints + maritime/shipping keywords',
     cadence: '5 min',
     license: 'Free; attribution requested.',
   },
@@ -67,7 +67,7 @@ const SOURCES = [
   },
   {
     name: 'AISStream.io',
-    use: 'Real-time AIS vessel positions in the strait (when key configured)',
+    use: 'Real-time AIS vessel positions in the Strait of Hormuz (when AIS key configured)',
     cadence: 'Real-time WebSocket',
     license: 'Free tier; MMSI-level vessel positions.',
   },
@@ -75,10 +75,29 @@ const SOURCES = [
 
 const CHANGELOG = [
   {
+    v: '0.7.0',
+    date: '2026-06-11',
+    notes:
+      'API hardening pass: replaced String(err) leakage with safe messages across all public routes, ' +
+      'added User-Agent and AbortSignal.timeout to every external and internal fetch. ' +
+      'Batch email dispatch via Resend /emails/batch. ' +
+      'OpenAPI spec updated with all admin-gated operations. ' +
+      'Fixed embed widget brentPrice missing from deriveStatus call. ' +
+      'Corrected methodology docs: PARTIALLY_CLOSED state name, 40/30/30 threat score weights, price-level signal.',
+  },
+  {
+    v: '0.6.0',
+    date: '2026-05-27',
+    notes:
+      'Full rebrand to Global Chokepoints Alerts — multi-chokepoint intelligence platform (Hormuz, Red Sea, Suez, Panama, Taiwan Strait). ' +
+      'Added TickerBar, ChokepointsPanel card grid, HeroStatus CTAs, region inference in Timeline. ' +
+      'System-wide flat UI (no rounded corners). Feed health row, relative timestamps in NewsFeed, vessel count in header.',
+  },
+  {
     v: '0.5.0',
     date: '2026-05-14',
     notes:
-      'Migrated to Cloudflare Pages (strait-of-hormuz-monitor.pages.dev). ' +
+      'Migrated to Cloudflare Pages (global-chokepoints.pages.dev). ' +
       'Added PortWatch animated vessels on map. KV caching on /api/timeline and /api/weather. ' +
       'Fixed confirmation email token bug. Tightened threat-score false-positive rule.',
   },
@@ -162,24 +181,8 @@ export default function MethodologyContent() {
         </div>
 
         <Section title={m.s1title}>
-          <p>
-            The headline output is the <strong>Strait State</strong>:{' '}
-            <code className="font-mono text-accent text-[12px]">OPEN</code>,{' '}
-            <code className="font-mono text-accent text-[12px]">DISRUPTED</code>, or{' '}
-            <code className="font-mono text-accent text-[12px]">CLOSED</code>.
-            Alongside the state we publish a <strong>Tension Level</strong>{' '}
-            (NORMAL / ELEVATED / CRITICAL) and a <strong>Threat Score</strong>{' '}
-            (0–100) that fuses timeline event severity with market volatility.
-            An analyst <strong>confidence</strong> value in [0, 1] grows with
-            source diversity and event density.
-          </p>
-          <p>
-            The map shows live vessel positions from{' '}
-            <strong>AISStream.io</strong> when available, plus{' '}
-            <strong>representative vessel dots</strong> animated along the IMO
-            shipping lanes — proportional to the day&apos;s IMF PortWatch transit
-            count by vessel type (tanker · cargo · container · dry bulk).
-          </p>
+          <p>{m.s1para1}</p>
+          <p>{m.s1para2}</p>
         </Section>
 
         <Section title={m.s2title}>
@@ -208,49 +211,59 @@ export default function MethodologyContent() {
         </Section>
 
         <Section title={m.s3title}>
-          <p>
-            Status is derived in{' '}
-            <code className="font-mono text-accent text-[12px]">app/lib/api.ts → deriveStatus()</code>.
-            Runs client-side on every data refresh using the latest timeline
-            events and Brent price change.
-          </p>
+          <p>{m.s3body}</p>
 
-          <SubHeading>Step 1 — Keyword state detection</SubHeading>
+          <SubHeading>{m.s3step1}</SubHeading>
           <CodeBlock>{`# Scan events from the past 72 hours
 CLOSURE_PATTERNS = /closed|closure|shut down|blocked|blockade|suspended|halt/
 PARTIAL_PATTERNS = /diverted|rerouted|delayed|evacuated|traffic disrupt/
 
 if any recent event matches CLOSURE_PATTERNS → state = CLOSED
-elif any recent event matches PARTIAL_PATTERNS → state = DISRUPTED
+elif any recent event matches PARTIAL_PATTERNS → state = PARTIALLY_CLOSED
 else → state = OPEN`}</CodeBlock>
 
-          <SubHeading>Step 2 — Multi-signal Threat Score (0–100)</SubHeading>
-          <CodeBlock>{`# Timeline Severity Score (last 24 h)
+          <SubHeading>{m.s3step2}</SubHeading>
+          <CodeBlock>{`# Timeline Severity Score (last 24 h)  — weight 40%
 weight = { low: 1, medium: 2, high: 4, critical: 7 }
 raw_timeline = sum(weight[e.severity] for e in last24)
 timeline_score = min(100, raw_timeline × (100 / 35))   # normalised 0–100
 
-# Market Volatility Score
-# Brent spike > 2% starts triggering; 5% spike → score 100
+# Market Volatility Score  — weight 30%
+# Brent daily change > 2% starts triggering; ≥ 5% → score 100
 if brent_change_pct > 2:
     market_score = min(100, (brent_change_pct - 2) × 33.3)
 else:
     market_score = 0
 
-# Final 50/50 blend
-threat_score = round(timeline_score × 0.5 + market_score × 0.5)
+# Absolute Price-Level Score  — weight 30%
+# High absolute Brent price signals sustained supply-chain stress
+# (independent of day-over-day change)
+price_level_score = 0
+if   brent_price >= 120: price_level_score = 100
+elif brent_price >= 110: price_level_score = 80
+elif brent_price >= 100: price_level_score = 65
+elif brent_price >= 90:  price_level_score = 45
+elif brent_price >= 80:  price_level_score = 25
+elif brent_price >= 70:  price_level_score = 10
+
+# Final 40 / 30 / 30 blend
+threat_score = round(
+    timeline_score  × 0.40 +
+    market_score    × 0.30 +
+    price_level_score × 0.30
+)
 
 # Tension level thresholds
-if threat_score ≥ 80 or state == CLOSED   → CRITICAL
-elif threat_score ≥ 40 or state != OPEN   → ELEVATED
-else                                        → NORMAL
+if threat_score ≥ 80 or state == CLOSED            → CRITICAL
+elif threat_score ≥ 40 or state == PARTIALLY_CLOSED → ELEVATED
+else                                                 → NORMAL
 
 # State override — timeline events required to escalate
-# (pure Brent spike without events never closes the strait)
+# (pure Brent spike without events never escalates state)
 if state == OPEN and last24 not empty and threat_score > 85:
-    state = DISRUPTED`}</CodeBlock>
+    state = PARTIALLY_CLOSED`}</CodeBlock>
 
-          <SubHeading>Step 3 — Confidence</SubHeading>
+          <SubHeading>{m.s3step3}</SubHeading>
           <CodeBlock>{`sources    = unique source names contributing to last24 events
 confidence = min(0.99,
   0.55
@@ -323,20 +336,20 @@ confidence = min(0.99,
             A read-only JSON API is available for embeds and partner integrations.
             CORS is allow-all; responses are cached at the edge.
           </p>
-          <CodeBlock>{`GET /v1/status              # strait state, tension level, confidence, reason
+          <CodeBlock>{`GET /v1/status              # chokepoint state, tension level, confidence, reason
 GET /v1/events?limit=30     # latest aggregated timeline events
 GET /v1/events?since=ISO    # incremental fetch since ISO timestamp
 GET /v1/metrics             # markets (Brent/WTI/NG), weather, event counts
 GET /feed.xml               # RSS 2.0 for journalists and aggregators`}</CodeBlock>
           <p className="text-[11px] text-text3 mt-3">
-            License: CC-BY-4.0. Attribution: &ldquo;IsStraitHormuzOpen?&rdquo; with a link to{' '}
+            License: CC-BY-4.0. Attribution: &ldquo;Global Chokepoints Alerts&rdquo; with a link to{' '}
             <a
-              href="https://strait-of-hormuz-monitor.pages.dev"
+              href="https://global-chokepoints.pages.dev"
               className="text-accent hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              strait-of-hormuz-monitor.pages.dev
+              global-chokepoints.pages.dev
             </a>.
             {' '}Full interactive reference at{' '}
             <Link href="/docs" className="text-accent hover:underline">/docs</Link>.

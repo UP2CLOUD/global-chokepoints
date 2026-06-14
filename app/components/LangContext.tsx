@@ -17,26 +17,51 @@ const LangContext = createContext<LangContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'hormuz-lang';
 const VALID_LANGS = Object.keys(translations) as Lang[];
+const RTL_LANGS = new Set<Lang>(['ar']);
 
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('en');
 
-  // Restore saved language preference on mount
+  // Language resolution priority: ?lang= URL param > localStorage > navigator.languages > 'en'
   useEffect(() => {
     try {
+      // 1. Explicit ?lang= URL parameter — apply and persist as new preference
+      const urlParam = new URLSearchParams(window.location.search).get('lang') as Lang | null;
+      if (urlParam && VALID_LANGS.includes(urlParam)) {
+        setLangState(urlParam);
+        document.documentElement.lang = HTML_LANG[urlParam];
+        document.documentElement.dir = RTL_LANGS.has(urlParam) ? 'rtl' : 'ltr';
+        localStorage.setItem(STORAGE_KEY, urlParam);
+        return;
+      }
+
+      // 2. Saved localStorage preference
       const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
       if (saved && VALID_LANGS.includes(saved)) {
         setLangState(saved);
         document.documentElement.lang = HTML_LANG[saved];
+        document.documentElement.dir = RTL_LANGS.has(saved) ? 'rtl' : 'ltr';
+        return;
+      }
+
+      // 3. Auto-detect from browser language
+      const preferred = [...(navigator.languages ?? []), navigator.language]
+        .flatMap(l => [l?.toLowerCase(), l?.split('-')[0]?.toLowerCase()])
+        .find(l => l && VALID_LANGS.includes(l as Lang)) as Lang | undefined;
+      if (preferred) {
+        setLangState(preferred);
+        document.documentElement.lang = HTML_LANG[preferred];
+        document.documentElement.dir = RTL_LANGS.has(preferred) ? 'rtl' : 'ltr';
       }
     } catch {
-      // localStorage may be blocked in some environments
+      // localStorage or navigator may be blocked in some environments
     }
   }, []);
 
   const setLang = useCallback((newLang: Lang) => {
     setLangState(newLang);
     document.documentElement.lang = HTML_LANG[newLang];
+    document.documentElement.dir = RTL_LANGS.has(newLang) ? 'rtl' : 'ltr';
     try { localStorage.setItem(STORAGE_KEY, newLang); } catch { /* ignore */ }
   }, []);
 

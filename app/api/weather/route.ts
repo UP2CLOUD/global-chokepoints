@@ -77,14 +77,14 @@ export async function GET() {
   if (kv) {
     try {
       const cached = await kv.get(KV_WEATHER_KEY, 'json');
-      if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800' } });
-    } catch { /* fall through to live fetch */ }
+      if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800, stale-if-error=86400', 'X-Cache': 'HIT' } });
+    } catch (err) { console.warn('[weather] KV read failed, fetching live:', err); }
   }
 
   try {
     const [fRes, mRes] = await Promise.all([
-      fetch(FORECAST_URL, { next: { revalidate: 900 }, signal: AbortSignal.timeout(8000) }),
-      fetch(MARINE_URL, { next: { revalidate: 900 }, signal: AbortSignal.timeout(8000) }),
+      fetch(FORECAST_URL, { next: { revalidate: 900 }, signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'GlobalChokepointsAlerts/1.0' } }),
+      fetch(MARINE_URL, { next: { revalidate: 900 }, signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'GlobalChokepointsAlerts/1.0' } }),
     ]);
 
     if (!fRes.ok) throw new Error(`forecast HTTP ${fRes.status}`);
@@ -125,13 +125,13 @@ export async function GET() {
       generatedAt: new Date().toISOString(),
     };
 
-    if (kv) kv.put(KV_WEATHER_KEY, JSON.stringify(payload), { expirationTtl: KV_WEATHER_TTL }).catch(() => {});
+    if (kv) await kv.put(KV_WEATHER_KEY, JSON.stringify(payload), { expirationTtl: KV_WEATHER_TTL }).catch(e => console.warn('[api/weather] KV write failed:', e));
 
-    return NextResponse.json(payload, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800' } });
+    return NextResponse.json(payload, { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800, stale-if-error=86400', 'X-Cache': 'MISS' } });
   } catch (err) {
     console.error('[api/weather] failed:', err);
     return NextResponse.json(
-      { error: String(err), source: 'Open-Meteo' },
+      { error: 'Weather data temporarily unavailable', source: 'Open-Meteo' },
       { status: 502 }
     );
   }

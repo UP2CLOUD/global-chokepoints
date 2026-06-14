@@ -144,10 +144,15 @@ async function fetchStooq(): Promise<Payload> {
 // we prefer Yahoo — but still fall back to stale EIA over a 502.
 const EIA_PREFERRED_MAX_AGE_DAYS = 5;
 
-const ok = (payload: Payload, staleOverride?: boolean) =>
+type XCache = 'HIT' | 'MISS' | 'STALE';
+
+const ok = (payload: Payload, staleOverride?: boolean, xCache: XCache = 'MISS') =>
   NextResponse.json(
     staleOverride ? { ...payload, stale: true } : payload,
-    { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+    { headers: {
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=7200',
+      'X-Cache': xCache,
+    }}
   );
 
 export async function GET() {
@@ -164,7 +169,7 @@ export async function GET() {
         // For simplicity, let's treat KV as a fallback just like module-cache but persistent.
         const parsed = cached as { ts: number; payload: Payload };
         if (Date.now() - parsed.ts < 5 * 60 * 1000) {
-          return ok(parsed.payload);
+          return ok(parsed.payload, false, 'HIT');
         }
       }
     } catch (err) {
@@ -172,9 +177,9 @@ export async function GET() {
     }
   }
 
-  const updateKV = (payload: Payload) => {
+  const updateKV = async (payload: Payload) => {
     if (kv) {
-      kv.put('BRENT_PAYLOAD', JSON.stringify({ ts: Date.now(), payload })).catch(e => 
+      await kv.put('BRENT_PAYLOAD', JSON.stringify({ ts: Date.now(), payload })).catch(e =>
         console.warn('[api/brent] KV write failed:', e)
       );
     }
@@ -183,7 +188,7 @@ export async function GET() {
   // 1) Yahoo Finance — real-time, minimal headers to avoid 429 in Edge Runtime
   try {
     const data = await fetchYahoo();
-    updateKV(data);
+    await updateKV(data);
     return ok(data);
   } catch (err) {
     console.warn('[api/brent] Yahoo failed, trying Stooq:', (err as Error).message);
@@ -192,7 +197,7 @@ export async function GET() {
   // 2) Stooq — free CSV, separate rate-limit pool from Yahoo
   try {
     const data = await fetchStooq();
-    updateKV(data);
+    await updateKV(data);
     return ok(data);
   } catch (err) {
     console.warn('[api/brent] Stooq failed, trying EIA:', (err as Error).message);
@@ -213,9 +218,12 @@ export async function GET() {
         stale: isStale || undefined,
       };
       priceCache = { ts: Date.now(), payload: result };
-      updateKV(result);
+      await updateKV(result);
       return NextResponse.json(result, {
-        headers: { 'Cache-Control': isStale ? 'public, s-maxage=60, stale-while-revalidate=120' : 'public, s-maxage=300, stale-while-revalidate=600' },
+        headers: {
+          'Cache-Control': isStale ? 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=7200' : 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=7200',
+          'X-Cache': 'MISS',
+        },
       });
     }
   } catch (err) {
@@ -225,7 +233,7 @@ export async function GET() {
   // 4) Last resort — serve whatever is in module-level cache (up to 6 h old)
   if (priceCache && Date.now() - priceCache.ts < STALE_OK_MS) {
     console.warn('[api/brent] all sources failed; serving module cache.');
-    return ok(priceCache.payload, true);
+    return ok(priceCache.payload, true, 'STALE');
   }
 
   // 5) KV Fallback — last ditch effort before returning 502
@@ -235,7 +243,7 @@ export async function GET() {
       if (cached) {
         console.warn('[api/brent] all sources failed; serving KV cache.');
         const parsed = cached as { ts: number; payload: Payload };
-        return ok(parsed.payload, true);
+        return ok(parsed.payload, true, 'STALE');
       }
     } catch (err) {
       console.warn('[api/brent] KV read fallback failed:', err);

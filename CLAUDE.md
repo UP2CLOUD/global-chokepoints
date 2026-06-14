@@ -51,6 +51,9 @@ app/
     unsubscribe/     # One-click unsubscribe
     openapi/         # OpenAPI 3.0 JSON spec (served at /api/openapi)
     og/              # Open Graph image generator
+    webhooks/        # Webhook registration (CRUD); test delivery via [id]/test
+    keys/            # API key issuance (POST public, GET/DELETE admin-gated)
+    badge/           # SVG status badge (shields.io style)
   hooks/             # Custom React hooks (extracted from page.tsx)
     useAisVessels.ts    # 15 s AIS polling
     useDashboardData.ts # Dashboard data, news, and timeline polling + state
@@ -140,6 +143,10 @@ Thresholds: `tensionIndex ≥ THREAT_CRITICAL_THRESHOLD (80)` → `CRITICAL/CLOS
 - TypeScript strict mode is on; `types/cloudflare.d.ts` stubs D1/KV to keep `tsc` happy without wrangler
 - All magic numbers (thresholds, TTLs, geography) live in `app/lib/constants.ts`
 - The `build:cf` script deletes `.next` after the Cloudflare build to prevent dev server corruption
+- API keys (gca_* format) are stored as SHA-256 hashes in D1 and cached plain in KV as `apikey:<hash>` (1 h TTL); rate-limit counters live in KV as `rl:<id>:<YYYY-MM-DD>` with 86401 s TTL
+- Webhooks: HMAC-SHA256 signed using `hmacSha256hex()` from `app/lib/crypto.ts`; secrets stored plain in D1 (never exposed after registration)
+- `migrations/0002_production_features.sql` adds `webhooks`, `status_history`, and `api_keys` tables
+- PWA: `public/manifest.json` + `public/sw.js` (network-first); `PWAInit` component handles SW registration + install banner
 
 ## Environment Variables
 

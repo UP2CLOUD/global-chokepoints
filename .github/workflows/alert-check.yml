@@ -23,6 +23,8 @@ on:
     - cron: '0 * * * *'   # every hour at :00
   workflow_dispatch:        # manual trigger for testing
 
+permissions: {}
+
 jobs:
   check:
     name: Check strait status & send alerts
@@ -43,21 +45,22 @@ jobs:
           ALERT_SECRET: ${{ secrets.ALERT_CRON_SECRET }}
 
       - name: Sync ALERT_CRON_SECRET to Cloudflare Pages
-        if: steps.check_secrets.outputs.skip == 'false'
+        if: steps.check_secrets.outputs.skip == 'false' && secrets.CLOUDFLARE_API_TOKEN != ''
+        continue-on-error: true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           ALERT_CRON_SECRET: ${{ secrets.ALERT_CRON_SECRET }}
         run: |
           echo "$ALERT_CRON_SECRET" | npx wrangler pages secret put ALERT_CRON_SECRET \
-            --project-name=strait-of-hormuz-monitor
+            --project-name=global-chokepoints
 
       - name: Trigger alert-check endpoint
         if: steps.check_secrets.outputs.skip == 'false'
         env:
           ALERT_SECRET: ${{ secrets.ALERT_CRON_SECRET }}
         run: |
-          SITE="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://strait-of-hormuz-monitor.pages.dev' }}"
+          SITE="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://global-chokepoints.pages.dev' }}"
           echo "POST ${SITE}/api/alert-check"
 
           HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \

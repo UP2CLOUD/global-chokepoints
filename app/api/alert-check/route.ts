@@ -1,5 +1,5 @@
 // ============================================================
-// POST /api/alert-check  — strait status change detector & mailer
+// POST /api/alert-check  — chokepoint status change detector & mailer
 //
 // Called by:
 //   • Cloudflare Cron Trigger  (every 10 min, wrangler.toml)
@@ -16,32 +16,33 @@
 // ============================================================
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
-import { getD1 } from '@/app/lib/db';
-import { sendEmail, alertEmailHtml } from '@/app/lib/email';
+import { getD1, randomId } from '@/app/lib/db';
+import { sendEmailBatch, alertEmailHtml } from '@/app/lib/email';
 import { deriveStatus } from '@/app/lib/api';
 import { REOPEN_CONFIDENCE_THRESHOLD } from '@/app/lib/constants';
+import { hmacSha256hex } from '@/app/lib/crypto';
 import type { StatusData } from '@/app/lib/types';
 
 export const dynamic = 'force-dynamic';
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
 }
 
 async function deriveCurrentStatus(): Promise<{ status: StatusData | null; error?: string }> {
   // Always use the canonical public URL — the internal CF origin from req.url
   // is an internal address that cannot reach sibling edge functions.
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.pages.dev')
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev')
     .replace(/\/$/, '');
 
   try {
     const [timelineRes, brentRes] = await Promise.all([
       fetch(`${base}/api/timeline`, {
-        headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
+        headers: { 'User-Agent': 'GlobalChokepointsAlerts/alert-check' },
         signal: AbortSignal.timeout(20_000),
       }),
       fetch(`${base}/api/brent`, {
-        headers: { 'User-Agent': 'IsHormuzOpen/alert-check' },
+        headers: { 'User-Agent': 'GlobalChokepointsAlerts/alert-check' },
         signal: AbortSignal.timeout(20_000),
       }),
     ]);
@@ -55,7 +56,8 @@ async function deriveCurrentStatus(): Promise<{ status: StatusData | null; error
 
     return { status: deriveStatus(timeline, brent?.changePercent ?? null, 'en', brent?.price ?? null) };
   } catch (err) {
-    return { status: null, error: String(err) };
+    console.error('[alert-check] deriveCurrentStatus failed:', err);
+    return { status: null, error: 'Status derivation failed' };
   }
 }
 
@@ -139,35 +141,83 @@ export async function POST(req: NextRequest) {
     console.error('[alert-check] Failed to upsert system_state:', err);
   }
 
+  // ── Log to status_history ────────────────────────────────
+  try {
+    await db
+      .prepare('INSERT INTO status_history (id, state, previous_state, tension, confidence, reason) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(randomId(), currentStatus, lastStatus, Math.round(status.tensionIndex ?? 0), status.confidence, status.reason)
+      .run();
+  } catch (err) { console.warn('[alert-check] status_history insert failed (table may not exist yet):', err); }
+
   if (subscribers.length === 0) {
     return NextResponse.json({ ok: true, changed: true, subscribers: 0, status: currentStatus });
   }
 
-  // ── Send alert emails ────────────────────────────────────
-  let sent = 0;
-  let failed = 0;
+  // ── Send alert emails (batch via Resend) ─────────────────
   const base = siteUrl();
+  const label =
+    currentStatus === 'OPEN'             ? 'OPEN ✓'       :
+    currentStatus === 'PARTIALLY_CLOSED' ? 'DISRUPTED ⚠'  : 'CLOSED ✗';
 
-  for (const sub of subscribers) {
-    const html = alertEmailHtml({
+  const messages = subscribers.map(sub => ({
+    to:      sub.email,
+    subject: `[Global Chokepoints] Status is now ${label}`,
+    html: alertEmailHtml({
       newStatus: currentStatus,
       previousStatus: lastStatus,
       reason:    status.reason,
       reasonUrl: status.reasonUrl,
       unsubscribeUrl: `${base}/api/unsubscribe?token=${sub.unsubscribe_token}`,
-    });
+    }),
+  }));
 
-    const label =
-      currentStatus === 'OPEN'             ? 'OPEN ✓'       :
-      currentStatus === 'PARTIALLY_CLOSED' ? 'DISRUPTED ⚠'  : 'CLOSED ✗';
+  const { sent, failed } = await sendEmailBatch(messages);
 
-    const result = await sendEmail({
-      to:      sub.email,
-      subject: `Strait of Hormuz is now ${label} — IsStraitHormuzOpen?`,
-      html,
-    });
+  // ── Webhook fan-out ──────────────────────────────────────
+  const webhookPayload = JSON.stringify({
+    event: 'status_change',
+    previousStatus: lastStatus,
+    currentStatus,
+    tensionIndex: status.tensionIndex ?? 0,
+    reason: status.reason,
+    timestamp: new Date().toISOString(),
+  });
 
-    if (result.ok) sent++; else failed++;
+  let webhooksSent = 0;
+  let webhooksFailed = 0;
+  try {
+    const { results: hooks } = await db
+      .prepare("SELECT id, url, secret FROM webhooks WHERE confirmed = 1 AND (events = 'status_change' OR events LIKE '%status_change%')")
+      .all<{ id: string; url: string; secret: string }>();
+
+    const hookResults = await Promise.allSettled((hooks ?? []).map(async hook => {
+      const sig = await hmacSha256hex(hook.secret, webhookPayload);
+      const res = await fetch(hook.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Signature-256': `sha256=${sig}`,
+          'User-Agent': 'GlobalChokepointsAlerts/1.0',
+        },
+        body: webhookPayload,
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return hook.id;
+    }));
+
+    for (let i = 0; i < hookResults.length; i++) {
+      const r = hookResults[i];
+      if (r.status === 'fulfilled') {
+        webhooksSent++;
+      } else {
+        webhooksFailed++;
+        const hook = (hooks ?? [])[i];
+        console.warn(`[alert-check] webhook ${hook?.id} delivery failed:`, r.reason);
+      }
+    }
+  } catch (err) {
+    console.error('[alert-check] webhooks query failed:', err);
   }
 
   return NextResponse.json({
@@ -178,6 +228,8 @@ export async function POST(req: NextRequest) {
     subscribers: subscribers.length,
     sent,
     failed,
+    webhooksSent,
+    webhooksFailed,
   });
 }
 

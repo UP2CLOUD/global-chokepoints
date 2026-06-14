@@ -1,4 +1,4 @@
-# IsHormuzOpen — Production Redesign & Data Architecture Proposal
+# Global Chokepoints Alerts — Production Redesign & Data Architecture Proposal
 
 **Author voice:** senior product designer + staff platform architect + geopolitical-intelligence consultant.
 **Status target:** trusted public intelligence dashboard, journalist- and trader-grade.

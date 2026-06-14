@@ -78,13 +78,13 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
       });
       const json = await res.json();
       if (!res.ok) {
-        setErrorMsg(json.error ?? 'Something went wrong. Please try again.');
+        setErrorMsg(json.error ?? t.subscribe.unknownError);
         setPhase('error');
         return;
       }
       setPhase(json.alreadyConfirmed ? 'already' : 'success');
     } catch {
-      setErrorMsg('Network error. Please check your connection.');
+      setErrorMsg(t.subscribe.networkError);
       setPhase('error');
     }
   }
@@ -101,7 +101,7 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
       aria-modal="true"
       aria-label={t.subscribe.title}
     >
-      <div className="relative w-full max-w-md bg-bg1 border border-divider rounded-xl shadow-2xl overflow-hidden animate-fadeInUp">
+      <div className="relative w-full max-w-md bg-bg1 border border-divider shadow-2xl overflow-hidden animate-fadeInUp">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-divider">
           <div className="flex items-center gap-2">
@@ -110,7 +110,7 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
               {t.subscribe.title}
             </span>
           </div>
-          <button onClick={onClose} className="text-text3 hover:text-text transition-colors" aria-label="Close">
+          <button onClick={onClose} className="text-text3 hover:text-text transition-colors" aria-label={t.subscribe.closeLabel}>
             <X size={16} />
           </button>
         </div>
@@ -131,7 +131,7 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
               </p>
               <button
                 onClick={onClose}
-                className="mt-6 px-6 py-2 text-[11px] font-mono font-semibold bg-accent text-bg rounded-md hover:bg-accent-hi transition-colors"
+                className="mt-6 px-6 py-2 text-[11px] font-mono font-semibold bg-accent text-bg hover:bg-accent-hi transition-colors"
               >
                 {t.subscribe.done}
               </button>
@@ -152,7 +152,7 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.subscribe.placeholder}
-                    className="w-full pl-8 pr-4 py-2.5 bg-bg2 border border-divider rounded-md
+                    className="w-full pl-8 pr-4 py-2.5 bg-bg2 border border-divider
                                text-[12px] font-mono text-text placeholder-text4
                                focus:outline-none focus:border-accent transition-colors"
                   />
@@ -179,7 +179,7 @@ function SubscribeModal({ onClose, initialPhase = 'idle' }: { onClose: () => voi
                   type="submit"
                   disabled={phase === 'loading' || !turnstileToken}
                   className="w-full py-2.5 bg-accent text-bg text-[12px] font-mono font-bold
-                             rounded-md hover:bg-accent-hi disabled:opacity-60
+                             hover:bg-accent-hi disabled:opacity-60
                              transition-colors flex items-center justify-center gap-2"
                 >
                   {phase === 'loading'
@@ -207,20 +207,20 @@ export function SubscribeInlineCTA() {
 
   return (
     <>
-      <div className="rounded-2xl border border-divider bg-card/40 backdrop-blur-sm p-5 md:p-6">
+      <div className="border border-divider bg-bg2 p-5 md:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2 mb-2">
-              <Mail size={13} className="text-accent" />
+            <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-[0.22em] text-text3 mb-2">
+              <Mail size={11} className="text-accent" />
               {t.subscribe.alertsLabel}
             </div>
-            <p className="text-[12px] text-text3 leading-relaxed max-w-lg">
+            <p className="text-[12px] font-mono text-text3 leading-relaxed max-w-lg">
               {t.subscribe.alertsDesc}
             </p>
           </div>
           <button
             onClick={() => setActivePhase('idle')}
-            className="shrink-0 px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em]
+            className="shrink-0 px-4 py-2 text-[11px] font-mono uppercase tracking-[0.12em]
               text-bg bg-accent hover:bg-accent-hi font-semibold
               transition-all duration-200"
           >

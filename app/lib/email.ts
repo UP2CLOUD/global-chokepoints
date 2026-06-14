@@ -9,11 +9,11 @@
 const RESEND_API = 'https://api.resend.com/emails';
 
 function fromAddress() {
-  return process.env.RESEND_FROM_EMAIL ?? 'alerts@strait-of-hormuz-monitor.dev';
+  return process.env.RESEND_FROM_EMAIL ?? 'alerts@global-chokepoints.dev';
 }
 
 function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://strait-of-hormuz-monitor.workers.dev').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
 }
 
 // ── HTML email templates ──────────────────────────────────────
@@ -31,7 +31,7 @@ function baseTemplate(title: string, body: string) {
 <tr><td align="center" style="padding:40px 16px;">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#0D1117;border:1px solid #1E2533;border-radius:8px;max-width:600px;">
   <tr><td style="padding:32px 32px 0;">
-    <p style="margin:0 0 4px;font-size:10px;letter-spacing:2px;color:#6B7787;text-transform:uppercase;">IsStraitHormuzOpen?</p>
+    <p style="margin:0 0 4px;font-size:10px;letter-spacing:2px;color:#6B7787;text-transform:uppercase;">Global Chokepoints Alerts</p>
     <h1 style="margin:0 0 24px;font-size:22px;font-weight:700;color:#F1F5F9;">${title}</h1>
   </td></tr>
   <tr><td style="padding:0 32px 32px;">
@@ -53,7 +53,7 @@ function baseTemplate(title: string, body: string) {
 export function confirmationEmailHtml(confirmUrl: string) {
   const body = `
     <p style="margin:0 0 16px;font-size:14px;color:#94A3B8;line-height:1.7;">
-      You requested email alerts for the Strait of Hormuz status monitor.
+      You requested email alerts for the Global Chokepoints status monitor.
       Click the button below to confirm your subscription.
     </p>
     <a href="${confirmUrl}"
@@ -84,10 +84,10 @@ export function alertEmailHtml(opts: {
   const statusWord = isOpen ? 'OPEN ✓' : isDisrupted ? 'DISRUPTED ⚠' : 'CLOSED ✗';
   const prevWord = opts.previousStatus === 'OPEN' ? 'Open' : opts.previousStatus === 'PARTIALLY_CLOSED' ? 'Disrupted' : 'Closed';
   const title = isOpen
-    ? 'Strait of Hormuz is now Open'
+    ? 'Global Chokepoints — Traffic Restored'
     : isDisrupted
-    ? 'Strait of Hormuz — Disruption Detected'
-    : 'Strait of Hormuz Closure Alert';
+    ? 'Global Chokepoints — Disruption Alert'
+    : 'Global Chokepoints — Closure Alert';
 
   const officialSourcesBlock = isOpen ? `
     <div style="margin:20px 0;padding:16px;background:#0B1A14;border:1px solid #10B98140;border-radius:6px;">
@@ -156,6 +156,7 @@ export async function sendEmail(opts: {
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
+      'User-Agent': 'GlobalChokepointsAlerts/1.0',
     },
     body: JSON.stringify({
       from: fromAddress(),
@@ -173,4 +174,47 @@ export async function sendEmail(opts: {
   }
 
   return { ok: true };
+}
+
+// Send up to 100 emails in a single Resend batch request.
+// Returns { sent, failed } counts.
+export async function sendEmailBatch(
+  messages: { to: string; subject: string; html: string }[]
+): Promise<{ sent: number; failed: number }> {
+  if (messages.length === 0) return { sent: 0, failed: 0 };
+
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    console.warn('[email] RESEND_API_KEY not set — batch not sent');
+    return { sent: 0, failed: messages.length };
+  }
+
+  const from = fromAddress();
+  const payload = messages.map(m => ({ from, to: [m.to], subject: m.subject, html: m.html }));
+
+  try {
+    const res = await fetch('https://api.resend.com/emails/batch', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'GlobalChokepointsAlerts/1.0',
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(20_000),
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.error(`[email] Resend batch error ${res.status}:`, body);
+      return { sent: 0, failed: messages.length };
+    }
+
+    const data = await res.json() as { data?: unknown[] };
+    const sent = Array.isArray(data.data) ? data.data.length : messages.length;
+    return { sent, failed: messages.length - sent };
+  } catch (err) {
+    console.error('[email] Resend batch failed:', err);
+    return { sent: 0, failed: messages.length };
+  }
 }

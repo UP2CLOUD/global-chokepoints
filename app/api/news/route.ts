@@ -1,6 +1,8 @@
 // ============================================================
 // /api/news — Live news via GDELT (free, no key)
-// Returns articles mentioning Strait of Hormuz / Iran navy / oil tankers.
+// Returns articles covering global maritime chokepoints:
+// Strait of Hormuz, Red Sea / Bab-el-Mandeb, Suez Canal,
+// Panama Canal, and Taiwan Strait.
 // GDELT v2 DocSearch can be slow (2-6 s) or occasionally return errors.
 // We retry up to 2 times with a short delay and serve a module-level
 // stale cache (up to 1 h) when GDELT is fully unavailable.
@@ -13,8 +15,11 @@ export const revalidate = 300;
 export const dynamic = 'force-dynamic';
 
 const QUERY =
-  '("Strait of Hormuz" OR "Hormuz Strait" OR "Iranian navy" OR ' +
-  '"Iran navy" OR "oil tanker" OR "Persian Gulf")';
+  '("Strait of Hormuz" OR "Hormuz Strait" OR "Iranian navy" OR "Iran navy" OR "Persian Gulf" OR ' +
+  '"Red Sea" OR "Houthi" OR "Bab el-Mandeb" OR "Bab-el-Mandeb" OR ' +
+  '"Suez Canal" OR "Panama Canal" OR ' +
+  '"Taiwan Strait" OR "TSMC" OR ' +
+  '"oil tanker" OR "maritime chokepoint" OR "shipping lane")';
 
 const GDELT_URL =
   `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(QUERY)}` +
@@ -32,14 +37,14 @@ async function fetchGdelt(retries = 2): Promise<any> {
     if (attempt > 0) await new Promise((r) => setTimeout(r, attempt * 1000));
     try {
       const res = await fetch(GDELT_URL, {
-        headers: { 'User-Agent': 'IsStraitHormuzOpen/1.0' },
+        headers: { 'User-Agent': 'GlobalChokepointsAlerts/1.0' },
         signal: AbortSignal.timeout(9000), // GDELT can be slow; give 9 s
       });
       if (!res.ok) throw new Error(`GDELT HTTP ${res.status}`);
       const text = await res.text();
       try { return JSON.parse(text); } catch { return { articles: [] }; }
     } catch (err) {
-      lastErr = err;
+      lastErr = err as Error;
       console.warn(`[api/news] GDELT attempt ${attempt + 1} failed:`, (err as Error).message);
     }
   }
@@ -117,7 +122,7 @@ export async function GET() {
         if (Date.now() - parsed.ts < 5 * 60 * 1000) {
           return NextResponse.json(
             { news: parsed.news, source: 'GDELT', count: parsed.news.length, cached: true },
-            { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+            { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=86400', 'X-Cache': 'HIT' } }
           );
         }
       }
@@ -135,7 +140,7 @@ export async function GET() {
     if (news.length > 0) {
       gdeltCache = { ts: Date.now(), news };
       if (kv) {
-        kv.put('NEWS_PAYLOAD', JSON.stringify({ ts: Date.now(), news })).catch(e => 
+        await kv.put('NEWS_PAYLOAD', JSON.stringify({ ts: Date.now(), news })).catch(e =>
           console.warn('[api/news] KV write failed:', e)
         );
       }
@@ -143,7 +148,7 @@ export async function GET() {
 
     return NextResponse.json(
       { news, source: 'GDELT', count: news.length },
-      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=86400', 'X-Cache': 'MISS' } }
     );
   } catch (err) {
     console.error('[api/news] all GDELT attempts failed:', err);
@@ -153,7 +158,7 @@ export async function GET() {
       console.warn('[api/news] serving stale GDELT cache');
       return NextResponse.json(
         { news: gdeltCache.news, source: 'GDELT (cached)', count: gdeltCache.news.length, stale: true },
-        { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } }
+        { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'STALE' } }
       );
     }
 
@@ -166,17 +171,17 @@ export async function GET() {
           const parsed = cached as { ts: number; news: any[] };
           return NextResponse.json(
             { news: parsed.news, source: 'GDELT (KV fallback)', count: parsed.news.length, stale: true },
-            { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } }
+            { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'STALE' } }
           );
         }
-      } catch (err) {}
+      } catch (kvErr) { console.warn('[api/news] KV fallback read failed:', kvErr); }
     }
 
-    // Return 200 OK so the browser doesn't log scary red network errors.
-    // The frontend gracefully handles empty news arrays.
+    // 502 so CDN stale-if-error serves a prior cached response instead of this error.
+    // fetchNews() catches non-2xx and returns null; dashboard degrades gracefully.
     return NextResponse.json(
-      { error: String(err), news: [], source: 'GDELT (Failed)' },
-      { status: 200, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30' } }
+      { error: 'News feed temporarily unavailable', news: [], source: 'GDELT (Failed)' },
+      { status: 502, headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, stale-if-error=3600' } }
     );
   }
 }

@@ -237,7 +237,7 @@ export async function GET() {
           out[s.key] = {
             price: 0, change: 0, changePercent: 0, history: [], asOf: '',
             label: s.label, symbol: s.symbol, unit: s.unit,
-            error: String(err),
+            error: 'Price data temporarily unavailable',
           };
         }
       }
@@ -250,7 +250,7 @@ export async function GET() {
     try {
       const entry: MarketsKVEntry = { markets: out, savedAt: Date.now() };
       await kv.put(KV_MARKETS_KEY, JSON.stringify(entry), { expirationTtl: KV_MARKETS_TTL * 2 });
-    } catch { /* KV write failed */ }
+    } catch (err) { console.warn('[api/markets] KV write failed:', err); }
   }
 
   // Aggregate source label for the rail header
@@ -259,12 +259,17 @@ export async function GET() {
     if (v.provider && !providers.includes(v.provider)) providers.push(v.provider);
   }
 
+  const hasStale = SYMBOLS.some(s => out[s.key]?.stale);
+
   return NextResponse.json(
     {
       markets: out,
       source: providers.join(' + ') || 'unavailable',
       generatedAt: new Date().toISOString(),
     },
-    { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+    { headers: {
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600, stale-if-error=7200',
+      'X-Cache': hasStale ? 'STALE' : 'MISS',
+    }}
   );
 }

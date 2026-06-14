@@ -51,7 +51,7 @@ export default function MarketsRail() {
     let alive = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/markets', { cache: 'no-store' });
+        const res = await fetch('/api/markets', { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
         if (!res.ok) throw new Error(String(res.status));
         const j = (await res.json()) as MarketsResponse;
         if (alive) { setData(j); setLoading(false); }
@@ -65,14 +65,14 @@ export default function MarketsRail() {
   }, []);
 
   const order = ['brent', 'wti', 'natgas'];
-  const items: { key: string; t: Ticker }[] = order
-    .map(k => ({ key: k, t: data?.markets?.[k] ?? { label: k.toUpperCase(), symbol: '', unit: '' } }))
-    .filter(x => !!x.t);
+  const items: { key: string; ticker: Ticker }[] = order
+    .map(k => ({ key: k, ticker: data?.markets?.[k] ?? { label: k.toUpperCase(), symbol: '', unit: '' } }))
+    .filter(x => !!x.ticker);
 
   return (
-    <section className="rounded-xl border border-divider bg-card/70 p-4 md:p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
+    <section className="border border-divider bg-bg1 p-5 md:p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3">
           {t.markets.title}
         </div>
         <div className="text-[10px] font-mono text-text3">
@@ -80,41 +80,41 @@ export default function MarketsRail() {
         </div>
       </div>
       <div className="grid grid-cols-3 gap-3 md:gap-4">
-        {items.map(({ key, t }) => {
-          const ok = !t.error && t.price != null;
-          const Up = (t.changePercent ?? 0) > 0;
-          const Down = (t.changePercent ?? 0) < 0;
+        {items.map(({ key, ticker }) => {
+          const ok = !ticker.error && ticker.price != null;
+          const Up = (ticker.changePercent ?? 0) > 0;
+          const Down = (ticker.changePercent ?? 0) < 0;
           const TrendIcon = Up ? TrendingUp : Down ? TrendingDown : Minus;
           const trendCol = Up ? 'text-ok' : Down ? 'text-danger' : 'text-text2';
           return (
-            <div key={key} className="rounded-lg border border-divider bg-bg1/60 p-3">
+            <div key={key} className="border border-divider bg-bg2 p-3">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-text2">{t.label}</span>
-                <span className="text-[9px] font-mono text-text4">{t.symbol}</span>
+                <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-text2">{ticker.label}</span>
+                <span className="text-[9px] font-mono text-text4">{ticker.symbol}</span>
               </div>
               <div className="flex items-end justify-between gap-2">
                 <div>
                   <div className={`text-[20px] font-bold font-mono leading-none ${ok ? 'text-text' : 'text-text3'}`}>
-                    {ok ? `$${t.price!.toFixed(2)}` : '—'}
+                    {ok ? `$${ticker.price!.toFixed(2)}` : '—'}
                   </div>
-                  <div className="text-[10px] font-mono text-text3 mt-1">{t.unit}</div>
+                  <div className="text-[10px] font-mono text-text3 mt-1">{ticker.unit}</div>
                 </div>
-                {ok && t.history && <Sparkline data={t.history} up={!Down} />}
+                {ok && ticker.history && <Sparkline data={ticker.history} up={!Down} />}
               </div>
               {ok && (
                 <div className="mt-2 flex items-center gap-2">
                   <div className={`inline-flex items-center gap-1 text-[11px] font-mono ${trendCol}`}>
                     <TrendIcon size={12} />
-                    {(t.change ?? 0) >= 0 ? '+' : ''}{(t.change ?? 0).toFixed(2)} ({(t.changePercent ?? 0) >= 0 ? '+' : ''}{(t.changePercent ?? 0).toFixed(2)}%)
+                    {(ticker.change ?? 0) >= 0 ? '+' : ''}{(ticker.change ?? 0).toFixed(2)} ({(ticker.changePercent ?? 0) >= 0 ? '+' : ''}{(ticker.changePercent ?? 0).toFixed(2)}%)
                   </div>
-                  {t.stale && (
-                    <span className="text-[9px] font-mono stale px-1.5 py-0.5 rounded uppercase tracking-wider">stale</span>
+                  {ticker.stale && (
+                    <span className="text-[9px] font-mono stale px-1.5 py-0.5 uppercase tracking-wider">{t.markets.stale}</span>
                   )}
                 </div>
               )}
               {!ok && !loading && (
                 <div className="mt-2 text-[10px] font-mono down inline-block px-1.5 py-0.5 rounded">
-                  feed down
+                  {t.markets.feedDown}
                 </div>
               )}
             </div>

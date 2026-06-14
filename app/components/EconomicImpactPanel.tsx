@@ -32,43 +32,43 @@ export default function EconomicImpactPanel({ state }: Props) {
     <section className="border border-divider bg-bg2 p-5 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-text2">
-          <DollarSign size={13} className="text-accent" />
+        <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-[0.22em] text-text3">
+          <DollarSign size={11} className="text-accent" />
           {t.economic.title}
         </div>
-        <span className="text-[10px] font-mono text-text4">{t.economic.source}</span>
+        <span className="text-[9px] font-mono text-text4">{t.economic.source}</span>
       </div>
 
       {/* Big stat tiles */}
       <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="rounded-lg border border-divider bg-bg1/60 p-3 text-center">
+        <div className="border border-divider bg-bg1 p-3 text-center">
           <div className="text-[19px] font-mono font-bold text-text">{t.economic.dailyValue}</div>
           <div className="text-[9px] font-mono text-text3 uppercase tracking-wide mt-0.5">{t.economic.daily}</div>
         </div>
-        <div className="rounded-lg border border-divider bg-bg1/60 p-3 text-center">
+        <div className="border border-divider bg-bg1 p-3 text-center">
           <div className="text-[19px] font-mono font-bold text-text">{t.economic.annualValue}</div>
           <div className="text-[9px] font-mono text-text3 uppercase tracking-wide mt-0.5">{t.economic.annual}</div>
         </div>
-        <div className="rounded-lg border border-divider bg-bg1/60 p-3 text-center">
+        <div className="border border-divider bg-bg1 p-3 text-center">
           <div className="text-[19px] font-mono font-bold text-accent">{t.economic.oilDailyValue}</div>
           <div className="text-[9px] font-mono text-text3 uppercase tracking-wide mt-0.5">{t.economic.oilDaily}</div>
         </div>
       </div>
 
       {/* Sector breakdown */}
-      <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-text3 mb-3">
+      <p className="text-[9px] font-mono uppercase tracking-[0.22em] text-text3 mb-3">
         {t.economic.sectors}
       </p>
-      <div className="space-y-2.5 mb-5">
+      <div className="space-y-3 mb-5">
         {SECTORS.map(({ key, pct, bar }) => (
           <div key={key}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-mono text-text2">{t.economic[key]}</span>
               <span className="text-[11px] font-mono font-bold text-text3">{pct}%</span>
             </div>
-            <div className="h-1.5 bg-bg2 rounded-full overflow-hidden border border-divider">
+            <div className="h-[2px] bg-divider overflow-hidden">
               <div
-                className={`h-full rounded-full ${bar} transition-all duration-700`}
+                className={`h-full ${bar} transition-all duration-700`}
                 style={{ width: `${pct}%` }}
                 role="progressbar"
                 aria-valuenow={pct}
@@ -81,7 +81,7 @@ export default function EconomicImpactPanel({ state }: Props) {
       </div>
 
       {/* Live status callout */}
-      <div className={`px-3 py-2.5 rounded-lg border text-[11px] font-mono flex flex-wrap items-center gap-2 ${statusColor}`}>
+      <div className={`px-3 py-2.5 border text-[11px] font-mono flex flex-wrap items-center gap-2 ${statusColor}`}>
         <span className="font-bold tracking-wide">{t.economic.currentFlow}</span>
         <span className="text-text3">—</span>
         <span>{flowMsg}</span>
