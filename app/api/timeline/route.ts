@@ -174,10 +174,14 @@ function stripTags(s: string): string {
     .replace(/&nbsp;/g, ' ');
 }
 
+// Epoch sentinel for missing/unparseable dates — keeps them outside the
+// 24 h / 72 h scoring windows so they don't inflate the tension score.
+const EPOCH_ISO = '1970-01-01T00:00:00.000Z';
+
 function parseDate(s: string): string {
-  if (!s) return new Date().toISOString();
+  if (!s) return EPOCH_ISO;
   const d = new Date(s);
-  return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+  return isNaN(d.getTime()) ? EPOCH_ISO : d.toISOString();
 }
 
 function hash(s: string): string {
