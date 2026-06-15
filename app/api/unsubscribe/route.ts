@@ -16,7 +16,7 @@ function siteUrl() {
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token');
 
-  if (!token) {
+  if (!token || !/^[0-9a-f]{32}$/.test(token)) {
     return NextResponse.redirect(`${siteUrl()}?unsubscribed=error`);
   }
 
