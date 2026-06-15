@@ -262,7 +262,7 @@ const spec = {
           {
             name: 'state',
             in: 'query',
-            schema: { type: 'string', enum: ['OPEN', 'CLOSED', 'PARTIALLY_CLOSED', 'DISRUPTED'] },
+            schema: { type: 'string', enum: ['OPEN', 'CLOSED', 'PARTIALLY_CLOSED'] },
             description: 'Filter to a specific chokepoint state.',
           },
         ],
@@ -291,7 +291,7 @@ const spec = {
                         type: 'object',
                         properties: {
                           id:            { type: 'string' },
-                          state:         { type: 'string', enum: ['OPEN', 'CLOSED', 'PARTIALLY_CLOSED', 'DISRUPTED'] },
+                          state:         { type: 'string', enum: ['OPEN', 'CLOSED', 'PARTIALLY_CLOSED'] },
                           previousState: { type: 'string', nullable: true },
                           tension:       { type: 'integer', nullable: true, minimum: 0, maximum: 100 },
                           confidence:    { type: 'number', nullable: true, minimum: 0, maximum: 1 },
