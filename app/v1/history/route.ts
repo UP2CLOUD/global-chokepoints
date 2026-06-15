@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
   }
   const beforeUnix  = !isNaN(beforeMs) ? Math.floor(beforeMs / 1000) : null;
 
-  // Optional state filter (OPEN | CLOSED | PARTIALLY_CLOSED | DISRUPTED)
+  // Optional state filter (OPEN | CLOSED | PARTIALLY_CLOSED)
   const stateParam = (u.searchParams.get('state') ?? '').toUpperCase() || null;
   if (stateParam && !VALID_STATES.has(stateParam)) {
     return NextResponse.json(

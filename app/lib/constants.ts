@@ -53,7 +53,7 @@ export const CONFIDENCE_PER_EVENT  = 0.02;
 export const CONFIDENCE_MAX_EVENTS = 6;
 
 /**
- * Minimum confidence required to send a CLOSED/DISRUPTED → OPEN alert.
+ * Minimum confidence required to send a CLOSED/PARTIALLY_CLOSED → OPEN alert.
  * Reopening must be supported by multiple corroborating sources before
  * subscribers are notified. Closure alerts use the standard threshold.
  */
