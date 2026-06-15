@@ -431,11 +431,11 @@ console.log(data.reason);       // "Maritime traffic operational. ..."`}
                 { name: 'limit',  in: 'query', type: 'integer',  desc: 'Max records to return (1–200, default 50)' },
                 { name: 'since',  in: 'query', type: 'ISO 8601', desc: 'Return only transitions recorded after this timestamp (exclusive)' },
                 { name: 'before', in: 'query', type: 'ISO 8601', desc: 'Return only transitions recorded before this timestamp — pass nextCursor to page backward' },
-                { name: 'state',  in: 'query', type: 'enum',     desc: 'Filter by target state: OPEN | CLOSED | PARTIALLY_CLOSED | DISRUPTED' },
+                { name: 'state',  in: 'query', type: 'enum',     desc: 'Filter by target state: OPEN | CLOSED | PARTIALLY_CLOSED' },
               ]}
               responseFields={[
                 { name: 'items[].id',            type: 'string',      desc: 'Unique record identifier (UUID)' },
-                { name: 'items[].state',          type: 'enum',        desc: 'New state: OPEN | PARTIALLY_CLOSED | CLOSED | DISRUPTED' },
+                { name: 'items[].state',          type: 'enum',        desc: 'New state: OPEN | PARTIALLY_CLOSED | CLOSED' },
                 { name: 'items[].previousState',  type: 'enum|null',   desc: 'Prior state, or null for the first recorded entry' },
                 { name: 'items[].tension',        type: 'number|null', desc: 'Tension index (0–100) at the time of the transition' },
                 { name: 'items[].confidence',     type: 'number|null', desc: 'Model confidence score (0–1, three decimal places)' },
