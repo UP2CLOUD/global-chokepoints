@@ -105,7 +105,7 @@ function buildNews(articles: any[]) {
       sentiment: analyzeSentiment(art.title || ''),
       relevance:
         typeof art.tone === 'string'
-          ? Math.min(1, 0.6 + Math.abs(parseFloat(art.tone) / 20))
+          ? (Math.min(1, 0.6 + Math.abs(parseFloat(art.tone) / 20)) || 0.75)
           : 0.75,
     }));
 }
