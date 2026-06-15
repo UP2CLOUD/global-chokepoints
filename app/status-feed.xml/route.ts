@@ -25,9 +25,10 @@ type HistoryRow = {
 };
 
 function stateLabel(s: string) {
-  if (s === 'OPEN')   return 'OPEN — Traffic Flowing Normally';
-  if (s === 'CLOSED') return 'CLOSED — Traffic Blocked';
-  return 'DISRUPTED — Traffic Partially Disrupted';
+  if (s === 'OPEN')             return 'OPEN — Traffic Flowing Normally';
+  if (s === 'CLOSED')           return 'CLOSED — Traffic Blocked';
+  if (s === 'PARTIALLY_CLOSED') return 'DISRUPTED — Traffic Partially Disrupted';
+  return 'Status Changed';
 }
 
 function esc(s: string) {
@@ -57,7 +58,7 @@ export async function GET(req: NextRequest) {
   const entries = items.map(item => {
     const date = new Date(item.created_at * 1000).toUTCString();
     const prev  = item.previous_state ? ` (was ${item.previous_state})` : '';
-    const title = `${stateLabel(item.state)}${prev}`;
+    const title = esc(`${stateLabel(item.state)}${prev}`);
     const desc  = item.reason ? esc(item.reason) : 'Status changed.';
     return `  <item>
     <title>${title}</title>
