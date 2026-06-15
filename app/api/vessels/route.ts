@@ -76,7 +76,9 @@ type KVPayload = {
 
 // ── Module-level fallback (non-CF / local dev) ─────────────────
 let moduleCache: KVPayload | null = null;
-let collectingInProgress = false;
+// Promise-based semaphore: concurrent callers share the same in-flight refresh
+// rather than spawning duplicate collections that burn AISStream quota.
+let refreshInFlight: Promise<void> | null = null;
 
 // ── AISStream collector ───────────────────────────────────────
 function collectVessels(apiKey: string): Promise<VesselEntry[]> {
@@ -176,32 +178,34 @@ function collectVessels(apiKey: string): Promise<VesselEntry[]> {
 }
 
 // ── Background refresh ────────────────────────────────────────
-async function refreshAndCache(apiKey: string, kv: KVNamespace | null) {
-  if (collectingInProgress) return;
-  collectingInProgress = true;
-  try {
-    // KV lock — prevent parallel collections in multi-isolate CF Workers
-    if (kv) {
-      const lock = await kv.get(KV_LOCK_KEY);
-      if (lock) return;
-      await kv.put(KV_LOCK_KEY, '1', { expirationTtl: 30 });
-    }
+function refreshAndCache(apiKey: string, kv: KVNamespace | null): Promise<void> {
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async () => {
+    try {
+      // KV lock — prevent parallel collections in multi-isolate CF Workers
+      if (kv) {
+        const lock = await kv.get(KV_LOCK_KEY);
+        if (lock) return;
+        await kv.put(KV_LOCK_KEY, '1', { expirationTtl: 30 });
+      }
 
-    const vessels = await collectVessels(apiKey);
-    const payload: KVPayload = { vessels, collectedAt: Date.now() };
+      const vessels = await collectVessels(apiKey);
+      const payload: KVPayload = { vessels, collectedAt: Date.now() };
 
-    if (kv) {
-      await kv.put(KV_CACHE_KEY, JSON.stringify(payload), {
-        expirationTtl: CACHE_TTL_SEC * 4,
-      });
-      await kv.delete(KV_LOCK_KEY);
+      if (kv) {
+        await kv.put(KV_CACHE_KEY, JSON.stringify(payload), {
+          expirationTtl: CACHE_TTL_SEC * 4,
+        });
+        await kv.delete(KV_LOCK_KEY);
+      }
+      moduleCache = payload; // always update module-level cache too
+    } catch (err) {
+      console.error('[vessels] refresh failed:', err);
+    } finally {
+      refreshInFlight = null;
     }
-    moduleCache = payload; // always update module-level cache too
-  } catch (err) {
-    console.error('[vessels] refresh failed:', err);
-  } finally {
-    collectingInProgress = false;
-  }
+  })();
+  return refreshInFlight;
 }
 
 // ── Route handler ─────────────────────────────────────────────
@@ -248,7 +252,7 @@ export async function GET() {
   if (isFresh && cached) {
     const ageSec = Math.floor(ageMs / 1000);
     // Trigger background refresh when cache is getting old
-    if (ageMs > REFRESH_AFTER_SEC * 1000 && !collectingInProgress) {
+    if (ageMs > REFRESH_AFTER_SEC * 1000) {
       const task = refreshAndCache(apiKey, kv);
       if (cfCtx?.waitUntil) {
         cfCtx.waitUntil(task);
@@ -274,13 +278,11 @@ export async function GET() {
   if (cached && ageMs < CACHE_TTL_SEC * 4 * 1000) {
     // We have usable (just old) data — return it and refresh in background
     const ageSec = Math.floor(ageMs / 1000);
-    if (!collectingInProgress) {
-      const task = refreshAndCache(apiKey, kv);
-      if (cfCtx?.waitUntil) {
-        cfCtx.waitUntil(task);
-      } else {
-        task.catch(console.error);
-      }
+    const task = refreshAndCache(apiKey, kv);
+    if (cfCtx?.waitUntil) {
+      cfCtx.waitUntil(task);
+    } else {
+      task.catch(console.error);
     }
 
     return NextResponse.json(
