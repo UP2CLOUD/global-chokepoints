@@ -78,7 +78,7 @@ async function fetchYahoo(): Promise<Payload> {
       const latest = meta.regularMarketPrice ?? history[history.length - 1].price;
       const previous = meta.chartPreviousClose ?? history[history.length - 2].price;
       const change = latest - previous;
-      const changePercent = (change / previous) * 100;
+      const changePercent = previous !== 0 ? (change / previous) * 100 : 0;
 
       const payload: Payload = {
         price: Number(latest.toFixed(2)),
