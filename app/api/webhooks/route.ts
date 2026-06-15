@@ -7,15 +7,21 @@ import { getD1, randomId, randomToken } from '@/app/lib/db';
 const VALID_EVENTS = ['status_change'] as const;
 type WebhookEvent = typeof VALID_EVENTS[number];
 
-// Block private/loopback hostnames to prevent SSRF.
+const MAX_WEBHOOK_URL_LENGTH = 2000;
+
+// Block private/loopback/reserved hostnames to prevent SSRF.
 function isPrivateHost(hostname: string): boolean {
   const h = hostname.toLowerCase();
   if (h === 'localhost' || h === '::1' || h === '0.0.0.0') return true;
-  // IPv4 loopback / private ranges / link-local
-  if (/^127\./.test(h) || /^10\./.test(h) || /^192\.168\./.test(h)) return true;
+  // IPv4 loopback / private ranges / link-local / AWS IMDS
+  if (/^127\./.test(h))                      return true;
+  if (/^10\./.test(h))                       return true;
+  if (/^192\.168\./.test(h))                 return true;
   if (/^172\.(1[6-9]|2\d|3[01])\./.test(h)) return true;
-  if (/^169\.254\./.test(h)) return true; // link-local / AWS metadata
-  if (h === 'metadata.google.internal') return true;
+  if (/^169\.254\./.test(h))                 return true;
+  // Multicast (RFC 3171) and reserved/future-use (RFC 1112, 3330)
+  if (/^22[4-9]\./.test(h) || /^2[3-5]\d\./.test(h)) return true;
+  if (h === 'metadata.google.internal')      return true;
   return false;
 }
 
@@ -30,6 +36,9 @@ export async function POST(req: NextRequest) {
 
   if (!body.url) {
     return NextResponse.json({ error: 'url is required' }, { status: 400 });
+  }
+  if (body.url.length > MAX_WEBHOOK_URL_LENGTH) {
+    return NextResponse.json({ error: `url must not exceed ${MAX_WEBHOOK_URL_LENGTH} characters` }, { status: 400 });
   }
   let parsed: URL;
   try { parsed = new URL(body.url); } catch {
