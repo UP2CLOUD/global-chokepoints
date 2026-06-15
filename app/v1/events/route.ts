@@ -56,9 +56,15 @@ export async function GET(req: NextRequest) {
 
   const origin = u.origin;
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
-  const res = await fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(10_000) });
-  const json = res.ok ? await res.json() : { events: [] };
-  let events: any[] = Array.isArray(json.events) ? json.events : [];
+  const UA = { 'User-Agent': 'GlobalChokepointsAlerts/v1' };
+  let events: any[] = [];
+  try {
+    const res = await fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(10_000), headers: UA });
+    const json = res.ok ? await res.json() : { events: [] };
+    events = Array.isArray(json.events) ? json.events : [];
+  } catch (err) {
+    console.warn('[v1/events] timeline fetch failed:', err);
+  }
 
   // Pre-parse timestamps once to avoid O(N log N) Date instantiations in sort/filter
   let stamped = events.map(e => ({ e, time: +new Date(e.date) }));
