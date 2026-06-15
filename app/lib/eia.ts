@@ -84,7 +84,7 @@ export function eiaToTicker(r: EiaSeriesResult) {
   const last = r.points[r.points.length - 1];
   const prev = r.points[r.points.length - 2];
   const change = last.price - prev.price;
-  const changePercent = (change / prev.price) * 100;
+  const changePercent = prev.price !== 0 ? (change / prev.price) * 100 : 0;
   const history = r.points.slice(-7).map((p) => ({
     date: new Date(p.ts).toLocaleDateString('en-US', {
       day: '2-digit',
@@ -166,7 +166,7 @@ export function fredToTicker(r: FredResult) {
   const last = r.points[r.points.length - 1];
   const prev = r.points[r.points.length - 2];
   const change        = last.price - prev.price;
-  const changePercent = (change / prev.price) * 100;
+  const changePercent = prev.price !== 0 ? (change / prev.price) * 100 : 0;
   const history = r.points.slice(-7).map(p => ({
     date:  new Date(p.ts).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' }),
     price: Number(p.price.toFixed(3)),
