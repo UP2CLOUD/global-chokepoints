@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   const brent = brentRes.ok ? await brentRes.json() : null;
   const brentPct = brent?.changePercent ?? null;
 
-  const status = deriveStatus(timeline, brentPct, 'en');
+  const status = deriveStatus(timeline, brentPct, 'en', brent?.price ?? null);
 
   // Optional history query: ?history=7d (1–30 days)
   const historyParam = req.nextUrl.searchParams.get('history');
