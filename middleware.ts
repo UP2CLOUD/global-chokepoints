@@ -45,9 +45,10 @@ export async function middleware(request: NextRequest) {
   const isV1    = request.nextUrl.pathname.startsWith('/v1/');
   const isApi   = request.nextUrl.pathname.startsWith('/api/');
 
-  // Echo client-supplied X-Request-ID or generate a fresh one for API/v1 routes
+  // Echo client-supplied X-Request-ID (UUID format only) or generate a fresh one
+  const clientId = request.headers.get('X-Request-ID') ?? '';
   const requestId = (isV1 || isApi)
-    ? (request.headers.get('X-Request-ID') || crypto.randomUUID())
+    ? (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId) ? clientId : crypto.randomUUID())
     : undefined;
 
   if (request.method === 'OPTIONS') {
