@@ -41,6 +41,12 @@ export async function GET(req: NextRequest) {
   const beforeMs   = before ? +new Date(before) : 0;
   if (since  && isNaN(sinceMs))  return NextResponse.json({ error: 'Invalid since: must be an ISO 8601 timestamp'  }, { status: 400, headers: CORS });
   if (before && isNaN(beforeMs)) return NextResponse.json({ error: 'Invalid before: must be an ISO 8601 timestamp' }, { status: 400, headers: CORS });
+  if (chokepoint && !CP_KEYWORDS[chokepoint]) {
+    return NextResponse.json(
+      { error: `Invalid chokepoint. Valid values: ${Object.keys(CP_KEYWORDS).join(', ')}` },
+      { status: 400, headers: CORS }
+    );
+  }
 
   // ?severity=high,critical  — comma-separated; unknown values ignored
   const severityRaw  = u.searchParams.get('severity');
