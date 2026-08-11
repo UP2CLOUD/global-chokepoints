@@ -33,7 +33,8 @@ const VALID_CATEGORIES = new Set(['incident', 'military', 'diplomatic', 'economi
 
 export async function GET(req: NextRequest) {
   const u = new URL(req.url);
-  const limit      = Math.min(100, Math.max(1, parseInt(u.searchParams.get('limit') ?? '30', 10)));
+  const limitRaw   = parseInt(u.searchParams.get('limit') ?? '30', 10);
+  const limit      = Math.min(100, Math.max(1, Number.isNaN(limitRaw) ? 30 : limitRaw));
   const since      = u.searchParams.get('since');
   const before     = u.searchParams.get('before');
   const chokepoint = u.searchParams.get('chokepoint');
