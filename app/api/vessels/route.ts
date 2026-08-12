@@ -240,12 +240,11 @@ export async function GET() {
   const isFresh = ageMs < CACHE_TTL_SEC * 1000;
 
   // ── Get CF execution context for waitUntil ────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let cfCtx: any = null;
+  let cfCtx: { waitUntil?: (p: Promise<unknown>) => void } | null = null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { getCloudflareContext } = require('@opennextjs/cloudflare');
-    cfCtx = getCloudflareContext()?.ctx;
+    cfCtx = getCloudflareContext()?.ctx ?? null;
   } catch { /* local dev */ }
 
   // ── If fresh cache: return immediately, maybe refresh BG ─

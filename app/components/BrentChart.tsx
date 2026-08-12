@@ -3,9 +3,20 @@
 import { useEffect, useState } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  type TooltipProps,
 } from 'recharts';
 import { getBrentHistory } from '@/app/lib/mockData';
 import { fetchBrent } from '@/app/lib/api';
+
+function BrentTooltip({ active, payload }: TooltipProps<number, string>) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-bg1/95 border border-divider px-2.5 py-1.5 text-[11px] font-mono">
+      <div className="text-text3">{payload[0].payload.date}</div>
+      <div className="text-accent font-semibold">${Number(payload[0].value).toFixed(2)}</div>
+    </div>
+  );
+}
 
 export default function BrentChart() {
   // Empty initial state — avoids SSR/client hydration mismatch.
@@ -52,17 +63,7 @@ export default function BrentChart() {
           <YAxis tick={{ fill: text3, fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} domain={['dataMin - 1', 'dataMax + 1']} />
           <Tooltip
             cursor={{ stroke: accent, strokeDasharray: '2 4', strokeWidth: 1 }}
-            content={({ active, payload }) => {
-              if (active && payload && payload.length) {
-                return (
-                  <div className="bg-bg1/95 border border-divider px-2.5 py-1.5 text-[11px] font-mono">
-                    <div className="text-text3">{payload[0].payload.date}</div>
-                    <div className="text-accent font-semibold">${Number(payload[0].value).toFixed(2)}</div>
-                  </div>
-                );
-              }
-              return null;
-            }}
+            content={BrentTooltip}
           />
           <Area type="monotone" dataKey="price" stroke={accent} strokeWidth={1.5} fill="url(#brentGrad)" activeDot={{ r: 3, fill: accent, stroke: 'var(--bg)', strokeWidth: 2 }} />
         </AreaChart>

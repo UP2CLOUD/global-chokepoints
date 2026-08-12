@@ -27,6 +27,20 @@ const MARINE_URL =
 const KV_WEATHER_KEY = 'weather:cache';
 const KV_WEATHER_TTL = 900; // 15 min
 
+interface OmForecastCurrent {
+  temperature_2m?: number;
+  wind_speed_10m?: number;
+  wind_direction_10m?: number;
+  visibility?: number;
+  weather_code?: number;
+}
+interface OmMarineCurrent {
+  wave_height?: number;
+  wave_period?: number;
+  wind_wave_height?: number;
+  swell_wave_height?: number;
+}
+
 const WEATHER_CODES: Record<number, string> = {
   0: 'Clear',
   1: 'Mainly clear',
@@ -88,11 +102,11 @@ export async function GET() {
     ]);
 
     if (!fRes.ok) throw new Error(`forecast HTTP ${fRes.status}`);
-    const f = await fRes.json();
-    const fc = f.current ?? {};
+    const f = await fRes.json() as { current?: OmForecastCurrent };
+    const fc: OmForecastCurrent = f.current ?? {};
 
-    const m = mRes.ok ? await mRes.json() : null;
-    const mc = m?.current ?? {};
+    const m = mRes.ok ? await mRes.json() as { current?: OmMarineCurrent } : null;
+    const mc: OmMarineCurrent = m?.current ?? {};
 
     const windKn = Number(fc.wind_speed_10m ?? 0);
     const windDeg = Number(fc.wind_direction_10m ?? 0);

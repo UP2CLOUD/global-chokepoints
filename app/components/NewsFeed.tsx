@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { NewsItem } from '@/app/lib/types';
 import { useLang } from './LangContext';
 import { ExternalLink } from 'lucide-react';
@@ -68,17 +68,20 @@ export default function NewsFeed({ news, loading = false }: Props) {
   const { t } = useLang();
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
 
-  const seenIds = new Set<string>();
-  const allItems = news.map((item, i) => {
-    let key = item.id || item.url || `news-${i}`;
-    if (seenIds.has(key)) key = `${key}-${i}`;
-    seenIds.add(key);
-    return { ...item, _key: key };
-  });
+  const allItems = useMemo(() => {
+    const seenIds = new Set<string>();
+    return news.map((item, i) => {
+      let key = item.id || item.url || `news-${i}`;
+      if (seenIds.has(key)) key = `${key}-${i}`;
+      seenIds.add(key);
+      return { ...item, _key: key };
+    });
+  }, [news]);
 
-  const items = activeFilter === 'all'
-    ? allItems
-    : allItems.filter(item => matchesFilter(item, activeFilter));
+  const items = useMemo(() =>
+    activeFilter === 'all' ? allItems : allItems.filter(item => matchesFilter(item, activeFilter)),
+    [allItems, activeFilter],
+  );
 
   return (
     <div>
