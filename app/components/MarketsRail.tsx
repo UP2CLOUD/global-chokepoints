@@ -76,7 +76,7 @@ export default function MarketsRail() {
           {t.markets.title}
         </div>
         <div className="text-[10px] font-mono text-text3">
-          {data ? `via Yahoo Finance · ${new Date(data.generatedAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}` : '—'}
+          {data ? `via ${data.source} · ${new Date(data.generatedAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}` : '—'}
         </div>
       </div>
       <div className="grid grid-cols-3 gap-3 md:gap-4">

@@ -93,7 +93,7 @@ export default function Header({ status, metrics, loading, vesselCount }: Props)
         <div className="max-w-[1440px] mx-auto px-4 md:px-8 flex items-center justify-between h-14">
 
           {/* Brand mark */}
-          <div className="flex items-center gap-3" aria-label="Global Chokepoints Alerts">
+          <div className="flex items-center gap-3">
             {/* Chokepoint icon — concentric ring with pulse dot */}
             <div className="relative w-7 h-7 shrink-0 flex items-center justify-center">
               <span className="absolute inset-0 rounded-full border border-accent/30" />
