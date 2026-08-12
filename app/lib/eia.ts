@@ -13,6 +13,7 @@
 
 export type EiaSeries = 'RBRTE' | 'RWTC' | 'RNGWHHD';
 export type EiaPoint = { ts: number; period: string; price: number };
+type EiaRow = { period: string; value: string | number; units?: string };
 
 export interface EiaSeriesResult {
   series: EiaSeries;
@@ -56,7 +57,7 @@ export async function fetchEiaSpot(
   });
   if (!res.ok) throw new Error(`EIA HTTP ${res.status} for ${series}`);
   const json = await res.json();
-  const raw: any[] = json?.response?.data ?? [];
+  const raw: EiaRow[] = json?.response?.data ?? [];
   if (!raw.length) throw new Error(`EIA: empty data for ${series}`);
 
   // EIA returns newest-first; reverse so history is oldest→newest.

@@ -11,6 +11,15 @@ export const runtime = 'edge';
 import { NextResponse } from 'next/server';
 import { getKV } from '@/app/lib/kv';
 
+interface GdeltArticle {
+  url?: string;
+  title?: string;
+  sourcecommonname?: string;
+  domain?: string;
+  seendate?: string;
+  tone?: string | number;
+}
+
 export const revalidate = 300;
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +40,7 @@ let gdeltCache: { ts: number; news: ReturnType<typeof buildNews> } | null = null
 const CACHE_STALE_MS = 60 * 60 * 1000; // 1 hour
 
 // Fetch GDELT with retries (exponential back-off: 0 ms, 1 s, 2 s).
-async function fetchGdelt(retries = 2): Promise<any> {
+async function fetchGdelt(retries = 2): Promise<{ articles: GdeltArticle[] }> {
   let lastErr: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, attempt * 1000));
@@ -85,7 +94,7 @@ function djb2(s: string): string {
   return Math.abs(h).toString(36);
 }
 
-function buildNews(articles: any[]) {
+function buildNews(articles: GdeltArticle[]) {
   const seen = new Set<string>();
   return articles
     .filter((art) => {
@@ -133,14 +142,14 @@ export async function GET() {
 
   try {
     const data = await fetchGdelt();
-    const articles: any[] = data.articles ?? [];
+    const articles: GdeltArticle[] = data.articles ?? [];
     const news = buildNews(articles);
 
     // Update module-level cache on success
     if (news.length > 0) {
       gdeltCache = { ts: Date.now(), news };
       if (kv) {
-        await kv.put('NEWS_PAYLOAD', JSON.stringify({ ts: Date.now(), news })).catch(e =>
+        await kv.put('NEWS_PAYLOAD', JSON.stringify({ ts: Date.now(), news }), { expirationTtl: 300 }).catch(e =>
           console.warn('[api/news] KV write failed:', e)
         );
       }
