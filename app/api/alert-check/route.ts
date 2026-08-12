@@ -233,7 +233,6 @@ export async function POST(req: NextRequest) {
   });
 }
 
-// Support GET for CF dashboard health-check / manual trigger
-export async function GET(req: NextRequest) {
-  return POST(req);
+export async function GET() {
+  return NextResponse.json({ error: 'Use POST' }, { status: 405, headers: { Allow: 'POST' } });
 }

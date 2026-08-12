@@ -73,7 +73,7 @@ export async function middleware(request: NextRequest) {
         const hash   = await sha256hex(rawKey);
         const cached = await kv.get(`apikey:${hash}`, 'json') as { id: string; rateLimit: number } | null;
 
-        if (!cached) {
+        if (!cached || typeof cached.rateLimit !== 'number') {
           return NextResponse.json(
             { error: 'Invalid API key' },
             { status: 401, headers: { 'Content-Type': 'application/json', ...(requestId ? { 'X-Request-ID': requestId } : {}) } },

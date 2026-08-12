@@ -19,7 +19,7 @@ export interface Subscription {
 
 export function getD1(): D1Database | null {
   try {
-    return (getRequestContext().env as any).DB ?? null;
+    return (getRequestContext().env as Record<string, unknown>).DB as D1Database ?? null;
   } catch {
     return null; // local dev — no D1 available
   }

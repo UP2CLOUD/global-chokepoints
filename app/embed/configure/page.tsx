@@ -19,7 +19,8 @@ export default function EmbedConfigurePage() {
   const [lang, setLang]     = useState('en');
   const [height, setHeight] = useState(440);
   const [width, setWidth]   = useState('100%');
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied]     = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   const [origin, setOrigin] = useState('');
 
   useEffect(() => { setOrigin(window.location.origin); }, []);
@@ -28,10 +29,14 @@ export default function EmbedConfigurePage() {
   const snippet = `<iframe\n  src="${src}"\n  width="${width}"\n  height="${height}"\n  frameborder="0"\n  scrolling="no"\n  style="border:none;display:block"\n  title="Global Chokepoints Alerts — Live Status"\n></iframe>`;
 
   const copy = () => {
+    setCopyFailed(false);
     navigator.clipboard.writeText(snippet).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {});
+    }).catch(() => {
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 3000);
+    });
   };
 
   return (
@@ -93,7 +98,7 @@ export default function EmbedConfigurePage() {
                 onClick={copy}
                 className="mt-2 w-full text-[10px] uppercase tracking-[0.14em] border border-accent/40 text-accent px-3 py-2 hover:bg-accent/5 transition-colors"
               >
-                {copied ? 'Copied!' : 'Copy HTML'}
+                {copied ? 'Copied!' : copyFailed ? 'Copy failed — select manually' : 'Copy HTML'}
               </button>
             </div>
 
