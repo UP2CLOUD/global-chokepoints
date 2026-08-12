@@ -179,7 +179,7 @@ export async function GET() {
 
   const updateKV = async (payload: Payload) => {
     if (kv) {
-      await kv.put('BRENT_PAYLOAD', JSON.stringify({ ts: Date.now(), payload })).catch(e =>
+      await kv.put('BRENT_PAYLOAD', JSON.stringify({ ts: Date.now(), payload }), { expirationTtl: 300 }).catch(e =>
         console.warn('[api/brent] KV write failed:', e)
       );
     }
