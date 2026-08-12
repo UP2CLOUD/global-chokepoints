@@ -36,6 +36,9 @@ const tsPlugin = wrapped.find((c) => c.plugins?.['@typescript-eslint'])?.plugins
 const nextPlugin = wrapped.find((c) => c.plugins?.['@next/next'])?.plugins?.['@next/next'];
 
 export default [
+  {
+    ignores: ['.next/**', '.open-next/**', '.vercel/**', 'node_modules/**', 'next-env.d.ts'],
+  },
   ...wrapped,
   {
     plugins: {
@@ -49,6 +52,11 @@ export default [
       '@typescript-eslint/no-empty-object-type': 'off',
       'react/no-unescaped-entities': 'off',
       '@next/next/no-img-element': 'off',
+      // react-hooks@7 adds React Compiler rules; disable until codebase adopts compiler conventions
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/purity': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/refs': 'off',
     },
   },
 ];
