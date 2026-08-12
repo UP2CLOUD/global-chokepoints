@@ -185,9 +185,12 @@ export default function TransitChart() {
   }, []);
 
   useEffect(() => {
+    const abortRef = { current: null as AbortController | null };
     const load = async () => {
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
       try {
-        const r = await fetch('/api/portwatch', { cache: 'no-store', signal: AbortSignal.timeout(15_000) });
+        const r = await fetch('/api/portwatch', { cache: 'no-store', signal: abortRef.current.signal });
         if (r.ok) {
           const j = await r.json() as TransitData;
           if (j.ok) setData(j);
@@ -197,7 +200,7 @@ export default function TransitChart() {
     };
     load();
     const id = setInterval(load, 30 * 60_000);
-    return () => clearInterval(id);
+    return () => { clearInterval(id); abortRef.current?.abort(); };
   }, []);
 
   if (loading) {

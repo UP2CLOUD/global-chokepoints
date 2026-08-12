@@ -34,6 +34,9 @@ export async function POST(req: NextRequest) {
   if (!EMAIL_RE.test(email) || email.length > 254) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
   }
+  if (turnstileToken.length > 2048) {
+    return NextResponse.json({ error: 'Invalid Turnstile token' }, { status: 400 });
+  }
 
   // ── Turnstile Verification ────────────────────────────
   // Skip if we are running locally without a secret key (or using test keys)

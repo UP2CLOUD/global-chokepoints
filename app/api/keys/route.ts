@@ -22,7 +22,8 @@ export async function POST(req: NextRequest) {
   const hash      = await sha256hex(rawKey);
   const id        = randomId();
   const label     = String(body.label ?? '').slice(0, 80);
-  const rateLimit = Math.min(Math.max(Number(body.rateLimit ?? 1000), 100), 10_000);
+  const rawRateLimit = Number(body.rateLimit ?? 1000);
+  const rateLimit = Math.min(Math.max(Number.isFinite(rawRateLimit) ? rawRateLimit : 1000, 100), 10_000);
 
   try {
     await db

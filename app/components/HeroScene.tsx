@@ -66,6 +66,7 @@ function CameraIntro() {
       ease: 'power3.out',
       onUpdate: () => camera.lookAt(0, 0, 0),
     });
+    return () => { gsap.killTweensOf(camera.position); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return null;
@@ -89,6 +90,7 @@ function OceanPlane() {
 
 function TacticalGrid() {
   const geo = useMemo(() => new THREE.PlaneGeometry(40, 28, 40, 28), []);
+  useEffect(() => () => geo.dispose(), [geo]);
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
       <primitive object={geo} />
@@ -115,6 +117,7 @@ function LandMass({
 
 function ShippingLane({ curve, color }: { curve: THREE.CatmullRomCurve3; color: string }) {
   const geo = useMemo(() => new THREE.TubeGeometry(curve, 80, 0.025, 6, false), [curve]);
+  useEffect(() => () => geo.dispose(), [geo]);
   return (
     <mesh>
       <primitive object={geo} />
