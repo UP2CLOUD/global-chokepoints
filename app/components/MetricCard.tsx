@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 
 interface SparkPoint { date: string; price: number }
 
@@ -50,7 +50,7 @@ const TONE_CLASS: Record<NonNullable<Props['tone']>, string> = {
   default: 'text-text',
 };
 
-export default function MetricCard({
+function MetricCard({
   title, value, icon, change, changeType = 'neutral',
   delay = 0, source, spark, stale, down, tone = 'default',
   loading = false,
@@ -113,3 +113,5 @@ export default function MetricCard({
     </div>
   );
 }
+
+export default memo(MetricCard);
