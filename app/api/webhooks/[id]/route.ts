@@ -40,7 +40,8 @@ export async function DELETE(
   const result = await getAndAuth(req, id);
   if (result === null) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (result === 'unauthorized') return NextResponse.json({ error: 'x-webhook-secret required' }, { status: 401 });
-  const db = getD1()!;
+  const db = getD1();
+  if (!db) return NextResponse.json({ error: 'D1 not available' }, { status: 503 });
   try {
     await db.prepare('DELETE FROM webhooks WHERE id = ?').bind(id).run();
     return NextResponse.json({ ok: true });
