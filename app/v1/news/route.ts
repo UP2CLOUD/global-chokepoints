@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 300;
 
 import { NextRequest, NextResponse } from 'next/server';
+import type { NewsItem } from '@/app/lib/types';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  let news: any[] = [];
+  let news: NewsItem[] = [];
   let source = 'GDELT';
   try {
     const upstream = await fetch(`${base}/api/news`, { signal: AbortSignal.timeout(12_000), headers: { 'User-Agent': 'GlobalChokepointsAlerts/v1' } });
@@ -58,7 +59,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (sentimentParam) {
-    news = news.filter((item: any) => item.sentiment === sentimentParam);
+    news = news.filter(item => item.sentiment === sentimentParam);
   }
   const total = news.length;
   news = news.slice(0, limit);

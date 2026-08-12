@@ -5,6 +5,7 @@
 // ============================================================
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
+import type { TimelineEvent } from '@/app/lib/types';
 
 export const revalidate = 60;
 export const dynamic = 'force-dynamic';
@@ -64,7 +65,7 @@ export async function GET(req: NextRequest) {
   const origin = u.origin;
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://global-chokepoints.pages.dev').replace(/\/$/, '');
   const UA = { 'User-Agent': 'GlobalChokepointsAlerts/v1' };
-  let events: any[] = [];
+  let events: TimelineEvent[] = [];
   try {
     const res = await fetch(`${base}/api/timeline`, { signal: AbortSignal.timeout(10_000), headers: UA });
     const json = res.ok ? await res.json() : { events: [] };

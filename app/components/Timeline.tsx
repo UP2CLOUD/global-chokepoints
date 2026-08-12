@@ -79,7 +79,7 @@ export default function Timeline({ events }: Props) {
       });
 
       cleanup = () => triggers.forEach(t => t.kill());
-    });
+    }).catch((err: unknown) => console.warn('[Timeline] GSAP load failed:', err));
 
     return () => { cleanup?.(); };
   }, [filtered]);
