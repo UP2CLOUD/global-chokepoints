@@ -100,7 +100,7 @@ function buildStats(days: PortWatchDay[], baseline: number): ChokepointStats {
     ? Math.round(last7.reduce((s, d) => s + d.total, 0) / last7.length * 10) / 10
     : 0;
   const todayTotal = last?.total ?? 0;
-  const vsBaseline = Math.round(((todayTotal - baseline) / baseline) * 100);
+  const vsBaseline = baseline ? Math.round(((todayTotal - baseline) / baseline) * 100) : 0;
   return { days, todayTotal, sevenDayAvg, baselineDaily: baseline, vsBaseline, latestDate: last?.date ?? '' };
 }
 

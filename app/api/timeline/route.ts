@@ -28,6 +28,15 @@ interface TimelineEvent {
   url: string;
 }
 
+interface TimelinePayload {
+  events: TimelineEvent[];
+  sources: string[];
+  feedsOk: number;
+  feedsFailed: number;
+  generatedAt: string;
+  fetchMs: number;
+}
+
 // Feeds to aggregate. All are public RSS. Reuters killed their official
 // RSS feeds in 2020, so we use Google News scoped to reuters.com.
 const FEEDS: { name: string; url: string }[] = [
@@ -233,7 +242,7 @@ export async function GET() {
   const kv = getKV();
   if (kv) {
     try {
-      const cached = await kv.get(KV_TIMELINE_KEY, 'json') as { events: TimelineEvent[]; sources: string[]; feedsOk: number; feedsFailed: number; generatedAt: string; fetchMs: number } | null;
+      const cached = await kv.get(KV_TIMELINE_KEY, 'json') as TimelinePayload | null;
       if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120, stale-if-error=86400', 'X-Cache': 'HIT' } });
     } catch (err) { console.warn('[timeline] KV read failed, fetching live:', err); }
   }

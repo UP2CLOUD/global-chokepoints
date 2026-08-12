@@ -75,8 +75,8 @@ export async function GET(req: NextRequest) {
       const res = await fetch(`${base}/v1/status`, { signal: AbortSignal.timeout(4000), headers: UA });
       if (res.ok) {
         const j = await res.json() as { state?: string; tensionIndex?: number };
-        if (j.state)        status = j.state;
-        if (j.tensionIndex) risk   = Math.round(j.tensionIndex);
+        if (j.state)                  status = j.state;
+        if (j.tensionIndex != null)   risk   = Math.round(j.tensionIndex);
       }
     } else {
       // Other chokepoints: fetch from /v1/chokepoints

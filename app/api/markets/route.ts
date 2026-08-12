@@ -18,6 +18,16 @@ import { getKV } from '@/app/lib/kv';
 export const revalidate = 300;
 export const dynamic = 'force-dynamic';
 
+interface YahooChartResponse {
+  chart?: {
+    result?: Array<{
+      timestamp?: number[];
+      indicators?: { quote?: Array<{ close?: (number | null)[] }> };
+      meta?: { regularMarketPrice?: number; chartPreviousClose?: number; regularMarketTime?: number };
+    }>;
+  };
+}
+
 interface Ticker {
   price: number;
   change: number;
@@ -92,7 +102,7 @@ async function fetchYahoo(symbol: string): Promise<Ticker> {
       }
       if (!res.ok) throw new Error(`Yahoo HTTP ${res.status} for ${symbol}`);
 
-      const json = await res.json();
+      const json = await res.json() as YahooChartResponse;
       const result = json?.chart?.result?.[0];
       if (!result) throw new Error(`No chart payload for ${symbol}`);
 
